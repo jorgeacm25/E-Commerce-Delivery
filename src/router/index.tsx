@@ -11,12 +11,14 @@ import {
 	CheckoutPage,
 	ThankyouPage,
 	OrderUserPage,
+	CombosPage,
 	DashboardProductsPage,
 	DashboardNewProductPage,
 	DashboardProductSlugPage,
 	DashboardOrdersPage,
 	DashboardOrderPage,
 	DashboardPaymentVerificationPage,
+	DashboardCombosPage,
 } from '../pages';
 import { ClientLayout } from '../layouts/ClientLayout';
 import { DashboardLayout } from '../layouts/DashboardLayout';
@@ -41,6 +43,10 @@ export const router = createBrowserRouter([
 			{
 				path: 'nosotros',
 				element: <AboutPage />,
+			},
+			{
+				path: 'combos',
+				element: <CombosPage />,
 			},
 			{
 				path: 'login',
@@ -109,6 +115,10 @@ export const router = createBrowserRouter([
 			{
 				path: 'pagos',
 				element: <DashboardPaymentVerificationPage />,
+			},
+			{
+				path: 'combos',
+				element: <DashboardCombosPage />,
 			},
 		],
 	},

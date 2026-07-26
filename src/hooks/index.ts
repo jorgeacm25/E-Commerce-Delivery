@@ -35,3 +35,14 @@ export * from './payments/useUploadPaymentProof';
 export * from './payments/usePendingPaymentProofs';
 export * from './payments/useReviewPaymentProof';
 export * from './payments/usePaymentProofSignedUrl';
+export * from './payments/useActiveExchangeRate';
+export * from './payments/useUpdateExchangeRate';
+
+/* ********************************** */
+/*               COMBOS               */
+/* ********************************** */
+export * from './combos/useActiveCombos';
+export * from './combos/useAllCombosAdmin';
+export * from './combos/useCreateCombo';
+export * from './combos/useManageCombo';
+export * from './combos/useVariantsForComboSelector';

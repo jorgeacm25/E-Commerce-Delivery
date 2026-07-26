@@ -1,6 +1,6 @@
 import { LuMinus, LuPlus } from 'react-icons/lu';
 import { Separator } from '../components/shared/Separator';
-import { formatPrice } from '../helpers';
+import { DualPrice } from '../components/shared/DualPrice';
 import { CiDeliveryTruck } from 'react-icons/ci';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { BsChatLeftText } from 'react-icons/bs';
@@ -173,11 +173,13 @@ export const CellPhonePage = () => {
 					</h1>
 
 					<div className='flex gap-5 items-center'>
-						<span className='tracking-wide text-lg font-semibold'>
-							{formatPrice(
-								selectedVariant?.price || product.variants[0].price
-							)}
-						</span>
+						<DualPrice
+							usd={
+								selectedVariant?.price ||
+								product.variants[0].price
+							}
+							className='tracking-wide text-lg font-semibold'
+						/>
 
 						<div className='relative'>
 							{isOutOfStock && <Tag contentTag='agotado' />}

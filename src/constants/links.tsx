@@ -6,6 +6,7 @@ import {
 	FaTiktok,
 	FaXTwitter,
 	FaMoneyCheckDollar,
+	FaLayerGroup,
 } from 'react-icons/fa6';
 
 export const navbarLinks = [
@@ -21,6 +22,11 @@ export const navbarLinks = [
 	},
 	{
 		id: 3,
+		title: 'Combos',
+		href: '/combos',
+	},
+	{
+		id: 4,
 		title: 'Sobre Nosotros',
 		href: '/nosotros',
 	},
@@ -71,5 +77,11 @@ export const dashboardLinks = [
 		title: 'Pagos',
 		href: '/dashboard/pagos',
 		icon: <FaMoneyCheckDollar size={25} />,
+	},
+	{
+		id: 4,
+		title: 'Combos',
+		href: '/dashboard/combos',
+		icon: <FaLayerGroup size={25} />,
 	},
 ];

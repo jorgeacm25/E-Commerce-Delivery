@@ -10,6 +10,22 @@ export const formatPrice = (price: number) => {
 	}).format(price);
 };
 
+// Función para formatear un monto ya convertido a CUP (sin símbolo de moneda nativo,
+// porque Intl no tiene formato oficial para CUP)
+export const formatCup = (amount: number) => {
+	const formatted = new Intl.NumberFormat('es-CU', {
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2,
+	}).format(amount);
+
+	return `${formatted} CUP`;
+};
+
+// Convierte un monto en USD a CUP dada la tasa de cambio vigente
+export const convertUsdToCup = (usd: number, valorCupPorUsd: number) => {
+	return usd * valorCupPorUsd;
+};
+
 // Función para preparar los productos - (CELULARES)
 export const prepareProducts = (products: Product[]) => {
 	return products.map(product => {

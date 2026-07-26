@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FiPlus } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { VariantProduct } from '../../interfaces';
-import { formatPrice } from '../../helpers';
+import { DualPrice } from '../shared/DualPrice';
 import { Tag } from '../shared/Tag';
 import { useCartStore } from '../../store/cart.store';
 import toast from 'react-hot-toast';
@@ -86,9 +86,11 @@ export const CardProduct = ({
 
 			<div className='flex flex-col gap-1 items-center'>
 				<p className='text-[15px] font-medium'>{name}</p>
-				<p className='text-[15px] font-medium'>
-					{formatPrice(price)}
-				</p>
+				<DualPrice
+					usd={price}
+					className='text-[15px] font-medium'
+					cupClassName='text-xs text-gray-500'
+				/>
 
 				<div className='flex gap-3'>
 					{colors.map(color => (
