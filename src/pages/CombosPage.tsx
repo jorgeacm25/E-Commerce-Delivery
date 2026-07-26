@@ -1,9 +1,19 @@
 import { useActiveCombos } from '../hooks';
 import { Loader } from '../components/shared/Loader';
 import { formatPrice } from '../helpers';
+import { useCartStore } from '../store/cart.store';
+import toast from 'react-hot-toast';
 
 export const CombosPage = () => {
 	const { data: combos, isLoading } = useActiveCombos();
+	const addCombo = useCartStore(state => state.addCombo);
+
+	const handleAddCombo = (combo: NonNullable<typeof combos>[number]) => {
+		addCombo(combo);
+		toast.success('Combo añadido al carrito', {
+			position: 'bottom-right',
+		});
+	};
 
 	if (isLoading) return <Loader />;
 
@@ -46,6 +56,13 @@ export const CombosPage = () => {
 							<p className='font-bold text-xl'>
 								{formatPrice(combo.precio_combo_usd)}
 							</p>
+
+							<button
+								onClick={() => handleAddCombo(combo)}
+								className='bg-black text-white py-2.5 text-sm font-semibold rounded-md w-full'
+							>
+								Añadir combo al carrito
+							</button>
 						</div>
 					))}
 				</div>

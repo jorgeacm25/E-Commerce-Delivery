@@ -11,6 +11,10 @@ export interface ICartItem {
 	price: number;
 	quantity: number;
 	image: string;
+	// Presentes solo si este ítem vino de un combo: permite que la misma
+	// variante exista como ítem normal y como parte de un combo a la vez.
+	comboId?: string;
+	comboName?: string;
 }
 
 interface Props {
@@ -22,12 +26,12 @@ export const CartItem = ({ item }: Props) => {
 	const updateQuantity = useCartStore(state => state.updateQuantity);
 
 	const increment = () => {
-		updateQuantity(item.variantId, item.quantity + 1);
+		updateQuantity(item.variantId, item.quantity + 1, item.comboId);
 	};
 
 	const decrement = () => {
 		if (item.quantity > 1) {
-			updateQuantity(item.variantId, item.quantity - 1);
+			updateQuantity(item.variantId, item.quantity - 1, item.comboId);
 		}
 	};
 
@@ -43,7 +47,14 @@ export const CartItem = ({ item }: Props) => {
 
 			<div className='flex-1 space-y-3'>
 				<div className='flex justify-between'>
-					<p className='font-semibold'>{item.name}</p>
+					<div>
+						<p className='font-semibold'>{item.name}</p>
+						{item.comboName && (
+							<span className='text-[11px] uppercase tracking-wide text-cyan-600 font-semibold'>
+								Combo: {item.comboName}
+							</span>
+						)}
+					</div>
 					<p className='text-sm font-medium text-gray-600 mt-1'>
 						{formatPrice(item.price)}
 					</p>
@@ -73,7 +84,9 @@ export const CartItem = ({ item }: Props) => {
 
 					<button
 						className='underline font-medium text-[10px]'
-						onClick={() => removeItem(item.variantId)}
+						onClick={() =>
+							removeItem(item.variantId, item.comboId)
+						}
 					>
 						Eliminar
 					</button>
