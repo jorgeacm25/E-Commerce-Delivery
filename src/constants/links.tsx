@@ -5,6 +5,7 @@ import {
 	FaInstagram,
 	FaTiktok,
 	FaXTwitter,
+	FaMoneyCheckDollar,
 } from 'react-icons/fa6';
 
 export const navbarLinks = [
@@ -64,5 +65,11 @@ export const dashboardLinks = [
 		title: 'Ordenes',
 		href: '/dashboard/ordenes',
 		icon: <FaCartShopping size={25} />,
+	},
+	{
+		id: 3,
+		title: 'Pagos',
+		href: '/dashboard/pagos',
+		icon: <FaMoneyCheckDollar size={25} />,
 	},
 ];

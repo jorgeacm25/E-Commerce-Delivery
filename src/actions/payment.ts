@@ -1,4 +1,5 @@
 import {
+	PaymentProofWithOrder,
 	ReviewPaymentProofInput,
 	UploadPaymentProofInput,
 } from '../interfaces';
@@ -193,7 +194,9 @@ export const getPendingPaymentProofs = async () => {
 		throw new Error(error.message);
 	}
 
-	return data;
+	// supabase-js tipa columnas de texto como `string`; acá las acotamos
+	// a los literales reales que ya garantizan el CHECK constraint en la DB.
+	return data as unknown as PaymentProofWithOrder[];
 };
 
 export const confirmPaymentProof = async ({

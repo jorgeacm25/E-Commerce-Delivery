@@ -5,6 +5,7 @@ import { CiCircleCheck } from 'react-icons/ci';
 import { formatPrice } from '../helpers';
 import { useEffect } from 'react';
 import { supabase } from '../supabase/client';
+import { PaymentProofUpload } from '../components/checkout/PaymentProofUpload';
 
 export const ThankyouPage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -49,28 +50,8 @@ export const ThankyouPage = () => {
 					</p>
 				</div>
 
-				<div className='border border-slate-200 w-full md:w-[600px] p-5 rounded-md space-y-3'>
-					<h3 className='font-medium'>Tu pedido está confirmado</h3>
-
-					<p className='text-sm'>
-						Gracias por realizar tu compra en Celularesbaratos. Para
-						realizar la transferencia te compartimos los siguientes
-						datos
-					</p>
-
-					<div className='space-y-0.5 text-sm'>
-						<p>BANCO PICHINCHA</p>
-						<p>Razón Social: CelularesBaratos</p>
-						<p>RUC: 123456789000</p>
-						<p>Tipo de cuenta: Corriente</p>
-						<p>Número de cuenta: 1234567890</p>
-					</div>
-
-					<p className='text-sm'>
-						Una vez realizada la transferencia, comparte tu
-						comprobante a ventas@celularesbaratos.com para procesarla
-						y hacerte la entrega de tu dispositivo a domicilio.
-					</p>
+				<div className='w-full md:w-[600px]'>
+					<PaymentProofUpload orderId={Number(id)} />
 				</div>
 
 				<div className='border border-slate-200 w-full p-5 rounded-md space-y-3 md:w-[600px]'>
@@ -128,10 +109,8 @@ export const ThankyouPage = () => {
 						</div>
 
 						<div className='flex flex-col text-sm'>
-							<p className='font-semibold'>Métodos de pago:</p>
-							<p>
-								Deposito bancario - {formatPrice(data.totalAmount)}
-							</p>
+							<p className='font-semibold'>Total a pagar:</p>
+							<p>{formatPrice(data.totalAmount)}</p>
 						</div>
 
 						<div className='flex flex-col text-sm'>

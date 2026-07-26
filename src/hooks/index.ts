@@ -26,3 +26,12 @@ export * from './orders/useOrders';
 export * from './orders/useAllOrders';
 export * from './orders/useChangeStatusOrder';
 export * from './orders/useOrderAdmin';
+
+/* ********************************** */
+/*               PAGOS                */
+/* ********************************** */
+export * from './payments/useActivePaymentAccount';
+export * from './payments/useUploadPaymentProof';
+export * from './payments/usePendingPaymentProofs';
+export * from './payments/useReviewPaymentProof';
+export * from './payments/usePaymentProofSignedUrl';
