@@ -6,7 +6,7 @@ import { supabase } from '../supabase/client';
 import { Loader } from '../components/shared/Loader';
 
 export const ClientLayout = () => {
-	const { session, isLoading: isLoadingSession } = useUser();
+	const { isLoading: isLoadingSession } = useUser();
 
 	const navigate = useNavigate();
 
