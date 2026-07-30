@@ -4,6 +4,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Anillo de foco visible y consistente para todos los elementos interactivos del sistema de diseño */
+.focus-ring {
+	@apply outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
+}
+
 /* CLASES PERSONALIZADAS */
 .btn-paginated {
 	@apply border border-slate-700 rounded-md font-semibold text-xs py-1 px-3 hover:bg-slate-700 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-800 disabled:hover:bg-white disabled:hover:text-slate-700;
