@@ -6,8 +6,10 @@ export interface ICartItem {
 	variantId: string;
 	productId: string;
 	name: string;
-	color: string;
-	storage: string;
+	// Descripción libre de la variante/presentación (ej. "5 lb", "128GB / Negro",
+	// "Talla M"): campo genérico que reemplaza los color/storage específicos
+	// de celulares para poder representar también productos de alimentos.
+	variantLabel: string;
 	price: number;
 	quantity: number;
 	image: string;
@@ -61,9 +63,7 @@ export const CartItem = ({ item }: Props) => {
 				</div>
 
 				<div className='flex gap-3'>
-					<p className='text-[13px] text-gray-600'>
-						{item.storage} / {item.color}
-					</p>
+					<p className='text-[13px] text-gray-600'>{item.variantLabel}</p>
 				</div>
 
 				<div className='flex gap-4'>

@@ -113,8 +113,9 @@ export const CellPhonePage = () => {
 				productId: product?.id || '',
 				name: product?.name || '',
 				image: product?.images[0] || '',
-				color: selectedVariant.color_name,
-				storage: selectedVariant.storage,
+				variantLabel: [selectedVariant.storage, selectedVariant.color_name]
+					.filter(Boolean)
+					.join(' / '),
 				price: selectedVariant.price,
 				quantity: count,
 			});
@@ -132,8 +133,9 @@ export const CellPhonePage = () => {
 				productId: product?.id || '',
 				name: product?.name || '',
 				image: product?.images[0] || '',
-				color: selectedVariant.color_name,
-				storage: selectedVariant.storage,
+				variantLabel: [selectedVariant.storage, selectedVariant.color_name]
+					.filter(Boolean)
+					.join(' / '),
 				price: selectedVariant.price,
 				quantity: count,
 			});

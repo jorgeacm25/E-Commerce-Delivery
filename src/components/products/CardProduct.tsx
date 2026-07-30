@@ -40,8 +40,9 @@ export const CardProduct = ({
 				productId: slug,
 				name,
 				image: img,
-				color: activeColor.name,
-				storage: selectedVariant.storage,
+				variantLabel: [selectedVariant.storage, activeColor.name]
+					.filter(Boolean)
+					.join(' / '),
 				price: selectedVariant.price,
 				quantity: 1,
 			});

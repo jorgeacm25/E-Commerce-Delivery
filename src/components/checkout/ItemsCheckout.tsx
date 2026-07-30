@@ -32,9 +32,7 @@ export const ItemsCheckout = () => {
 								</p>
 							</div>
 							<div className='flex gap-3'>
-								<p className='text-[13px] text-gray-600'>
-									{item.storage} /{item.color}
-								</p>
+								<p className='text-[13px] text-gray-600'>{item.variantLabel}</p>
 							</div>
 						</div>
 					</li>
