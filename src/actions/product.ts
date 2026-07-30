@@ -145,6 +145,12 @@ export const createProduct = async (productInput: ProductInput) => {
 
 		const uploadedImages = await Promise.all(
 			productInput.images.map(async image => {
+				if (!(image instanceof File)) {
+					throw new Error(
+						'Se esperaba un archivo de imagen nuevo para crear el producto'
+					);
+				}
+
 				const { data, error } = await supabase.storage
 					.from('product-images')
 					.upload(`${folderName}/${product.id}-${image.name}`, image);

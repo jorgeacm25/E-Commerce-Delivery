@@ -51,7 +51,7 @@ export interface ProductInput {
 	slug: string;
 	features: string[];
 	description: JSONContent;
-	images: File[];
+	images: (File | string)[];
 	variants: VariantInput[];
 }
 
