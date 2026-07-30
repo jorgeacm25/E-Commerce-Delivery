@@ -2,3 +2,8 @@ export * from './product.interface';
 export * from './order.interface';
 export * from './payment.interface';
 export * from './combo.interface';
+export * from './home.interface';
+export * from './catalog.interface';
+export * from './cart.interface';
+export * from './checkout.interface';
+export * from './auth.interface';

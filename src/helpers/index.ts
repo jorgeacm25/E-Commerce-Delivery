@@ -1,5 +1,7 @@
 import { Color, Product, VariantProduct } from '../interfaces';
 
+export * from './cn';
+
 // Función para formatear el precio a dólares
 export const formatPrice = (price: number) => {
 	return new Intl.NumberFormat('en-US', {
