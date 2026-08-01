@@ -1,14 +1,16 @@
-// Perfil sincronizado desde la tabla `profiles` (ver
-// supabase/migrations/003_profiles.sql). Independiente de las tablas legacy
-// `customers`/`user_roles` del dominio "celulares".
+// Perfil del usuario autenticado. El backend .NET (Almacen-Delivery-Home_Api_new)
+// distingue 3 identidades reales — Customer, User (staff) y Admin (staff
+// raíz, gestiona Users) — pero para efectos de UX/guardas de ruta en el
+// frontend alcanza con distinguir 'customer' de 'staff'; qué tan
+// específico es el permiso de un staff se resuelve en el backend, no acá.
 export interface Profile {
 	id: string;
 	fullName: string;
 	phone: string | null;
-	role: 'customer' | 'admin' | 'operador' | 'mensajero';
-	status: 'active' | 'suspended';
-	createdAt: string;
-	updatedAt: string;
+	role: 'customer' | 'staff';
+	status: 'active' | 'suspended' | null;
+	createdAt: string | null;
+	updatedAt: string | null;
 }
 
 export interface SignUpInput {
@@ -24,7 +26,7 @@ export interface SignInInput {
 }
 
 export interface SignUpResult {
-	// true cuando Supabase requiere confirmación de correo antes de habilitar
-	// la sesión (signUp no devuelve `session` en ese caso).
+	// Se mantiene por compatibilidad con los consumidores existentes; el
+	// backend .NET no tiene confirmación de correo, siempre es false.
 	needsEmailConfirmation: boolean;
 }

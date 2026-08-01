@@ -50,7 +50,7 @@ describe('RegisterPage', () => {
 		expect(signUp).not.toHaveBeenCalled();
 	});
 
-	it('muestra el aviso de confirmación de correo cuando Supabase la exige', async () => {
+	it('muestra el aviso de confirmación de correo cuando needsEmailConfirmation es true', async () => {
 		const signUp = vi.fn().mockResolvedValue({ needsEmailConfirmation: true });
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		useAuthMock.mockReturnValue({ signUp } as any);
@@ -83,7 +83,9 @@ describe('RegisterPage', () => {
 	});
 
 	it('muestra el mensaje de error cuando el correo ya está registrado', async () => {
-		const signUp = vi.fn().mockRejectedValue(new Error('User already registered'));
+		// El backend .NET ya devuelve el mensaje en español (ver
+		// CustomerRegisteredError) — no hace falta traducirlo.
+		const signUp = vi.fn().mockRejectedValue(new Error('Ya existe un cliente registrado con ese email'));
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		useAuthMock.mockReturnValue({ signUp } as any);
 		const user = userEvent.setup();
@@ -92,6 +94,6 @@ describe('RegisterPage', () => {
 		await fillValidForm(user);
 		await user.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
-		expect(await screen.findByText('Ya existe una cuenta registrada con este correo.')).toBeInTheDocument();
+		expect(await screen.findByText('Ya existe un cliente registrado con ese email')).toBeInTheDocument();
 	});
 });

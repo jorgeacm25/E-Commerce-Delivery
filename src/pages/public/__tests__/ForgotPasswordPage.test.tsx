@@ -38,7 +38,7 @@ describe('ForgotPasswordPage', () => {
 	});
 
 	it('muestra un mensaje de confirmación genérico tras enviar el enlace', async () => {
-		const requestPasswordReset = vi.fn().mockResolvedValue(undefined);
+		const requestPasswordReset = vi.fn().mockResolvedValue({});
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		useAuthMock.mockReturnValue({ requestPasswordReset } as any);
 		const user = userEvent.setup();

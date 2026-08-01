@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Button, PasswordInput } from '../../components/ui';
 import { useAuth } from '../../hooks';
 import { ResetPasswordFormValues, resetPasswordSchema } from '../../lib/authValidators';
 import { getAuthErrorMessage } from '../../helpers/authError';
 
 // Página de destino del enlace de recuperación de contraseña
-// (`requestPasswordReset`, ver src/services/auth.service.ts). El SDK de
-// Supabase detecta el token de la URL automáticamente (detectSessionInUrl,
-// activo por defecto) y abre una sesión de recuperación antes de que este
-// componente se monte; si no hay sesión, el enlace ya expiró o no es válido.
+// (`requestPasswordReset`, ver src/api/auth.ts). El backend .NET no
+// abre una "sesión de recuperación" como hacía Supabase: el enlace trae el
+// token de un solo uso directo en la URL (?token=...) y esta página lo
+// manda junto con la nueva contraseña a resetPassword().
 export const ResetPasswordPage = () => {
-	const { session, isInitializing, updatePassword } = useAuth();
+	const { resetPassword } = useAuth();
 	const navigate = useNavigate();
+	const [searchParams] = useSearchParams();
+	const token = searchParams.get('token');
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
 
@@ -25,10 +27,12 @@ export const ResetPasswordPage = () => {
 	} = useForm<ResetPasswordFormValues>({ resolver: zodResolver(resetPasswordSchema) });
 
 	const onSubmit = async (values: ResetPasswordFormValues) => {
+		if (!token) return;
+
 		setSubmitError(null);
 
 		try {
-			await updatePassword(values.password);
+			await resetPassword(token, values.password);
 			setSuccess(true);
 		} catch (error) {
 			setSubmitError(getAuthErrorMessage(error));
@@ -50,7 +54,7 @@ export const ResetPasswordPage = () => {
 		);
 	}
 
-	if (!isInitializing && !session) {
+	if (!token) {
 		return (
 			<div className='container flex justify-center py-12'>
 				<div className='w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 shadow-card'>

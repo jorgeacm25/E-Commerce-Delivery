@@ -11,6 +11,10 @@ export const ForgotPasswordPage = () => {
 	const { requestPasswordReset } = useAuth();
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const [sentTo, setSentTo] = useState<string | null>(null);
+	// El backend local todavía no tiene servidor de correo configurado: en
+	// Development devuelve el token directo en la respuesta para poder
+	// probar el flujo sin email real (ver CustomerController.ForgotPassword).
+	const [devResetUrl, setDevResetUrl] = useState<string | null>(null);
 
 	const {
 		register,
@@ -22,8 +26,11 @@ export const ForgotPasswordPage = () => {
 		setSubmitError(null);
 
 		try {
-			await requestPasswordReset(values.email);
+			const { devResetToken } = await requestPasswordReset(values.email);
 			setSentTo(values.email);
+			if (devResetToken) {
+				setDevResetUrl(`${window.location.origin}/restablecer-contrasena?token=${devResetToken}`);
+			}
 		} catch (error) {
 			setSubmitError(getAuthErrorMessage(error));
 		}
@@ -38,10 +45,25 @@ export const ForgotPasswordPage = () => {
 				</p>
 
 				{sentTo ? (
-					<Alert variant='success' title='Enlace enviado' className='mt-6'>
-						Si <strong>{sentTo}</strong> tiene una cuenta registrada, recibirás un correo con
-						instrucciones para restablecer tu contraseña.
-					</Alert>
+					<div className='mt-6 flex flex-col gap-4'>
+						<Alert variant='success' title='Enlace enviado'>
+							Si <strong>{sentTo}</strong> tiene una cuenta registrada, recibirás un correo con
+							instrucciones para restablecer tu contraseña.
+						</Alert>
+						{devResetUrl && (
+							<Alert variant='info' title='Modo desarrollo'>
+								No hay servidor de correo configurado todavía. Usa este enlace para probar el
+								restablecimiento:
+								<br />
+								<Link
+									to={devResetUrl.replace(window.location.origin, '')}
+									className='break-all underline'
+								>
+									{devResetUrl}
+								</Link>
+							</Alert>
+						)}
+					</div>
 				) : (
 					<form onSubmit={handleSubmit(onSubmit)} noValidate className='mt-6 flex flex-col gap-4'>
 						{submitError && <Alert variant='danger'>{submitError}</Alert>}

@@ -1,24 +1,29 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Session, User } from '@supabase/supabase-js';
-import { supabase } from '../supabase/client';
+import { getToken, clearToken } from '../api/client';
+import * as authApi from '../api/auth';
+import type { AuthSession, AuthUser } from '../api/auth';
 import { Profile, SignInInput, SignUpInput, SignUpResult } from '../interfaces';
-import * as authService from '../services/auth.service';
 
 export interface AuthContextValue {
-	session: Session | null;
-	user: User | null;
+	session: AuthSession | null;
+	user: AuthUser | null;
 	profile: Profile | null;
-	// true solo mientras se resuelve la sesión inicial (storage/cookie), no
-	// en cada cambio posterior. Sirve para la pantalla de carga de arranque.
+	// true solo mientras se resuelve la sesión inicial (token en
+	// localStorage), no en cada cambio posterior. Sirve para la pantalla de
+	// carga de arranque.
 	isInitializing: boolean;
 	isProfileLoading: boolean;
 	signUp: (input: SignUpInput) => Promise<SignUpResult>;
-	signIn: (input: SignInInput) => Promise<Session>;
+	// Login de cliente. Ver staffSignIn para login de personal interno.
+	signIn: (input: SignInInput) => Promise<AuthSession>;
+	staffSignIn: (input: SignInInput) => Promise<AuthSession>;
 	signOut: () => Promise<void>;
-	requestPasswordReset: (email: string) => Promise<void>;
+	requestPasswordReset: (email: string) => Promise<{ devResetToken?: string }>;
+	resetPassword: (token: string, newPassword: string) => Promise<void>;
+	// Cambio de contraseña estando ya logueado (Seguridad de la cuenta). No
+	// confundir con resetPassword (flujo de "olvidé mi contraseña").
 	updatePassword: (password: string) => Promise<void>;
-	refreshSession: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -27,75 +32,86 @@ interface Props {
 	children: React.ReactNode;
 }
 
-// Fuente única de verdad para la sesión de Supabase Auth en toda la app.
-// Persistencia y renovación automática de sesión ya las resuelve el SDK de
-// Supabase (createClient con las opciones por defecto: persistSession y
-// autoRefreshToken en true); este provider solo mantiene el estado de React
-// sincronizado con esos eventos vía onAuthStateChange y sincroniza el
-// perfil (`profiles`) asociado al usuario autenticado.
+// Fuente única de verdad para la sesión del backend .NET en toda la app.
+// A diferencia de Supabase, no hay SDK que persista/renueve la sesión por
+// nosotros: el JWT se guarda en localStorage (src/api/client.ts) y no tiene
+// refresh token (expira a los 60 min — JwtSettings.AccessTokenExpirationMinutes
+// del backend), así que al expirar simplemente se cierra la sesión y hay
+// que volver a iniciar sesión.
 export const AuthProvider = ({ children }: Props) => {
-	const [session, setSession] = useState<Session | null>(null);
-	const [isInitializing, setIsInitializing] = useState(true);
+	const [session, setSession] = useState<AuthSession | null>(() => authApi.getStoredSession(getToken()));
+	// Resolver la sesión inicial es síncrono (decodificar el JWT guardado en
+	// localStorage, sin red) — a diferencia de Supabase, nunca hay una fase
+	// de carga real acá. Se conserva el campo por compatibilidad con
+	// consumidores existentes (PageSkeleton mientras arranca).
+	const isInitializing = false;
 	const queryClient = useQueryClient();
 
+	// Verifica en cada montaje que el token guardado no haya expirado
+	// mientras la pestaña estaba cerrada.
 	useEffect(() => {
-		let isMounted = true;
-
-		authService
-			.getCurrentSession()
-			.then(currentSession => {
-				if (!isMounted) return;
-				setSession(currentSession);
-			})
-			.finally(() => {
-				if (isMounted) setIsInitializing(false);
-			});
-
-		const {
-			data: { subscription },
-		} = supabase.auth.onAuthStateChange((_event, newSession) => {
-			setSession(newSession);
-			setIsInitializing(false);
-		});
-
-		return () => {
-			isMounted = false;
-			subscription.unsubscribe();
-		};
+		const stored = authApi.getStoredSession(getToken());
+		if (!stored) {
+			clearToken();
+			setSession(null);
+		}
 	}, []);
 
 	const userId = session?.user.id;
+	const role = session?.role;
 
 	const { data: profile, isLoading: isProfileLoading } = useQuery({
-		queryKey: ['profile', userId],
-		queryFn: () => authService.getProfile(userId as string),
-		enabled: Boolean(userId),
+		queryKey: ['profile', userId, role],
+		queryFn: () =>
+			role === 'staff' ? authApi.getStaffProfile(userId as string) : authApi.getCustomerProfile(userId as string),
+		enabled: Boolean(userId && role),
 		retry: false,
 	});
 
-	const signUp = useCallback((input: SignUpInput) => authService.signUp(input), []);
+	// A diferencia de Supabase, el registro no abre sesión por sí solo (el
+	// backend .NET solo crea la cuenta) — se encadena el login con las
+	// mismas credenciales para que el contrato siga siendo "needsEmailConfirmation:
+	// false implica que ya quedaste logueado", como esperan los consumidores
+	// existentes (ver RegisterPage.tsx).
+	const signUp = useCallback(async (input: SignUpInput) => {
+		const result = await authApi.customerSignUp(input);
+		const newSession = await authApi.customerSignIn({ email: input.email, password: input.password });
+		setSession(newSession);
+		return result;
+	}, []);
 
-	const signIn = useCallback((input: SignInInput) => authService.signIn(input), []);
+	const signIn = useCallback(async (input: SignInInput) => {
+		const newSession = await authApi.customerSignIn(input);
+		setSession(newSession);
+		return newSession;
+	}, []);
+
+	const staffSignIn = useCallback(async (input: SignInInput) => {
+		const newSession = await authApi.staffSignIn(input);
+		setSession(newSession);
+		return newSession;
+	}, []);
 
 	const signOut = useCallback(async () => {
-		await authService.signOut();
+		authApi.signOut();
+		setSession(null);
 		queryClient.removeQueries({ queryKey: ['profile'] });
 	}, [queryClient]);
 
-	const requestPasswordReset = useCallback(
-		(email: string) => authService.requestPasswordReset(email),
+	const requestPasswordReset = useCallback((email: string) => authApi.requestPasswordReset(email), []);
+
+	const resetPassword = useCallback(
+		(token: string, newPassword: string) => authApi.resetPassword(token, newPassword),
 		[]
 	);
 
 	const updatePassword = useCallback(
-		(password: string) => authService.updatePassword(password),
-		[]
+		async (password: string) => {
+			if (!userId) throw new Error('No hay una sesión activa.');
+			await authApi.updateOwnPassword(userId, password);
+		},
+		[userId]
 	);
-
-	const refreshSession = useCallback(async () => {
-		const refreshed = await authService.refreshSession();
-		setSession(refreshed);
-	}, []);
 
 	const value = useMemo<AuthContextValue>(
 		() => ({
@@ -106,10 +122,11 @@ export const AuthProvider = ({ children }: Props) => {
 			isProfileLoading,
 			signUp,
 			signIn,
+			staffSignIn,
 			signOut,
 			requestPasswordReset,
+			resetPassword,
 			updatePassword,
-			refreshSession,
 		}),
 		[
 			session,
@@ -118,10 +135,11 @@ export const AuthProvider = ({ children }: Props) => {
 			isProfileLoading,
 			signUp,
 			signIn,
+			staffSignIn,
 			signOut,
 			requestPasswordReset,
+			resetPassword,
 			updatePassword,
-			refreshSession,
 		]
 	);
 

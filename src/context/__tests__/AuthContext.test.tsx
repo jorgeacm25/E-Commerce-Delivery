@@ -1,36 +1,36 @@
-import type { Session } from '@supabase/supabase-js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthProvider } from '../AuthContext';
 import { useAuth } from '../../hooks/auth/useAuth';
-import * as authService from '../../services/auth.service';
+import * as authApi from '../../api/auth';
+import type { AuthSession } from '../../api/auth';
 import { Profile } from '../../interfaces';
 
-vi.mock('../../services/auth.service', () => ({
-	getCurrentSession: vi.fn(),
-	getProfile: vi.fn(),
-	signIn: vi.fn(),
-	signUp: vi.fn(),
+vi.mock('../../api/auth', () => ({
+	getStoredSession: vi.fn(),
+	getCustomerProfile: vi.fn(),
+	getStaffProfile: vi.fn(),
+	customerSignIn: vi.fn(),
+	staffSignIn: vi.fn(),
+	customerSignUp: vi.fn(),
 	signOut: vi.fn(),
 	requestPasswordReset: vi.fn(),
-	updatePassword: vi.fn(),
-	refreshSession: vi.fn(),
+	resetPassword: vi.fn(),
+	updateOwnPassword: vi.fn(),
 }));
 
-vi.mock('../../supabase/client', () => ({
-	supabase: {
-		auth: {
-			onAuthStateChange: vi.fn(() => ({
-				data: { subscription: { unsubscribe: vi.fn() } },
-			})),
-		},
-	},
+vi.mock('../../api/client', () => ({
+	getToken: vi.fn(() => 'fake-token'),
+	setToken: vi.fn(),
+	clearToken: vi.fn(),
 }));
 
-const fakeSession = {
+const fakeSession: AuthSession = {
+	token: 'fake-token',
 	user: { id: 'user-1', email: 'ana@example.com' },
-} as unknown as Session;
+	role: 'customer',
+};
 
 const fakeProfile: Profile = {
 	id: 'user-1',
@@ -72,25 +72,24 @@ describe('AuthProvider / useAuth', () => {
 		vi.clearAllMocks();
 	});
 
-	it('inicia con isInitializing y luego expone sesión nula si no hay sesión activa', async () => {
-		vi.mocked(authService.getCurrentSession).mockResolvedValue(null);
+	it('expone sesión nula si no hay token guardado válido', async () => {
+		vi.mocked(authApi.getStoredSession).mockReturnValue(null);
 
 		renderWithProviders();
 
-		expect(screen.getByText('cargando')).toBeInTheDocument();
 		await waitFor(() => expect(screen.getByText('sesión: ninguna')).toBeInTheDocument());
 		expect(screen.getByText('perfil: sin perfil')).toBeInTheDocument();
 	});
 
 	it('sincroniza el perfil cuando hay una sesión activa', async () => {
-		vi.mocked(authService.getCurrentSession).mockResolvedValue(fakeSession);
-		vi.mocked(authService.getProfile).mockResolvedValue(fakeProfile);
+		vi.mocked(authApi.getStoredSession).mockReturnValue(fakeSession);
+		vi.mocked(authApi.getCustomerProfile).mockResolvedValue(fakeProfile);
 
 		renderWithProviders();
 
 		await waitFor(() => expect(screen.getByText('sesión: user-1')).toBeInTheDocument());
 		await waitFor(() => expect(screen.getByText('perfil: Ana Pérez')).toBeInTheDocument());
-		expect(authService.getProfile).toHaveBeenCalledWith('user-1');
+		expect(authApi.getCustomerProfile).toHaveBeenCalledWith('user-1');
 	});
 
 	it('useAuth lanza un error si se usa fuera de AuthProvider', () => {
