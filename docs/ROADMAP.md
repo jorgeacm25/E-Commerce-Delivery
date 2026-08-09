@@ -116,9 +116,10 @@ real, no en esta fase.
 > para el detalle de qué se cerró. **Pendiente de validación explícita del
 > usuario en el navegador** (mismo requisito que quedó abierto para la
 > Fase B) antes de considerar todo el bloque B-I cerrado según la regla de
-> `CLAUDE.md`. Dos ítems quedan fuera, diferidos a propósito: Configuración
-> → datos de contacto (WhatsApp, necesita tabla nueva en el backend) y
-> Dashboard → actividad reciente (necesita endpoint de auditoría).
+> `CLAUDE.md`. Un ítem queda fuera, diferido a propósito: Dashboard →
+> actividad reciente (necesita endpoint de auditoría). Configuración →
+> datos de contacto (WhatsApp) se cerró el 2026-08-09 (ver
+> `docs/PROJECT_STATE.md`): `api/agencyContact` real en el backend.
 
 - `/admin/almacen` (Fase C): alertas de stock bajo/vencimiento derivadas de
   `GET /api/product`, historial real vía `GET /api/history`, registrar
@@ -143,7 +144,9 @@ real, no en esta fase.
 - `/admin/configuracion` (Fase I): tasa de cambio real (ya existía);
   gestión de cuentas Admin/staff (crear, restablecer contraseña, eliminar
   — el backend no permite renombrar en el Update, solo reset de password);
-  datos de contacto (WhatsApp) sigue fuera de alcance (ver nota arriba).
+  datos de contacto (WhatsApp) real vía `api/agencyContact`, mismo patrón
+  versionado que la tasa de cambio — reemplaza el valor hardcoded que
+  usaban el footer y el botón de WhatsApp de la tienda pública.
 
 ## Deuda técnica (heredada, no bloquea las fases de negocio)
 

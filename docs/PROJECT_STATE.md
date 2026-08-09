@@ -1,6 +1,56 @@
 # Estado del proyecto
 
-> Última actualización: 2026-08-09 (más reciente). Sesión de "completar
+> Última actualización: 2026-08-09 (más reciente, misma sesión que la
+> entrada de abajo — continuación tras "avanza hacia el siguiente módulo
+> incompleto y termínalo"). Cerró el último gap documentado de Fase I
+> (Configuración): **"Datos de contacto" (WhatsApp) pasó de hardcoded en
+> el código a un dato real, editable desde el panel, respaldado por el
+> backend .NET.**
+> - **Backend** (`Almacen-Delivery-Home_Api_new`, repo separado): entidad
+>   nueva `AgencyContactEntity` (`WhatsappPhone`, `VigenteDesde`,
+>   `CreadoPorAdminId`), espejando exactamente el patrón ya usado por
+>   `ExchangeRateEntity` (cada actualización crea una fila nueva "vigente",
+>   no se edita una existente — conserva histórico). `POST /api/agencyContact`
+>   (staff), `GET /api/agencyContact/active` (público, 404 si nadie configuró
+>   nada todavía). Migración `20260809193050_AddAgencyContact` aplicada.
+>   **Al investigar el repo del backend se encontró que tenía ~119 archivos
+>   sin commitear** (todo el soporte real de Vendedores/Comisiones,
+>   Trabajadores, Remesas, Gastos, Provincias/Municipios, descuento en
+>   catálogo y reset de contraseña admin/staff — el backend real detrás de
+>   las Fases C-I que esta misma sesión había verificado en el navegador
+>   más temprano, más el reset de password de admin/staff que usa
+>   `AdminSettingsPage`) — se commiteó todo junto en un solo commit
+>   (`AppDbContext`/el snapshot de EF mezclan ese trabajo previo con el de
+>   `AgencyContact` de forma no separable limpiamente), mismo criterio que
+>   el checkpoint del frontend más abajo.
+> - **Frontend**: `src/services/agencyContact.service.ts` +
+>   `src/hooks/agencyContact/{useActiveAgencyContact,useUpdateAgencyContact}.ts`
+>   (mismo patrón que `useActiveExchangeRate`/`useUpdateExchangeRate`, 404 →
+>   `null`). `AdminSettingsPage.tsx`: la sección "Datos de contacto" pasa de
+>   un `Input` deshabilitado + alerta "fase futura" a un formulario real
+>   (mismo layout que la tasa de cambio). `PublicLayout.tsx` y
+>   `ContactSupportSection.tsx` (antes hardcodeaban `DEFAULT_WHATSAPP_PHONE`)
+>   ahora usan el valor real vía `useActiveAgencyContact`, con
+>   `DEFAULT_WHATSAPP_PHONE` como fallback mientras carga o si nadie
+>   configuró nada todavía (no rompe el sitio público en una instalación
+>   nueva). Verificado en el navegador: `/admin/configuracion` actualiza el
+>   WhatsApp real vía API, y el botón flotante de WhatsApp del sitio
+>   público (`wa.me/...`) refleja el número nuevo tras la actualización.
+> - **Encontrado de paso, no arreglado (fuera de alcance, delegado a una
+>   tarea aparte)**: `RegisterProductOutModal.tsx` (`/admin/almacen`,
+>   "Registrar salida") usa estado local controlado en vez de RHF; combinado
+>   con el `useEffect([isOpen, onClose])` de `Modal.tsx` que reenfoca el
+>   panel en cada render, esto le roba el foco al input en cada tecla — solo
+>   entra el primer carácter de cada campo. Es el único modal afectado hoy
+>   (el resto usa RHF, no controlado, así que no re-renderiza en cada tecla),
+>   pero el bug vive en el componente compartido `Modal`.
+> - Se encontró y corrigió también `vitest.config.ts`: no excluía
+>   `.claude/worktrees/**` (usado por sesiones/agentes en paralelo), así que
+>   Vitest recorría esas copias del repo y duplicaba cada prueba.
+> `npm run lint`, `npx tsc -b`, `npm run build` y `npx vitest run` (49
+> archivos, 243 pruebas) en verde.
+>
+> Actualización anterior: 2026-08-09. Sesión de "completar
 > módulos incompletos": el working tree traía ~189 archivos sin commitear
 > de sesiones anteriores nunca cerradas — el resto de la migración de auth
 > a Supabase Auth (borrado de código muerto) y prácticamente todas las
@@ -845,17 +895,19 @@ Las Fases C-I del roadmap nuevo (Almacén, Clientes, Vendedores/comisiones,
 Trabajadores, Remesas, Contabilidad, Configuración) ya están construidas
 y conectadas al backend .NET real — no mock, no roadmap original con datos
 simulados como se había planificado (ver "Última actualización" arriba
-para el detalle de qué se cerró en la sesión del 2026-08-09). **Pendiente
+para el detalle de qué se cerró en la sesión del 2026-08-09, incluyendo
+Configuración → "Datos de contacto" que quedaba pendiente). **Pendiente
 de validación explícita del usuario en el navegador con una sesión
 `admin`/`operador` real** — igual que quedó pendiente para la Fase B
 original, esta ronda de trabajo se verificó manualmente por el agente
 (editar/eliminar cliente, editar/eliminar gasto, resetear contraseña de
-staff, todo contra el backend real), pero no por el usuario. Sigue sin
-tocarse, deferido explícitamente:
-- Configuración → "Datos de contacto" (WhatsApp): necesita tabla nueva en
-  el backend, hoy es de solo lectura desde código (`DEFAULT_WHATSAPP_PHONE`).
+staff, actualizar el WhatsApp de contacto real, todo contra el backend
+real), pero no por el usuario. Sigue sin tocarse, deferido explícitamente:
 - Dashboard → "Actividad reciente": sigue en `adminDashboard.mock.ts`, no
   hay endpoint de auditoría en el backend todavía.
+- `RegisterProductOutModal.tsx` (`/admin/almacen`) le roba el foco al
+  input en cada tecla (bug real, no arreglado a propósito — ver "Última
+  actualización" arriba); flagueado como tarea aparte.
 
 Deuda técnica heredada (RPC transaccional de stock, auditoría real de
 inventario, idempotencia de pagos, procesador de pago real, CI, Docker)
