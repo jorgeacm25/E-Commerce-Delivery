@@ -1,9 +1,27 @@
 import { useState } from 'react';
-import { FiDollarSign, FiPlus, FiTrendingDown, FiTrendingUp, FiUsers } from 'react-icons/fi';
-import { Badge, BadgeVariant, Button, DataTable, PageHeader, Select, StatCard } from '../../../components/ui';
+import {
+	FiDollarSign,
+	FiEdit2,
+	FiPlus,
+	FiTrash2,
+	FiTrendingDown,
+	FiTrendingUp,
+	FiUsers,
+} from 'react-icons/fi';
+import {
+	Badge,
+	BadgeVariant,
+	Button,
+	ConfirmDialog,
+	DataTable,
+	PageHeader,
+	Select,
+	StatCard,
+} from '../../../components/ui';
 import { ExpenseFormModal } from '../../../components/admin/accounting/ExpenseFormModal';
-import { useLedgerEntries, useCreateExpense } from '../../../hooks';
-import { LedgerEntryType } from '../../../interfaces';
+import { useLedgerEntries, useManageExpenses } from '../../../hooks';
+import { LedgerEntry, LedgerEntryType } from '../../../interfaces';
+import { ExpenseFormValues } from '../../../lib/adminExpenseValidators';
 import { formatDateLong, formatPrice } from '../../../helpers';
 
 const typeLabels: Record<LedgerEntryType, string> = {
@@ -29,12 +47,24 @@ const typeOptions = [
 
 export const AdminAccountingPage = () => {
 	const { entries, summary, isLoading } = useLedgerEntries();
-	const { create, isCreating } = useCreateExpense();
+	const { create, isCreating, update, isUpdating, remove, isDeleting } = useManageExpenses();
 
 	const [typeFilter, setTypeFilter] = useState('');
 	const [modalOpen, setModalOpen] = useState(false);
+	const [editingEntry, setEditingEntry] = useState<LedgerEntry | null>(null);
+	const [deletingEntry, setDeletingEntry] = useState<LedgerEntry | null>(null);
 
 	const filtered = typeFilter ? entries.filter(entry => entry.type === typeFilter) : entries;
+
+	const editingValues: ExpenseFormValues | undefined = editingEntry
+		? {
+				description: editingEntry.description,
+				amountUsd: Math.abs(editingEntry.amountUsd),
+				amountCup: editingEntry.amountCup ?? 0,
+				category: editingEntry.category ?? '',
+				date: editingEntry.date.slice(0, 10),
+			}
+		: undefined;
 
 	return (
 		<div className='flex flex-col gap-6'>
@@ -93,6 +123,32 @@ export const AdminAccountingPage = () => {
 						),
 					},
 					{ key: 'date', header: 'Fecha', render: entry => formatDateLong(entry.date) },
+					{
+						key: 'actions',
+						header: '',
+						className: 'text-right',
+						render: entry =>
+							entry.type === 'gasto' ? (
+								<div className='flex justify-end gap-2'>
+									<Button
+										size='sm'
+										variant='outline'
+										leftIcon={<FiEdit2 />}
+										onClick={() => setEditingEntry(entry)}
+									>
+										Editar
+									</Button>
+									<Button
+										size='sm'
+										variant='outline'
+										leftIcon={<FiTrash2 />}
+										onClick={() => setDeletingEntry(entry)}
+									>
+										Eliminar
+									</Button>
+								</div>
+							) : null,
+					},
 				]}
 				data={filtered}
 				getRowId={entry => entry.id}
@@ -106,6 +162,30 @@ export const AdminAccountingPage = () => {
 				onClose={() => setModalOpen(false)}
 				isSubmitting={isCreating}
 				onSubmit={values => create(values, { onSuccess: () => setModalOpen(false) })}
+			/>
+
+			<ExpenseFormModal
+				isOpen={Boolean(editingEntry)}
+				onClose={() => setEditingEntry(null)}
+				isSubmitting={isUpdating}
+				initialValues={editingValues}
+				onSubmit={values => {
+					if (!editingEntry?.sourceId) return;
+					update({ id: editingEntry.sourceId, input: values }, { onSuccess: () => setEditingEntry(null) });
+				}}
+			/>
+
+			<ConfirmDialog
+				isOpen={Boolean(deletingEntry)}
+				onClose={() => setDeletingEntry(null)}
+				onConfirm={() => {
+					if (deletingEntry?.sourceId) remove(deletingEntry.sourceId);
+					setDeletingEntry(null);
+				}}
+				title='¿Eliminar este gasto?'
+				description='Se eliminará el gasto de forma permanente. Esta acción no se puede deshacer.'
+				confirmLabel={isDeleting ? 'Eliminando...' : 'Eliminar'}
+				variant='danger'
 			/>
 		</div>
 	);

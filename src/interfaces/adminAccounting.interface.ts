@@ -10,6 +10,13 @@ export interface LedgerEntry {
 	description: string;
 	amountUsd: number;
 	date: string;
+	// Solo presentes en type === 'gasto': datos crudos de ExpenseEntity, para
+	// poder editar/eliminar sin perder campos que la vista agregada no
+	// muestra (amountCup/category). Ventas/comisiones/remesas son vistas
+	// derivadas de otras entidades, no se editan desde Contabilidad.
+	sourceId?: string;
+	amountCup?: number;
+	category?: string;
 }
 
 export interface AccountingSummary {
@@ -27,3 +34,6 @@ export interface ExpenseInput {
 	category: string;
 	date: string;
 }
+
+// PUT /api/expense acepta campos opcionales (actualización parcial).
+export type ExpenseUpdateInput = Partial<ExpenseInput>;

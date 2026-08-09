@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js';
 import { apiFetch } from '../api/client';
 import { CustomerResultDto, OrderResultDto } from '../api/types';
-import { AdminCustomer } from '../interfaces';
+import { AdminCustomer, AdminCustomerUpdateInput } from '../interfaces';
 
 // No hay endpoint de "deuda" en el backend — se deriva sumando (decimal.js)
 // los pedidos en estado "Pending" de cada cliente, mismo enfoque que
@@ -33,4 +33,12 @@ export const getAdminCustomers = async (): Promise<AdminCustomer[]> => {
 			};
 		})
 		.sort((a, b) => b.pendingDebtUsd - a.pendingDebtUsd);
+};
+
+export const updateCustomer = async (id: string, input: AdminCustomerUpdateInput): Promise<void> => {
+	await apiFetch('/api/customer', { method: 'PUT', body: { id, ...input } });
+};
+
+export const deleteCustomer = async (id: string): Promise<void> => {
+	await apiFetch(`/api/customer/${id}`, { method: 'DELETE' });
 };

@@ -1,7 +1,7 @@
 import Decimal from 'decimal.js';
 import { apiFetch } from '../api/client';
 import { CommissionResultDto, ExpenseResultDto, OrderResultDto, RemittanceResultDto } from '../api/types';
-import { AccountingSummary, ExpenseInput, LedgerEntry } from '../interfaces';
+import { AccountingSummary, ExpenseInput, ExpenseUpdateInput, LedgerEntry } from '../interfaces';
 import { toUtcDateTime } from '../helpers';
 
 // Libro contable: no hay un endpoint único de "movimientos" en el
@@ -50,6 +50,9 @@ export const getLedgerEntries = async (): Promise<LedgerEntry[]> => {
 		description: expense.description ?? '—',
 		amountUsd: -(expense.amountUsd ?? 0),
 		date: expense.date ?? expense.createdAt ?? '',
+		sourceId: expense.id ?? '',
+		amountCup: expense.amountCup ?? 0,
+		category: expense.category ?? '',
 	}));
 
 	return [...sales, ...settledCommissions, ...remittanceEntries, ...expenseEntries].sort((a, b) =>
@@ -82,4 +85,15 @@ export const getAccountingSummary = (entries: LedgerEntry[]): AccountingSummary 
 
 export const createExpense = async (input: ExpenseInput): Promise<void> => {
 	await apiFetch('/api/expense', { method: 'POST', body: { ...input, date: toUtcDateTime(input.date) } });
+};
+
+export const updateExpense = async (id: string, input: ExpenseUpdateInput): Promise<void> => {
+	await apiFetch('/api/expense', {
+		method: 'PUT',
+		body: { id, ...input, date: input.date ? toUtcDateTime(input.date) : undefined },
+	});
+};
+
+export const deleteExpense = async (id: string): Promise<void> => {
+	await apiFetch(`/api/expense/${id}`, { method: 'DELETE' });
 };

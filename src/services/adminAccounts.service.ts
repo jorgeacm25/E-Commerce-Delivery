@@ -45,3 +45,21 @@ export const createAdminAccount = async ({
 	const path = accountType === 'admin' ? '/api/admin' : '/user';
 	await apiFetch(path, { method: 'POST', body: { fullName, userName, password } });
 };
+
+// El Update de Admin/User solo acepta {id, password} — el backend no
+// permite renombrar fullName/userName desde ahí (UpdateAdminEntityCommand/
+// UpdateUserEntityCommand), así que la única edición real posible es un
+// reset de contraseña.
+export const resetAdminAccountPassword = async (
+	id: string,
+	accountType: 'admin' | 'user',
+	password: string
+): Promise<void> => {
+	const path = accountType === 'admin' ? '/api/admin' : '/user';
+	await apiFetch(path, { method: 'PUT', body: { id, password } });
+};
+
+export const deleteAdminAccount = async (id: string, accountType: 'admin' | 'user'): Promise<void> => {
+	const path = accountType === 'admin' ? `/api/admin/${id}` : `/user/${id}`;
+	await apiFetch(path, { method: 'DELETE' });
+};

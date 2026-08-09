@@ -12,3 +12,11 @@ export interface AdminCustomer {
 	pendingDebtUsd: number;
 	createdAt: string;
 }
+
+// PUT /api/customer acepta campos opcionales (actualización parcial);
+// `password` vacío/omitido significa "no cambiar la contraseña".
+export interface AdminCustomerUpdateInput {
+	fullName?: string;
+	phone?: string;
+	password?: string;
+}

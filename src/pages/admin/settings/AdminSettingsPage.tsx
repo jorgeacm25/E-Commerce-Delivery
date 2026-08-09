@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { FiPlus } from 'react-icons/fi';
-import { Alert, Badge, Button, DataTable, Input, PageHeader } from '../../../components/ui';
+import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
+import { Alert, Badge, Button, ConfirmDialog, DataTable, Input, PageHeader } from '../../../components/ui';
 import {
 	useActiveExchangeRate,
 	useAdminAccounts,
@@ -9,8 +9,10 @@ import {
 	useUpdateExchangeRate,
 } from '../../../hooks';
 import { AdminAccountFormModal } from '../../../components/admin/accounts/AdminAccountFormModal';
+import { AdminAccountResetPasswordModal } from '../../../components/admin/accounts/AdminAccountResetPasswordModal';
 import { DEFAULT_WHATSAPP_PHONE } from '../../../constants/whatsapp';
 import { formatDateLong } from '../../../helpers';
+import { AdminAccount } from '../../../interfaces';
 
 export const AdminSettingsPage = () => {
 	const { data: exchangeRate, isLoading } = useActiveExchangeRate();
@@ -18,10 +20,12 @@ export const AdminSettingsPage = () => {
 	const { profile } = useAuth();
 	const isRootAdmin = profile?.accountType === 'admin';
 	const { accounts, isLoading: isLoadingAccounts } = useAdminAccounts(isRootAdmin);
-	const { create, isCreating } = useManageAdminAccounts();
+	const { create, isCreating, resetPassword, isResettingPassword, remove, isDeleting } = useManageAdminAccounts();
 
 	const [newRate, setNewRate] = useState('');
 	const [accountModalOpen, setAccountModalOpen] = useState(false);
+	const [resettingAccount, setResettingAccount] = useState<AdminAccount | null>(null);
+	const [deletingAccount, setDeletingAccount] = useState<AdminAccount | null>(null);
 
 	const handleSubmit = () => {
 		const parsed = Number(newRate);
@@ -105,6 +109,38 @@ export const AdminSettingsPage = () => {
 								header: 'Creada',
 								render: account => (account.createdAt ? formatDateLong(account.createdAt) : '—'),
 							},
+							{
+								key: 'actions',
+								header: '',
+								className: 'text-right',
+								render: account => {
+									const isSelf = account.id === profile?.id;
+									return (
+										<div className='flex justify-end gap-2'>
+											<Button
+												size='sm'
+												variant='outline'
+												leftIcon={<FiEdit2 />}
+												disabled={isSelf}
+												title={isSelf ? 'No puedes editar tu propia cuenta desde aquí' : undefined}
+												onClick={() => setResettingAccount(account)}
+											>
+												Contraseña
+											</Button>
+											<Button
+												size='sm'
+												variant='outline'
+												leftIcon={<FiTrash2 />}
+												disabled={isSelf}
+												title={isSelf ? 'No puedes eliminar tu propia cuenta' : undefined}
+												onClick={() => setDeletingAccount(account)}
+											>
+												Eliminar
+											</Button>
+										</div>
+									);
+								},
+							},
 						]}
 						data={accounts}
 						getRowId={account => account.id}
@@ -119,6 +155,33 @@ export const AdminSettingsPage = () => {
 				onClose={() => setAccountModalOpen(false)}
 				isSubmitting={isCreating}
 				onSubmit={values => create(values, { onSuccess: () => setAccountModalOpen(false) })}
+			/>
+
+			<AdminAccountResetPasswordModal
+				isOpen={Boolean(resettingAccount)}
+				accountName={resettingAccount?.fullName ?? ''}
+				onClose={() => setResettingAccount(null)}
+				isSubmitting={isResettingPassword}
+				onSubmit={values => {
+					if (!resettingAccount) return;
+					resetPassword(
+						{ id: resettingAccount.id, accountType: resettingAccount.accountType, password: values.password },
+						{ onSuccess: () => setResettingAccount(null) }
+					);
+				}}
+			/>
+
+			<ConfirmDialog
+				isOpen={Boolean(deletingAccount)}
+				onClose={() => setDeletingAccount(null)}
+				onConfirm={() => {
+					if (deletingAccount) remove({ id: deletingAccount.id, accountType: deletingAccount.accountType });
+					setDeletingAccount(null);
+				}}
+				title='¿Eliminar esta cuenta?'
+				description='Se eliminará el acceso al panel de forma permanente. Esta acción no se puede deshacer.'
+				confirmLabel={isDeleting ? 'Eliminando...' : 'Eliminar'}
+				variant='danger'
 			/>
 		</div>
 	);

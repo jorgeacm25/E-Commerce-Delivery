@@ -1,11 +1,17 @@
 import { useState } from 'react';
-import { Badge, DataTable, PageHeader, SearchInput } from '../../../components/ui';
-import { useAdminCustomers } from '../../../hooks';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { Badge, Button, ConfirmDialog, DataTable, PageHeader, SearchInput } from '../../../components/ui';
+import { CustomerEditModal } from '../../../components/admin/customers/CustomerEditModal';
+import { useAdminCustomers, useManageCustomers } from '../../../hooks';
 import { formatPrice } from '../../../helpers';
+import { AdminCustomer } from '../../../interfaces';
 
 export const AdminCustomersPage = () => {
 	const { customers, isLoading } = useAdminCustomers();
+	const { update, isUpdating, remove, isDeleting } = useManageCustomers();
 	const [query, setQuery] = useState('');
+	const [editingCustomer, setEditingCustomer] = useState<AdminCustomer | null>(null);
+	const [deletingId, setDeletingId] = useState<string | null>(null);
 
 	const filtered = query
 		? customers.filter(
@@ -60,12 +66,61 @@ export const AdminCustomersPage = () => {
 							</Badge>
 						),
 					},
+					{
+						key: 'actions',
+						header: '',
+						className: 'text-right',
+						render: customer => (
+							<div className='flex justify-end gap-2'>
+								<Button
+									size='sm'
+									variant='outline'
+									leftIcon={<FiEdit2 />}
+									onClick={() => setEditingCustomer(customer)}
+								>
+									Editar
+								</Button>
+								<Button
+									size='sm'
+									variant='outline'
+									leftIcon={<FiTrash2 />}
+									onClick={() => setDeletingId(customer.id)}
+								>
+									Eliminar
+								</Button>
+							</div>
+						),
+					},
 				]}
 				data={filtered}
 				getRowId={customer => customer.id}
 				isLoading={isLoading}
 				emptyTitle='No hay clientes todavía'
 				emptyDescription='Los clientes aparecerán aquí a medida que se registren.'
+			/>
+
+			<CustomerEditModal
+				isOpen={Boolean(editingCustomer)}
+				customer={editingCustomer}
+				onClose={() => setEditingCustomer(null)}
+				isSubmitting={isUpdating}
+				onSubmit={values => {
+					if (!editingCustomer) return;
+					update({ id: editingCustomer.id, input: values }, { onSuccess: () => setEditingCustomer(null) });
+				}}
+			/>
+
+			<ConfirmDialog
+				isOpen={Boolean(deletingId)}
+				onClose={() => setDeletingId(null)}
+				onConfirm={() => {
+					if (deletingId) remove(deletingId);
+					setDeletingId(null);
+				}}
+				title='¿Eliminar este cliente?'
+				description='Se eliminará la cuenta del cliente de forma permanente. Esta acción no se puede deshacer.'
+				confirmLabel={isDeleting ? 'Eliminando...' : 'Eliminar'}
+				variant='danger'
 			/>
 		</div>
 	);

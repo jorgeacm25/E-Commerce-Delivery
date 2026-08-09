@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Button, Input, Modal } from '../../ui';
@@ -18,15 +19,25 @@ interface Props {
 	onClose: () => void;
 	onSubmit: (values: ExpenseFormValues) => void;
 	isSubmitting: boolean;
+	initialValues?: ExpenseFormValues;
 }
 
-export const ExpenseFormModal = ({ isOpen, onClose, onSubmit, isSubmitting }: Props) => {
+export const ExpenseFormModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialValues }: Props) => {
+	const isEditing = Boolean(initialValues);
 	const {
 		register,
 		handleSubmit,
 		reset,
 		formState: { errors },
-	} = useForm<ExpenseFormValues>({ resolver: zodResolver(expenseFormSchema), defaultValues: emptyValues });
+	} = useForm<ExpenseFormValues>({
+		resolver: zodResolver(expenseFormSchema),
+		defaultValues: initialValues ?? emptyValues,
+	});
+
+	useEffect(() => {
+		if (isOpen) reset(initialValues ?? emptyValues);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [isOpen, initialValues]);
 
 	const handleClose = () => {
 		reset(emptyValues);
@@ -35,14 +46,14 @@ export const ExpenseFormModal = ({ isOpen, onClose, onSubmit, isSubmitting }: Pr
 
 	const submit = (data: ExpenseFormValues) => {
 		onSubmit(data);
-		reset(emptyValues);
+		if (!isEditing) reset(emptyValues);
 	};
 
 	return (
 		<Modal
 			isOpen={isOpen}
 			onClose={handleClose}
-			title='Registrar gasto'
+			title={isEditing ? 'Editar gasto' : 'Registrar gasto'}
 			footer={
 				<>
 					<Button variant='outline' onClick={handleClose}>
