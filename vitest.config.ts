@@ -7,6 +7,10 @@ export default mergeConfig(
 		test: {
 			environment: 'jsdom',
 			setupFiles: ['./src/setupTests.ts'],
+			// .claude/worktrees/* son copias del repo para sesiones/agentes en
+			// paralelo (ver .gitignore) — sin excluirlas, Vitest las recorre
+			// también y duplica cada archivo de prueba.
+			exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/**'],
 		},
 	})
 );

@@ -4,10 +4,12 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+	useActiveAgencyContact,
 	useActiveExchangeRate,
 	useAdminAccounts,
 	useAuth,
 	useManageAdminAccounts,
+	useUpdateAgencyContact,
 	useUpdateExchangeRate,
 } from '../../../../hooks';
 import { AdminSettingsPage } from '../AdminSettingsPage';
@@ -19,6 +21,8 @@ vi.mock('../../../../hooks', async () => {
 		...actual,
 		useActiveExchangeRate: vi.fn(),
 		useUpdateExchangeRate: vi.fn(),
+		useActiveAgencyContact: vi.fn(),
+		useUpdateAgencyContact: vi.fn(),
 		useAuth: vi.fn(),
 		useAdminAccounts: vi.fn(),
 		useManageAdminAccounts: vi.fn(),
@@ -27,6 +31,8 @@ vi.mock('../../../../hooks', async () => {
 
 const useActiveExchangeRateMock = vi.mocked(useActiveExchangeRate);
 const useUpdateExchangeRateMock = vi.mocked(useUpdateExchangeRate);
+const useActiveAgencyContactMock = vi.mocked(useActiveAgencyContact);
+const useUpdateAgencyContactMock = vi.mocked(useUpdateAgencyContact);
 const useAuthMock = vi.mocked(useAuth);
 const useAdminAccountsMock = vi.mocked(useAdminAccounts);
 const useManageAdminAccountsMock = vi.mocked(useManageAdminAccounts);
@@ -76,6 +82,7 @@ describe('AdminSettingsPage - Administradores y staff', () => {
 	const create = vi.fn();
 	const resetPassword = vi.fn();
 	const remove = vi.fn();
+	const updateContact = vi.fn();
 
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -87,6 +94,13 @@ describe('AdminSettingsPage - Administradores y staff', () => {
 		});
 
 		useUpdateExchangeRateMock.mockReturnValue({ mutate: vi.fn(), isPending: false });
+
+		useActiveAgencyContactMock.mockReturnValue({
+			contact: { id: 'contact-1', whatsappPhone: '+53 5555 5555', vigenteDesde: '2026-01-01T00:00:00Z', creadoPorAdminId: null },
+			isLoading: false,
+		});
+
+		useUpdateAgencyContactMock.mockReturnValue({ mutate: updateContact, isPending: false });
 
 		useAuthMock.mockReturnValue({
 			session: null,
@@ -124,6 +138,18 @@ describe('AdminSettingsPage - Administradores y staff', () => {
 
 		expect(screen.getByText('Yo Mismo')).toBeInTheDocument();
 		expect(screen.getByText('Otro Admin')).toBeInTheDocument();
+	});
+
+	it('muestra el WhatsApp vigente y actualiza uno nuevo', async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		expect(screen.getByText(/vigente: \+53 5555 5555/i)).toBeInTheDocument();
+
+		await user.type(screen.getByLabelText(/^whatsapp\*?$/i), '+53 5555 9999');
+		await user.click(screen.getByRole('button', { name: /^actualizar$/i }));
+
+		await waitFor(() => expect(updateContact).toHaveBeenCalledWith('+53 5555 9999', expect.any(Object)));
 	});
 
 	it('deshabilita editar y eliminar en la fila del propio usuario logueado', () => {

@@ -1,28 +1,32 @@
 import { useState } from 'react';
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
-import { Alert, Badge, Button, ConfirmDialog, DataTable, Input, PageHeader } from '../../../components/ui';
+import { Badge, Button, ConfirmDialog, DataTable, Input, PageHeader } from '../../../components/ui';
 import {
+	useActiveAgencyContact,
 	useActiveExchangeRate,
 	useAdminAccounts,
 	useAuth,
 	useManageAdminAccounts,
+	useUpdateAgencyContact,
 	useUpdateExchangeRate,
 } from '../../../hooks';
 import { AdminAccountFormModal } from '../../../components/admin/accounts/AdminAccountFormModal';
 import { AdminAccountResetPasswordModal } from '../../../components/admin/accounts/AdminAccountResetPasswordModal';
-import { DEFAULT_WHATSAPP_PHONE } from '../../../constants/whatsapp';
 import { formatDateLong } from '../../../helpers';
 import { AdminAccount } from '../../../interfaces';
 
 export const AdminSettingsPage = () => {
 	const { data: exchangeRate, isLoading } = useActiveExchangeRate();
 	const { mutate: updateRate, isPending } = useUpdateExchangeRate();
+	const { contact, isLoading: isLoadingContact } = useActiveAgencyContact();
+	const { mutate: updateContact, isPending: isUpdatingContact } = useUpdateAgencyContact();
 	const { profile } = useAuth();
 	const isRootAdmin = profile?.accountType === 'admin';
 	const { accounts, isLoading: isLoadingAccounts } = useAdminAccounts(isRootAdmin);
 	const { create, isCreating, resetPassword, isResettingPassword, remove, isDeleting } = useManageAdminAccounts();
 
 	const [newRate, setNewRate] = useState('');
+	const [newWhatsapp, setNewWhatsapp] = useState('');
 	const [accountModalOpen, setAccountModalOpen] = useState(false);
 	const [resettingAccount, setResettingAccount] = useState<AdminAccount | null>(null);
 	const [deletingAccount, setDeletingAccount] = useState<AdminAccount | null>(null);
@@ -31,6 +35,12 @@ export const AdminSettingsPage = () => {
 		const parsed = Number(newRate);
 		if (!parsed || parsed <= 0) return;
 		updateRate(parsed, { onSuccess: () => setNewRate('') });
+	};
+
+	const handleContactSubmit = () => {
+		const trimmed = newWhatsapp.trim();
+		if (!trimmed) return;
+		updateContact(trimmed, { onSuccess: () => setNewWhatsapp('') });
 	};
 
 	return (
@@ -66,15 +76,25 @@ export const AdminSettingsPage = () => {
 			<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
 				<h2 className='mb-1 text-sm font-semibold text-neutral-900'>Datos de contacto</h2>
 				<p className='mb-4 text-sm text-neutral-500'>
-					Información que ve el cliente en la tienda pública (footer, botón de WhatsApp).
+					{isLoadingContact
+						? 'Cargando...'
+						: contact
+							? `Vigente: ${contact.whatsappPhone} (desde ${formatDateLong(contact.vigenteDesde)})`
+							: 'No hay datos de contacto configurados todavía.'}
 				</p>
 
-				<Alert variant='info' className='mb-4'>
-					Estos datos todavía viven en el código (no hay una tabla propia) — editar aquí llega en una
-					fase futura. Por ahora se muestran solo de referencia.
-				</Alert>
-
-				<Input label='WhatsApp' value={DEFAULT_WHATSAPP_PHONE} disabled containerClassName='sm:max-w-xs' />
+				<div className='flex flex-col gap-3 sm:flex-row sm:items-end'>
+					<Input
+						label='WhatsApp'
+						placeholder='+53 5555 5555'
+						value={newWhatsapp}
+						onChange={event => setNewWhatsapp(event.target.value)}
+						containerClassName='sm:max-w-xs'
+					/>
+					<Button onClick={handleContactSubmit} isLoading={isUpdatingContact} disabled={!newWhatsapp.trim()}>
+						Actualizar
+					</Button>
+				</div>
 			</div>
 
 			{isRootAdmin && (

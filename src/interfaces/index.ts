@@ -26,3 +26,4 @@ export * from './adminDashboard.interface';
 export * from './adminAccount.interface';
 export * from './adminCombo.interface';
 export * from './adminDeliveryZone.interface';
+export * from './agencyContact.interface';

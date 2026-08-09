@@ -7,9 +7,13 @@ import {
 	DEFAULT_WHATSAPP_PHONE,
 	buildWhatsAppUrl,
 } from '../../constants/whatsapp';
+import { useActiveAgencyContact } from '../../hooks';
 import { SectionHeading } from './SectionHeading';
 
 export const ContactSupportSection = () => {
+	const { contact } = useActiveAgencyContact();
+	const whatsappPhone = contact?.whatsappPhone || DEFAULT_WHATSAPP_PHONE;
+
 	return (
 		<section className='container flex flex-col gap-4 rounded-3xl border border-neutral-200 bg-white px-6 py-10 sm:px-10'>
 			<SectionHeading
@@ -19,7 +23,7 @@ export const ContactSupportSection = () => {
 
 			<div className='flex flex-wrap gap-3'>
 				<a
-					href={buildWhatsAppUrl(DEFAULT_WHATSAPP_PHONE, DEFAULT_WHATSAPP_MESSAGE)}
+					href={buildWhatsAppUrl(whatsappPhone, DEFAULT_WHATSAPP_MESSAGE)}
 					target='_blank'
 					rel='noopener noreferrer'
 				>

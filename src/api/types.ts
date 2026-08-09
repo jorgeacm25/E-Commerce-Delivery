@@ -110,6 +110,13 @@ export interface ExchangeRateResultDto {
 	creadoPorAdminId: string | null;
 }
 
+export interface AgencyContactResultDto {
+	id: string | null;
+	whatsappPhone: string | null;
+	vigenteDesde: string | null;
+	creadoPorAdminId: string | null;
+}
+
 export interface FavoriteResultDto {
 	id: string | null;
 	customerId: string | null;

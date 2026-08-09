@@ -114,3 +114,5 @@ export * from './adminCombos/useManageCombos';
 export * from './adminCombos/useProductsForComboSelector';
 export * from './adminDeliveryZones/useDeliveryZones';
 export * from './adminDeliveryZones/useManageDeliveryZones';
+export * from './agencyContact/useActiveAgencyContact';
+export * from './agencyContact/useUpdateAgencyContact';
