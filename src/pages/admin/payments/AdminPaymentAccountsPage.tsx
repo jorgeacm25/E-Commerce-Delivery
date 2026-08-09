@@ -15,8 +15,8 @@ export const AdminPaymentAccountsPage = () => {
 	return (
 		<div className='flex flex-col gap-4'>
 			<PageHeader
-				title='Pedidos'
-				description='Gestiona los pedidos y verifica los pagos.'
+				title='Cuentas de cobro'
+				description='Cuentas donde los clientes pueden pagar en el checkout.'
 				actions={
 					<Button leftIcon={<FiPlus />} onClick={() => setModalOpen(true)}>
 						Nueva cuenta
