@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -113,12 +113,8 @@ describe('AdminWarehousePage', () => {
 		await user.click(screen.getByRole('button', { name: /registrar salida/i }));
 
 		await user.selectOptions(screen.getByLabelText(/^producto\*?$/i), 'p-1');
-		// nota: RegisterProductOutModal usa useState controlado por campo y
-		// Modal reenfoca el panel en cada re-render (ver hallazgo reportado),
-		// lo que corta el tipeo con user.type tras el primer carácter — se usa
-		// fireEvent.change para fijar el valor completo de una sola vez.
-		fireEvent.change(screen.getByLabelText(/^cantidad\*?$/i), { target: { value: '2' } });
-		fireEvent.change(screen.getByLabelText(/^motivo\*?$/i), { target: { value: 'merma' } });
+		await user.type(screen.getByLabelText(/^cantidad\*?$/i), '2');
+		await user.type(screen.getByLabelText(/^motivo\*?$/i), 'merma');
 
 		await user.click(screen.getByRole('button', { name: /^registrar$/i }));
 

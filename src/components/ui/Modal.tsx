@@ -34,13 +34,23 @@ export const Modal = ({
 }: Props) => {
 	const panelRef = useRef<HTMLDivElement>(null);
 
+	// Guarda la última `onClose` sin que dispare el efecto de abajo: si
+	// `onClose` dependiera directamente del efecto, cualquier modal con
+	// estado controlado (re-renderiza en cada tecla, ej. RegisterProductOutModal)
+	// recrearía `onClose` en cada tecla y el efecto volvería a enfocar el
+	// panel, robándole el foco al input a mitad de escritura.
+	const onCloseRef = useRef(onClose);
+	useEffect(() => {
+		onCloseRef.current = onClose;
+	});
+
 	useEffect(() => {
 		if (!isOpen) return;
 
 		document.body.style.overflow = 'hidden';
 
 		const handleKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') onClose();
+			if (event.key === 'Escape') onCloseRef.current();
 		};
 
 		document.addEventListener('keydown', handleKeyDown);
@@ -50,7 +60,7 @@ export const Modal = ({
 			document.body.style.overflow = 'unset';
 			document.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [isOpen, onClose]);
+	}, [isOpen]);
 
 	if (!isOpen) return null;
 
