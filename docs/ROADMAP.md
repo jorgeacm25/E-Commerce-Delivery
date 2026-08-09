@@ -49,61 +49,101 @@ familiares).
    ruta `/combo/:id` separada (el spec original la sugería, pero duplicaría
    la UI ya construida en `/producto/:slug`).
 
+## Fase A.1 — Área privada del cliente (completada, adelantada fuera de orden)
+
+> Insertada el 2026-07-30 por instrucción explícita del usuario, antes de
+> la Fase B (panel admin) que este roadmap tenía como "siguiente". Ver
+> [PROJECT_STATE.md](PROJECT_STATE.md), sección "Área privada del cliente"
+> para el detalle completo.
+
+`/mi-cuenta` (perfil, destinatarios, direcciones, pedidos + detalle,
+favoritos, seguridad, soporte, logout) conectado a Supabase real con RLS
+(migración `005_customer_account.sql`: `customer_addresses`,
+`customer_recipients`, `favorites`, `support_cases`, todas ligadas a
+`profiles`). Excepción documentada: los pedidos siguen sobre el checkout
+simulado (localStorage etiquetado por `userId`) porque no existe todavía
+una tabla `orders` real para el dominio de comida — mismo gap que el
+riesgo 12 de `PROJECT_STATE.md`; se resuelve cuando se conecte el checkout
+real, no en esta fase.
+
 ## Fase B — Panel admin: acceso y núcleo (productos, combos, pedidos)
 
-- Login simple de administrador en `/admin/login` (hoy se reusa
-  `/iniciar-sesion`; falta una entrada dedicada o guarda de rol).
-- `/admin/dashboard`: resumen del día (pedidos nuevos, ventas USD, saldo
-  estimado CUP/USD, tasa de cambio vigente) — hoy `AdminOverviewPage` es
-  puro placeholder con ceros.
-- `/admin/pedidos`, `/admin/productos`, `/admin/combos`: reconectar/ampliar
-  el CRUD ya existente (legacy en `src/pages/dashboard/*`, no enlazado) a
-  la nueva estructura de rutas, con datos mock donde no haya tabla
-  Supabase todavía.
-- Formulario de producto con checkbox "calcular automático" (precio =
-  costo CUP × tasa vigente + margen) vs precio fijo en USD, reutilizando
-  `useActiveExchangeRate`/`convertUsdToCup`.
+> **2026-07-31 — Construida y con backend real aplicado; pendiente de
+> prueba del usuario.** Ver `docs/PROJECT_STATE.md`, sección "Panel admin —
+> Fase B", para el detalle completo. Las migraciones `006`-`008` (fix de
+> RLS `is_staff()`, tablas `catalog_*`, `combo_items.catalog_variant_id`)
+> ya se aplicaron al proyecto Supabase real, a petición explícita del
+> usuario. **Todavía no se marca como completada** en el sentido de la
+> regla de `CLAUDE.md` (no empezar una fase nueva sin validar la anterior):
+> falta que el usuario pruebe el flujo completo con datos reales
+> (crear categoría → producto → combo → ver pedido) con una sesión
+> `admin`/`operador` real en el navegador. **No iniciar la Fase C hasta que
+> el usuario confirme que la Fase B queda validada.**
 
-## Fase C — Almacén
+- Guarda de rol en `/admin` (`admin`/`operador`, vía `profiles.role` +
+  `src/lib/roleGuards.ts` + `RequireAuth allowedRoles`) — no se creó un
+  login dedicado nuevo, se sigue reusando `/iniciar-sesion`.
+- `/admin` (Dashboard): stats reales (pedidos de hoy, ventas del mes,
+  ticket promedio, tasa de cambio vigente) + stats simuladas marcadas
+  "Próximamente" para Fases C-I (stock bajo, vencimientos, entregas,
+  comisiones, nómina, gastos) + actividad reciente (mock).
+- `/admin/pedidos` (+ `/admin/pedidos/pagos` verificación de pagos,
+  `/admin/pedidos/:id` detalle): reconexión del CRUD legacy
+  (`src/actions/order.ts`, `src/actions/payment.ts`) a la nueva estructura
+  de rutas y diseño, con paginación/filtro/búsqueda nuevos. Cambios de
+  estado sensibles piden confirmación.
+- `/admin/productos` (+ `/nuevo`, `/:id/editar`) y `/admin/categorias`:
+  CRUD nuevo (no reconexión — el legacy operaba sobre el esquema
+  "celulares") sobre tablas nuevas del dominio comida
+  (`catalog_categories`/`catalog_products`/`catalog_product_variants`,
+  `supabase/migrations/007_catalog_admin.sql`), con RHF + Zod, subida de
+  imágenes, variantes/presentaciones, y el checkbox "calcular automático"
+  (precio = costo CUP / tasa vigente + margen USD fijo, fórmula confirmada
+  con el usuario) reutilizando `useActiveExchangeRate`.
+- `/admin/combos`: reconexión + adaptación (`src/actions/combo.ts`) para
+  armar combos con el catálogo nuevo (`supabase/migrations/008_combo_items_catalog_variants.sql`).
+- Hallazgo bloqueante corregido (migración redactada, no aplicada): las
+  políticas RLS de `orders`/`combos`/`combo_items`/`payment_proofs`/
+  `payment_accounts`/`exchange_rates` revisaban `user_roles` (nunca
+  poblada por el flujo de registro conectado) en vez de `profiles` —
+  `supabase/migrations/006_fix_legacy_admin_rls.sql`.
 
-- `/admin/almacen`: historial de entradas/salidas de inventario (mock),
-  alerta de stock bajo. Modelo `MovimientoAlmacen` — un registro por
-  producto por pedido confirmado (incluyendo productos dentro de combos).
+## Fases C-I — Almacén, Clientes, Vendedores, Trabajadores, Remesas, Contabilidad, Configuración
 
-## Fase D — Clientes
+> **2026-08-09 — Construidas contra el backend .NET real (no mock como
+> preveía el plan original de este roadmap), con CRUD completo y pruebas
+> de Vitest.** Ver `docs/PROJECT_STATE.md`, entrada "Última actualización",
+> para el detalle de qué se cerró. **Pendiente de validación explícita del
+> usuario en el navegador** (mismo requisito que quedó abierto para la
+> Fase B) antes de considerar todo el bloque B-I cerrado según la regla de
+> `CLAUDE.md`. Dos ítems quedan fuera, diferidos a propósito: Configuración
+> → datos de contacto (WhatsApp, necesita tabla nueva en el backend) y
+> Dashboard → actividad reciente (necesita endpoint de auditoría).
 
-- `/admin/clientes`: listado, deuda CUP/USD (`deudaUSD`/`deudaCUP`),
-  historial de pedidos por cliente. Se alimenta de pedidos con
-  `estadoPago: 'pendiente' | 'parcial'`.
-
-## Fase E — Vendedores y comisiones
-
-- `/admin/vendedores`: listado, `comisionPendienteUSD`, botón "liquidar".
-- Regla de negocio: `gananciaVendedorUSD` se calcula automáticamente
-  (porcentaje configurable) cuando el pedido tiene `vendedorId`, y se
-  acumula hasta liquidar. La comisión solo se consolida cuando el pedido
-  está pagado **y** entregado (ver [CLAUDE.md](../CLAUDE.md)).
-
-## Fase F — Trabajadores (repartidores)
-
-- `/admin/trabajadores`: listado, pagos pendientes, botón "liquidar".
-  Mismo mecanismo de liquidación que vendedores, aplicado a reparto.
-
-## Fase G — Remesas
-
-- `/admin/remesas`: gestión de envíos de remesas (CUP/USD), estado de pago.
-
-## Fase H — Contabilidad
-
-- `/admin/contabilidad`: libro contable con movimientos CUP y USD, filtro
-  por fecha y tipo. Consolida ventas, comisiones liquidadas, remesas y
-  gastos.
-
-## Fase I — Configuración
-
-- `/admin/configuracion`: editar tasa de cambio (ya real, vía
-  `createExchangeRate`/`getActiveExchangeRate`) y datos de contacto de la
-  agencia (mock, sin tabla propia todavía).
+- `/admin/almacen` (Fase C): alertas de stock bajo/vencimiento derivadas de
+  `GET /api/product`, historial real vía `GET /api/history`, registrar
+  salida de producto (`POST /api/productOut`).
+- `/admin/clientes` (Fase D): listado con deuda pendiente derivada de
+  pedidos `Pending` (`GET /api/customer` + `GET /api/order`), editar
+  (nombre/teléfono/contraseña) y eliminar contra `PUT`/`DELETE
+  /api/customer`.
+- `/admin/vendedores` (Fase E): CRUD + comisión pendiente/liquidar contra
+  `api/seller`/`api/commission`. La comisión se liquida vía
+  `POST /api/commission/{sellerId}/settle`, disparado solo desde este
+  botón — se sigue respetando la regla de CLAUDE.md de no consolidar
+  comisiones fuera de pedido pagado y entregado (validación en backend).
+- `/admin/trabajadores` (Fase F): mismo patrón que Vendedores sobre
+  `api/worker`.
+- `/admin/remesas` (Fase G): CRUD + cambio de estado (Pending/Sent/
+  Delivered) contra `api/remittance`.
+- `/admin/contabilidad` (Fase H): libro contable agregando 4 fuentes reales
+  (`api/order`, `api/commission` liquidadas, `api/remittance`,
+  `api/expense`); gastos con CRUD completo (crear/editar/eliminar), el
+  resto de movimientos son vistas derivadas, no editables.
+- `/admin/configuracion` (Fase I): tasa de cambio real (ya existía);
+  gestión de cuentas Admin/staff (crear, restablecer contraseña, eliminar
+  — el backend no permite renombrar en el Update, solo reset de password);
+  datos de contacto (WhatsApp) sigue fuera de alcance (ver nota arriba).
 
 ## Deuda técnica (heredada, no bloquea las fases de negocio)
 

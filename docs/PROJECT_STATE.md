@@ -1,6 +1,253 @@
 # Estado del proyecto
 
-> Última actualización: 2026-07-30, tras conectar autenticación real con
+> Última actualización: 2026-08-09 (más reciente). Sesión de "completar
+> módulos incompletos": el working tree traía ~189 archivos sin commitear
+> de sesiones anteriores nunca cerradas — el resto de la migración de auth
+> a Supabase Auth (borrado de código muerto) y prácticamente todas las
+> Fases C-I del roadmap (Almacén, Clientes, Vendedores, Trabajadores,
+> Remesas, Contabilidad, Configuración, más Rendimiento/Zonas de entrega/
+> Cuentas de pago fuera del roadmap original), ya con backend .NET real y
+> `npm run lint`/`build`/`vitest` en verde, pero sin commitear ni
+> documentar. Se hizo en 3 pasos:
+> 1. **Checkpoint de git**: 2 commits — limpieza del código muerto de la
+>    era Supabase Auth (`src/actions/auth.ts`, hooks/layouts/páginas
+>    legacy) y el build-out completo de Fases C-I. `.claude/` se agregó a
+>    `.gitignore` (config local del agente, no pertenece al repo).
+> 2. **Auditoría de completitud** (agente Explore) sobre los módulos de
+>    Fases C-I: casi todos ya estaban completos y conectados al backend
+>    real (no mock); solo 3 huecos funcionales genuinos, los tres con el
+>    endpoint de backend ya construido (`PUT`/`DELETE` en
+>    `CustomerController`/`ExpenseController`/`AdminController`/
+>    `UserController`), así que cerrarlos fue trabajo de frontend puro:
+>    - **Clientes** (`AdminCustomersPage`): editar (nombre/teléfono/
+>      contraseña) y eliminar, antes solo listaba.
+>    - **Contabilidad** (`AdminAccountingPage`): editar/eliminar gastos —
+>      solo aplica a movimientos `type === 'gasto'` (ventas/comisiones/
+>      remesas son vistas derivadas de otras entidades, no editables).
+>      `LedgerEntry` ganó `sourceId`/`amountCup`/`category` para poder
+>      editar sin perder datos que la vista agregada no mostraba.
+>    - **Configuración → Administradores y staff**: restablecer
+>      contraseña y eliminar cuenta — el backend solo permite reset de
+>      password en el Update de Admin/User (no renombrar), así que esa es
+>      la única edición real posible. Una cuenta no puede
+>      editarse/eliminarse a sí misma desde esta tabla (guarda comparando
+>      `account.id` contra `profile.id` de `useAuth()`).
+>    Fuera de alcance, ya diferido explícitamente en el propio código (no
+>    es un hueco accidental): el bloque "Datos de contacto" (WhatsApp) de
+>    Configuración, que necesita tabla nueva en el backend
+>    (`AdminSettingsPage.tsx`, alerta visible en la UI), y "Actividad
+>    reciente" del dashboard, que sigue en `adminDashboard.mock.ts` por
+>    falta de un endpoint de auditoría.
+> 3. **Cobertura de pruebas**: los 3 flujos nuevos de arriba se verificaron
+>    manualmente en el navegador contra el backend .NET real corriendo en
+>    local (editar/eliminar un cliente real, editar/eliminar un gasto
+>    real, resetear la contraseña de una cuenta de staff real — confirmado
+>    además con un login directo a la API con la contraseña nueva). Se
+>    agregaron pruebas de Vitest a los módulos de Fase C-I que no tenían
+>    (Almacén, Vendedores, Trabajadores, Remesas, Rendimiento, Zonas de
+>    entrega, Cuentas de pago, Clientes, Contabilidad, Configuración),
+>    siguiendo el mismo patrón que `adminCategories.service.test.ts`/
+>    `AdminCategoriesPage.test.tsx`.
+> `npm run lint`, `npm run build` y `npx vitest run` en verde en cada paso.
+>
+> Actualización anterior: 2026-08-08. Segunda fase del mismo
+> programa (ver actualización anterior): "Descuento en catálogo" — precio
+> original + precio rebajado en productos y combos, real (no cosmético: el
+> carrito cobra el precio con descuento).
+> - Backend: campo `DiscountPriceUsd` (decimal? nullable) agregado a
+>   `ProductEntity` y `ComboEntity`, expuesto en `POST`/`PUT`/`GET`
+>   `/api/product` y `/api/combo`. Validación server-side (`Create`/`Update`
+>   de ambos): si se manda, debe ser > 0 y < `SalePriceUsd`, si no
+>   `InvalidDiscountPriceError` (400). Migración
+>   `20260806023017_AddDiscountPriceToProductAndCombo` — nombre de archivo
+>   con timestamp anterior a cuando se aplicó realmente (el reloj del
+>   sistema no había avanzado al 06/08 al generar el nombre), no afecta el
+>   orden de aplicación real.
+> - Frontend admin: `PricingModeFields.tsx` (form de producto) y
+>   `AdminComboFormModal.tsx` ganan un switch "Aplicar descuento" + input
+>   condicional, con la misma regla de validación en Zod
+>   (`adminProductValidators.ts`/`adminComboValidators.ts`). Las tablas de
+>   `/admin/productos` y `/admin/combos` muestran el precio con el mismo
+>   tratamiento visual (tachado + rebajado).
+> - Frontend público: `CurrencyDisplay.tsx` gana un prop `discountedUsd`
+>   opcional (precio tachado al lado del rebajado); usado en `ProductCard`
+>   (+ badge "Oferta"), `ProductListRow`, `ProductPage` y las tablas admin.
+>   `buildCartItem` (`helpers/catalog.ts`) cobra `discountPriceUsd` cuando
+>   existe — el descuento afecta el total real del carrito, no solo la
+>   vista del catálogo.
+> Verificado en el navegador: descuento aplicado a un producto real desde
+> `/admin/productos/:id/editar` (validación de precio, guardado, reflejado
+> en `/catalogo` y en la ficha del producto con badge "Oferta" y precio
+> tachado) y a un combo real desde `/admin/combos` (mismo resultado en
+> `/combos`); agregado al carrito y confirmado que cobra el precio con
+> descuento, no el original. `npm run lint`, `npm run build` y
+> `npx vitest run` (155/155) en verde. Pendientes del mismo pedido:
+> marca/apariencia editable, permisos por rol, dashboard configurable.
+>
+> Actualización anterior: 2026-08-06. Primera fase de un programa más grande a
+> pedido del usuario (descuentos, personalización del panel, control
+> financiero, zonas de entrega — ver conversación): "Zonas de entrega". El
+> backend .NET (Almacen-Delivery-Home_Api_new) no tenía ningún concepto de
+> provincia/municipio/tarifa de envío — se agregó real (no simulado):
+> - Backend: entidades `ProvinceEntity`/`MunicipalityEntity` (Domain), DTOs +
+>   AutoMapper profiles (Application), `GET /api/province`,
+>   `GET /api/municipality` (públicos), `PUT /api/municipality` (staff,
+>   solo edita `deliveryFeeUsd` — nombre/provincia son geografía fija, no
+>   editable). Migración `20260806023017_AddProvinceAndMunicipality`
+>   aplicada. Seed en `DbSeeder.cs`: Pinar del Río (11 municipios), Artemisa
+>   (11) y La Habana (15) — 37 en total, todos a $5.00 de tarifa inicial.
+> - Frontend: `src/services/adminDeliveryZones.service.ts`,
+>   `src/hooks/adminDeliveryZones/*`, página nueva
+>   `/admin/zonas-entrega` (`AdminDeliveryZonesPage.tsx`) — tabla de los 37
+>   municipios con filtro por provincia/búsqueda y tarifa editable en línea
+>   por fila (`MunicipalityFeeCell.tsx`).
+> - Fuera de esta fase (no se tocó): el checkout público sigue simulado en
+>   localStorage (`SimulatedOrder`/`checkoutSimulation.service.ts`), no crea
+>   pedidos reales todavía — conectar la tarifa por municipio ahí es un paso
+>   aparte, pendiente para cuando el checkout se conecte al backend real.
+> Verificado en el navegador: editar la tarifa de un municipio real desde
+> `/admin/zonas-entrega` y confirmar el cambio vía API (luego revertido).
+> `npm run lint`, `npm run build` y `npx vitest run` (155/155) en verde.
+> Pendientes del mismo pedido, todavía no empezados: descuento en catálogo
+> (precio original + rebajado), marca/apariencia editable, permisos por rol,
+> dashboard configurable.
+>
+> Actualización anterior: 2026-08-05, tras conectar el panel
+> admin de Combos al backend .NET real (api/combo) — hasta ahora escribía a
+> tablas de Supabase (`combos`/`combo_items`/`catalog_products`) ya
+> abandonadas, completamente desconectadas del catálogo público. Cambios:
+> `src/services/adminCombos.service.ts` (nuevo, reemplaza a
+> `src/actions/combo.ts` para el admin — ese archivo queda solo con
+> `getActiveCombos`, todavía usada por la página pública legacy sin
+> enrutar), `src/hooks/adminCombos/*` (nuevo), UI reconstruida como modal
+> crear/editar (`AdminComboFormModal.tsx`, antes un formulario siempre
+> visible) con selector de productos reales del almacén en vez de variantes
+> del catálogo viejo. El modelo real de combo no tiene slug, descripción ni
+> activo/inactivo — se quitaron esos campos. `getCombos()` en
+> `catalog.service.ts` (usada por `/combos` y por la ficha de combo en
+> `/producto/:id`, que antes 404aba porque solo buscaba en la lista de
+> productos) ahora también lee `api/combo` real, resolviendo la imagen del
+> combo del primer producto incluido que tenga foto (el backend no guarda
+> imagen propia de combo). Se eliminó `src/data/catalog.mock.ts` (quedó sin
+> uso) y los archivos de `src/components/dashboard/combos/*` +
+> `src/pages/dashboard/DashboardCombosPage.tsx` que dependían de las APIs
+> viejas de combos y no estaban enrutados. Dos detalles reales del backend
+> encontrados al verificar en el navegador (no documentados en Swagger):
+> `useFieldArray` de RHF pisa en silencio cualquier campo `id` propio de los
+> datos (se usó `productId` en el formulario) y `DELETE /api/combo/{id}`
+> exige un body `{adminId, userId}` aunque el id ya vaya en la URL (a
+> diferencia de `DELETE /user/{id}`, que no lleva body). Verificado en el
+> navegador: crear, editar (cambiar precio) y eliminar un combo real desde
+> `/admin/combos`, y que se reflejara correctamente en `/combos` y en su
+> propia ficha `/producto/:id`. `npm run lint`, `npm run build` y
+> `npx vitest run` (155/155) en verde.
+>
+> Actualización anterior: 2026-08-05. Tres cambios relacionados: (1) se creó la
+> primera cuenta Admin raíz real vía API (`jorgeacm`, usando el seed
+> `admin`/`Admin123!` de `DbSeeder.cs` del backend para el bootstrap) y se
+> agregó un formulario en `/admin/configuracion` (`AdminSettingsPage.tsx`,
+> `src/components/admin/accounts/AdminAccountFormModal.tsx`,
+> `src/services/adminAccounts.service.ts`) para crear más cuentas Admin/Staff
+> desde el panel — visible solo si `profile.accountType === 'admin'`. (2) Se
+> reconectó el catálogo público (`/catalogo`, `/categoria/:slug`,
+> `/producto/:slug`, "Productos populares" del home) al backend .NET real
+> (`GET /api/product`, `GET /api/category`) en vez de los mocks de
+> `src/data/catalog.mock.ts`/`home.mock.ts` — era la causa de que subir una
+> foto de producto en el admin no se reflejara en la tienda pública: el
+> catálogo público simplemente no leía esa fuente de datos. El modelo de
+> producto real no tiene slug/descripción/variantes; se usa el `id` del
+> producto como slug de URL, descripción vacía y `variants: []`. Los combos
+> (`/combos`) siguen simulados — el backend no tiene imagen por combo
+> todavía ni el admin tiene ese módulo conectado. Se agregó invalidación de
+> `['catalog']`/`['home','popularProducts']` en `useManageProducts` para que
+> los cambios se vean sin esperar el staleTime por defecto. Se reescribieron
+> `src/services/__tests__/catalog.service.test.ts`,
+> `CatalogPage.test.tsx`, `ProductPage.test.tsx` (mockeando `apiFetch` en vez
+> de depender del mock viejo) y se agregó un mock mínimo en
+> `HomePage.test.tsx`. (3) Se corrigió `.env.example` (faltaba
+> `VITE_API_BASE_URL`, tenía una clave real de Supabase en vez de
+> placeholder). Verificado en el navegador: catálogo, ficha de producto y
+> home muestran los 4 productos reales sembrados por el backend; edité un
+> producto real vía API con una imagen nueva y confirmé que se veía en
+> `/producto/:id` (después revertido, era solo para la prueba).
+> `npm run lint`, `npm run build` y `npx vitest run` (155/155) en verde.
+>
+> Actualización anterior: 2026-08-04, tras terminar el login/inicio de sesión
+> de clientes y de staff/admin que había quedado a medio migrar en el commit
+> `5190b61` (reemplazo de Supabase Auth por el backend .NET real). Cambios:
+> (1) `getStaffProfile` (`src/api/auth.ts`) ahora sí resuelve
+> `Profile.accountType` probando `GET /user/{id}` y, si no existe ahí,
+> cayendo a `GET /api/admin/{id}` — antes nunca lo fijaba, lo que impedía
+> resolver el perfil de cuentas Admin raíz (negaba acceso a `/admin` con un
+> JWT válido) y hacía que `actorIdsFromProfile` siempre mandara
+> `{adminId: null, userId: null}` en toda mutación atribuida a staff
+> (productos, almacén, tipo de cambio, etc.). (2) `staffSignIn` ya no
+> descarta el error de `/user/login` sin condición al caer a
+> `/api/admin/login`. (3) Login de staff/admin separado en su propia ruta
+> `/admin/iniciar-sesion` (`src/pages/admin/AdminLoginPage.tsx`), en vez de
+> que `/iniciar-sesion` adivinara cliente vs. staff según de dónde vino la
+> redirección — `RequireAuth` ahora acepta un prop `loginPath` por layout.
+> (4) Manejo centralizado de sesión expirada: cualquier 401 de una request
+> autenticada (`src/api/client.ts`) cierra la sesión, limpia el perfil en
+> caché y avisa con un toast, en vez de fallar en silencio hasta que
+> expirara el JWT completo (60 min, sin refresh token). (5) Se eliminó el
+> código muerto de la era Supabase relacionado a auth que ya no importaba
+> nadie: `src/pages/{LoginPage,RegisterPage,CheckoutPage,ThankyouPage}.tsx`,
+> `src/layouts/{DashboardLayout,ClientLayout,RootLayout}.tsx`,
+> `src/components/shared/Navbar.tsx`, `src/actions/auth.ts`,
+> `src/hooks/auth/{useLogin,useRegister,useUser,useCustomer}.ts` y el
+> cliente HTTP duplicado sin uso `src/lib/almacenApiClient.ts`, con la
+> limpieza correspondiente en los barrels (`src/hooks/index.ts`,
+> `src/actions/index.ts`, `src/pages/index.ts`). (6) `.env.example`: se
+> agregó `VITE_API_BASE_URL` (faltaba, rompía el login en silencio para
+> cualquiera que clonara el repo) y se reemplazó la clave real de Supabase
+> por un placeholder (violaba la regla de CLAUDE.md de nunca commitear
+> claves reales ahí). No se tocó `src/services/{profile,address,recipient,
+> favorite,support}.service.ts` (siguen en Supabase) ni
+> `src/supabase/{client,supabase}.ts` — son parte del área de cuenta del
+> cliente, no del login, y quedan fuera de esta fase.
+>
+> Actualización anterior: 2026-07-31, tras aplicar al proyecto Supabase real
+> ("Deliverys Home" — `wkycfjvqotukprizfhga`) las migraciones `006`-`008`
+> que quedaron redactadas durante la construcción del panel admin — Fase B
+> (`/admin`: dashboard, pedidos, verificación de pagos, productos,
+> categorías, combos). A petición explícita del usuario ("agrega todas las
+> tablas para integrar el backend al frontend") se aplicaron en orden:
+> `006_fix_legacy_admin_rls` (función `is_staff()`, corrige las políticas
+> RLS de `orders`/`combos`/`combo_items`/`payment_proofs`/
+> `payment_accounts`/`exchange_rates` que revisaban `user_roles` en vez de
+> `profiles.role`), `007_catalog_admin` (tablas nuevas `catalog_categories`,
+> `catalog_products`, `catalog_product_variants`, con RLS: lectura pública
+> solo de filas activas, escritura solo `is_staff()`) y
+> `008_combo_items_catalog_variants` (`combo_items.catalog_variant_id`,
+> constraint `combo_items_variant_ref_check`). Verificado tras aplicar:
+> `list_tables` confirma las 3 tablas nuevas con RLS activo,
+> `get_advisors(security)` no reporta warnings nuevos (solo el ya aceptado
+> de `is_admin()`/`is_staff()` ejecutables por `anon`/`authenticated`,
+> necesario porque las políticas RLS los invocan en nombre de quien
+> consulta), y `generate_typescript_types` coincide con el tipado ya escrito
+> a mano en `src/supabase/supabase.ts` (no requirió cambios). Categorías/
+> Productos/Combos del panel admin ya tienen tablas reales que consultar, y
+> un admin/operador real ahora sí pasa las políticas RLS de
+> Pedidos/Combos/Pagos. **Pendiente para dar la Fase B por completada** (ver
+> regla de CLAUDE.md, no empezar Fase C sin validar la anterior): el usuario
+> todavía no probó el flujo completo con datos reales en el navegador
+> (crear categoría → producto → combo → ver pedido) con una sesión
+> `admin`/`operador` real. Suite de Vitest: 149/149 en verde
+> (`npx vitest run`), `npm run lint` y `npm run build` también en verde,
+> confirmados de nuevo después de aplicar las migraciones (no se tocó
+> código, solo esquema).
+>
+> Actualización anterior: 2026-07-30, tras construir el área privada del
+> cliente (`/mi-cuenta/*`). Ver la sección "Área privada del cliente"
+> más abajo. Se adelantó esta fase respecto al roadmap vigente (que
+> priorizaba la Fase B, panel admin) por instrucción explícita del
+> usuario; `ROADMAP.md` queda actualizado para reflejar el nuevo orden.
+> Suite completa de Vitest: 119/119 en verde (`npx vitest run`),
+> `npm run lint` y `npm run build` también en verde. Actualizar este
+> archivo al final de cada fase (ver [../CLAUDE.md](../CLAUDE.md)).
+>
+> Actualización anterior (misma fecha): tras conectar autenticación real con
 > Supabase Auth a las páginas públicas (`/iniciar-sesion`, `/registrarse`,
 > `/recuperar-contrasena`, nueva `/restablecer-contrasena`). Ver la sección
 > "Autenticación real (Supabase Auth)" más abajo. Suite completa de Vitest:
@@ -53,8 +300,10 @@
 
 - Catálogo público de productos + variantes (color/almacenamiento/precio).
 - Combos con precio propio y prorrateo al añadir al carrito.
-- Registro/login de clientes vía Supabase Auth, con alta automática de fila
-  en `user_roles` (rol `customer`).
+- Registro/login de clientes (`/iniciar-sesion`) y de staff/admin
+  (`/admin/iniciar-sesion`, ruta separada) contra JWT del backend .NET
+  (`src/api/auth.ts`), sin Supabase Auth. Sesión sin refresh token (60 min);
+  un 401 en cualquier request autenticada cierra la sesión automáticamente.
 - Checkout: dirección + resumen de carrito + creación de pedido + descuento
   de stock.
 - Subida de comprobante de pago (Supabase Storage, bucket privado) y cola de
@@ -406,19 +655,212 @@ resumen editable por bloque + checkbox de consentimiento de políticas
   `src/pages/public/__tests__/{LoginPage,RegisterPage,ForgotPasswordPage,ResetPasswordPage}.test.tsx`
   (mocks de `useAuth`/`services/auth.service`, sin pegar a Supabase real).
 
-## Qué falta (Fases B-I del roadmap nuevo, aún sin implementar)
+### Área privada del cliente (`/mi-cuenta/*`)
 
-Panel admin único (sin login por vendedor/trabajador): acceso + dashboard
-de resumen (Fase B), reconexión/ampliación de productos-combos-pedidos
-(Fase B), almacén con histórico de movimientos (Fase C), clientes con
-deuda CUP/USD (Fase D), vendedores y comisiones (Fase E), trabajadores/
-repartidores (Fase F), remesas (Fase G), contabilidad (Fase H),
-configuración — tasa de cambio (ya real) + datos de contacto (Fase I).
-Todas mock-first por decisión del usuario, salvo lo que ya está en
-Supabase (tasa de cambio). Deuda técnica heredada (RPC transaccional de
-stock, auditoría real de inventario, idempotencia de pagos, procesador de
-pago real, CI, Docker) reordenada al final del roadmap, no bloquea estas
-fases. Detalle y orden en [ROADMAP.md](ROADMAP.md).
+Las 8 rutas pedidas (`/mi-cuenta`, `pedidos`, `pedidos/:id`,
+`destinatarios`, `direcciones`, `favoritos`, `perfil`, `seguridad`,
+`soporte`) están construidas y enrutadas en `CustomerLayout`/
+`router/index.tsx`; logout ya existía.
+
+- **Migración `supabase/migrations/005_customer_account.sql`** (aplicada al
+  proyecto real "Deliverys Home" vía MCP): 4 tablas nuevas
+  (`customer_addresses`, `customer_recipients`, `favorites`,
+  `support_cases`), todas `profile_id references profiles(id)`, con RLS
+  owner-only (select/insert/update/delete donde `auth.uid() = profile_id`)
+  + policy de solo lectura para admins (`is_admin()`, reutilizando la
+  función de `003_profiles.sql`), mismo patrón que `profiles`. Función
+  compartida `set_updated_at()` + trigger `protect_support_case_status()`
+  (el cliente crea/lee casos pero no puede cambiar su propio `status`,
+  igual que `protect_profile_privileged_columns` protege `role`/`status`
+  en `profiles`). `get_advisors` tras aplicar: sin warnings nuevos (solo
+  los ya aceptados de `is_admin()`). `src/supabase/supabase.ts` extendido
+  a mano con las 4 tablas nuevas.
+- **Perfil** (`/mi-cuenta/perfil`): no necesitó tabla nueva, reutiliza
+  `profiles`/`profiles_update_own`. `src/services/profile.service.ts` +
+  `useUpdateProfile` (invalida `['profile', userId]`, la misma key que usa
+  `AuthContext`).
+- **Destinatarios y direcciones**: `src/services/{recipient,address}.service.ts`
+  + hooks `use{Recipients,Addresses}`/`useManage{Recipients,Addresses}`
+  (CRUD completo con `invalidateQueries`). Páginas
+  `Customer{Recipients,Addresses}Page.tsx`: tarjetas + `Modal` con
+  formulario (RHF + Zod, `src/lib/accountValidators.ts`), provincia/
+  municipio reutilizando `useDeliveryZones` (mismo servicio que
+  `LocationStep` del checkout), `ConfirmDialog` para eliminar, badge de
+  "predeterminado".
+- **Favoritos**: tabla `favorites` guarda `product_id` = slug del catálogo
+  simulado (no existe tabla `products` real para el dominio de comida
+  todavía, ver riesgo 12) — la fila de favorito sí es 100% real/RLS, solo
+  el producto referenciado sigue siendo mock. `useToggleFavorite` +
+  `FavoriteButton` (`src/components/product/FavoriteButton.tsx`, visible
+  solo con sesión activa) integrado en `/producto/:slug`.
+  `CustomerFavoritesPage.tsx` resuelve cada favorito vía
+  `getCatalogProductBySlug` con `useQueries`.
+- **Soporte**: `support_cases` (crear + listar, sin edición — el estado
+  solo lo cambia un admin vía RLS/trigger). `CustomerSupportPage.tsx`:
+  formulario de creación + lista de casos propios con badge de estado.
+- **Pedidos** (`/mi-cuenta/pedidos`, `/mi-cuenta/pedidos/:orderNumber`):
+  **sigue sin tabla `orders` real para el dominio de comida** (la única
+  `orders` en Supabase es del dominio legacy "celulares", ligada a
+  `customers`, no a `profiles`) — conectar el checkout a un pedido real
+  es trabajo mayor (tabla nueva + RLS + decremento de stock) que no
+  entraba en este pedido y ya está rastreado como deuda técnica en
+  `ROADMAP.md`. Se etiquetó cada pedido simulado
+  (`src/services/checkoutSimulation.service.ts`) con el `userId` de la
+  sesión activa al confirmar el checkout (`SimulatedOrder.userId`,
+  opcional — los pedidos de invitado quedan sin dueño); nueva función
+  `getSimulatedOrdersByUserId` + hook `useCustomerOrders`.
+  `CustomerOrderDetailPage.tsx` verifica que `order.userId` coincida con
+  el usuario autenticado antes de mostrar el pedido (no confía en que el
+  número de la URL sea del usuario correcto) y agrega "Repetir pedido"
+  (reconstruye las líneas guardadas en el pedido y las agrega al carrito
+  vía `useCartStore().addItem`).
+- Pruebas nuevas: `src/services/__tests__/checkoutSimulation.service.test.ts`
+  (etiquetado por `userId`, filtro/orden de `getSimulatedOrdersByUserId`).
+  `CheckoutPage.test.tsx`/`ProductPage.test.tsx` se actualizaron para
+  mockear `useAuth` (ahora se usa en ambas páginas) siguiendo el mismo
+  patrón que `LoginPage.test.tsx` (`vi.importActual` + override de
+  `useAuth`, para no perder el resto de hooks reales del barril).
+- **Verificado manualmente**: `npm run lint`, `npm run build` y
+  `npx vitest run` (119/119) en verde. La verificación visual completa del
+  flujo de registro en el navegador quedó bloqueada por el rate limit de
+  envío de correo de Supabase Auth del proyecto (`email rate limit
+  exceeded`, no relacionado con este código) tras varios intentos de
+  registro con distintos correos de prueba; se confirmó igualmente, con
+  una llamada directa a `supabase.auth.signUp()` desde la consola del
+  navegador, que la app sí habla con el Supabase real (no con el cliente
+  offline simulado) y que los errores de Auth se propagan correctamente
+  a la UI. Pendiente: recorrer las 8 páginas ya con una sesión real una
+  vez pase el rate limit.
+
+### Panel admin — Fase B (`/admin`, construida, pendiente de validación)
+
+El prompt original pedía un panel genérico masivo (9 roles, ~20 módulos
+incl. Compras/Proveedores/Nómina/Auditoría, inventario completo). Se acordó
+con el usuario un híbrido: la infraestructura de shell de ese spec, pero
+poblada solo con los módulos que sí están en `ROADMAP.md` Fase B (Dashboard,
+Pedidos, Productos, Categorías, Combos). Los módulos de fases posteriores
+(Almacén, Clientes, Vendedores, Trabajadores, Remesas, Contabilidad,
+Configuración) aparecen en el sidebar como "Próximamente" pero no tienen
+página propia — usan el catch-all `AdminSectionPlaceholderPage`.
+
+- **Roles**: no se creó un sistema nuevo. Se reutiliza `profiles.role`
+  (`'customer' | 'admin' | 'operador' | 'mensajero'`, ya existente).
+  `/admin` se abre a `admin` y `operador` (`src/lib/roleGuards.ts`,
+  `ADMIN_ACCESS_ROLES`). `RequireAuth` (`src/router/RequireAuth.tsx`) gana
+  un prop opcional `allowedRoles`.
+- **Hallazgo real durante la construcción (no pedido, pero bloqueante)**:
+  el registro conectado hoy solo crea fila en `profiles`; las políticas RLS
+  de `orders`/`combos`/`combo_items`/`payment_proofs`/`payment_accounts`/
+  `exchange_rates` seguían revisando la tabla vieja `user_roles` (nunca
+  poblada por ese flujo). Sin corregirlo, un admin/operador real no podría
+  leer ni escribir pedidos/combos/pagos desde el panel nuevo. Confirmado
+  con el usuario: se redactó `supabase/migrations/006_fix_legacy_admin_rls.sql`
+  (nueva función `is_staff()`, admin u operador, reemplaza los checks a
+  `user_roles`). También se detectó que `combo_items` nunca tuvo policy de
+  escritura (gap real, no solo tabla equivocada) — corregido en la misma
+  migración.
+- **Esquema de productos**: la tienda pública sigue en catálogo simulado
+  (riesgo 12, sin tocar en esta fase). Se creó
+  `supabase/migrations/007_catalog_admin.sql` con tablas nuevas de dominio
+  comida (`catalog_categories`, `catalog_products`, `catalog_product_variants`),
+  espejando la forma de `CatalogProduct`/`CatalogCategory`, para que el
+  admin nuevo tenga datos reales propios sin tocar el esquema legacy
+  "celulares" (`products`/`variants`, sin categorías). Reconectar la tienda
+  pública a estas tablas queda para una fase aparte.
+  - **Caveat de seguridad documentado, no resuelto todavía**: RLS es a
+    nivel de fila, no de columna. La policy pública de `catalog_products`
+    (filas `is_active = true`) también expondría `cost_cup`/`margin_usd`/
+    `pricing_mode` (campos admin-only) si algún código público hiciera
+    `select('*')`. No es explotable hoy (nada público consulta esta tabla
+    todavía), pero hay que resolverlo con una vista `catalog_products_public`
+    antes de reconectar la tienda pública a este esquema.
+  - Todo producto necesita al menos una variante/presentación
+    (`catalog_product_variants`, decisión de diseño): así el armador de
+    combos (que solo referencia variantes, no productos directamente)
+    siempre tiene qué ofrecer.
+- **Combos**: `supabase/migrations/008_combo_items_catalog_variants.sql`
+  agrega `combo_items.catalog_variant_id` (referencia al catálogo nuevo) sin
+  quitar `variant_id` (legacy) — exactamente una de las dos debe estar
+  presente por fila (`combo_items_variant_ref_check`). `src/actions/combo.ts`
+  se actualizó para operar sobre el catálogo nuevo.
+- **Precio automático**: fórmula confirmada con el usuario —
+  `precio_usd = (costo_cup / tasa_vigente) + margen_usd` (margen como monto
+  fijo en USD, no porcentaje). Implementada en
+  `src/components/admin/products/PricingModeFields.tsx` con `decimal.js`
+  (regla de dinero del proyecto). Al construir la prueba de este componente
+  se encontró y corrigió un bug real: `react-hook-form` expone el valor
+  crudo del input (`''`) antes de que Zod lo coerza a `number`, lo que
+  hacía que `decimal.js` reventara con un input vacío mientras el usuario
+  todavía escribía — se agregó un guard (`toFiniteNumber`) antes de calcular.
+- **Tasa de cambio**: confirmado con el usuario que `admin` y `operador`
+  (no solo `admin`) pueden actualizarla (`is_staff()` en la policy de
+  escritura de `exchange_rates`).
+- **Pedidos**: se detectó que el hook legacy `useOrderAdmin` llama a
+  `getOrderById` (alcance de **cliente**, filtra por el propio
+  `customer_id`), no a `getOrderByIdAdmin` — un bug preexistente que habría
+  hecho que ningún admin real viera el detalle de un pedido ajeno. La
+  página nueva (`AdminOrderDetailPage`) usa un hook nuevo
+  (`useAdminOrderDetail`) sobre `getOrderByIdAdmin` en su lugar;
+  `useOrderAdmin`/`DashboardOrderPage` (legacy, sin enlazar) se dejaron
+  intactos. `getAllOrders`/`useAllOrders` ganaron paginación/filtro/
+  búsqueda sin romper al consumidor legacy (`data` se sigue exponiendo como
+  array). Cambiar a `Delivered`/`Cancelled` pide confirmación
+  (`ConfirmDialog`) por ser acciones sensibles.
+- **Dashboard**: stats reales (pedidos de hoy, ventas del mes con
+  `decimal.js`, ticket promedio, tasa de cambio vigente, vía
+  `getOrdersSummary` nuevo en `src/actions/order.ts`) + stats simuladas
+  explícitamente marcadas "Próximamente" (stock bajo, próximos a vencer,
+  entregas pendientes, comisiones pendientes, pagos pendientes, gastos —
+  `src/services/adminDashboard.service.ts`, mismo patrón que
+  `home.service.ts`, placeholders de las Fases C-I).
+- **Pruebas nuevas**: `roleGuards.test.ts`, `RequireAuth.test.tsx`
+  (extendido con casos de `allowedRoles`), `adminCategories.service.test.ts`,
+  `adminProducts.service.test.ts`, `adminDashboard.service.test.ts`
+  (primer precedente de mock del cliente Supabase con query-builder
+  encadenable en este repo), `AdminCategoriesPage.test.tsx` (crear/eliminar
+  con confirmación), `AdminProductFormPage.test.tsx` (modo de precio
+  automático — encontró el bug de `decimal.js` arriba — y bloqueo de envío
+  sin imágenes). No se escribieron pruebas dedicadas para
+  Pedidos/Combos/Dashboard/Categorías-lista (páginas más simples,
+  cubiertas indirectamente por las pruebas de servicio) — deuda menor,
+  igual que ya ocurre con `CustomerAddressesPage`.
+- **Migraciones aplicadas (2026-07-31)**: `006`, `007` y `008` se aplicaron
+  al proyecto Supabase real vía MCP, a petición explícita del usuario. Las
+  3 tablas nuevas (`catalog_categories`, `catalog_products`,
+  `catalog_product_variants`) existen con RLS activo, y `is_staff()` ya
+  cubre las políticas de `orders`/`combos`/`combo_items`/`payment_proofs`/
+  `payment_accounts`/`exchange_rates`. `src/supabase/supabase.ts` (extendido
+  a mano antes de aplicar, mismo precedente que `005_customer_account.sql`)
+  coincide con `generate_typescript_types` del proyecto real — no requirió
+  cambios. Verificado manualmente antes de esta fecha: `/admin` y todas sus
+  rutas hijas redirigen correctamente a `/iniciar-sesion` sin sesión (sin
+  errores de consola). **Pendiente**: nadie probó todavía el flujo completo
+  con datos reales (crear categoría → producto → combo → ver pedido) con
+  una sesión `admin`/`operador` real — requiere que el usuario cree ese
+  usuario y lo pruebe en el navegador antes de dar la Fase B por validada.
+
+## Qué falta
+
+Las Fases C-I del roadmap nuevo (Almacén, Clientes, Vendedores/comisiones,
+Trabajadores, Remesas, Contabilidad, Configuración) ya están construidas
+y conectadas al backend .NET real — no mock, no roadmap original con datos
+simulados como se había planificado (ver "Última actualización" arriba
+para el detalle de qué se cerró en la sesión del 2026-08-09). **Pendiente
+de validación explícita del usuario en el navegador con una sesión
+`admin`/`operador` real** — igual que quedó pendiente para la Fase B
+original, esta ronda de trabajo se verificó manualmente por el agente
+(editar/eliminar cliente, editar/eliminar gasto, resetear contraseña de
+staff, todo contra el backend real), pero no por el usuario. Sigue sin
+tocarse, deferido explícitamente:
+- Configuración → "Datos de contacto" (WhatsApp): necesita tabla nueva en
+  el backend, hoy es de solo lectura desde código (`DEFAULT_WHATSAPP_PHONE`).
+- Dashboard → "Actividad reciente": sigue en `adminDashboard.mock.ts`, no
+  hay endpoint de auditoría en el backend todavía.
+
+Deuda técnica heredada (RPC transaccional de stock, auditoría real de
+inventario, idempotencia de pagos, procesador de pago real, CI, Docker)
+reordenada al final del roadmap, no bloquea estas fases. Detalle y orden
+en [ROADMAP.md](ROADMAP.md).
 
 ## Riesgos y deuda técnica detectados
 
@@ -507,12 +949,51 @@ fases. Detalle y orden en [ROADMAP.md](ROADMAP.md).
     --port 5183` solo con fines de verificación visual en este entorno;
     `vite.config.ts` (sí trackeado) se dejó sin tocar. Si el puerto 3000
     tampoco está disponible en otra máquina, aplicar el mismo ajuste local.
+14. **`/mi-cuenta/pedidos` sigue sobre el checkout simulado** — no hay
+    tabla `orders` real para el dominio de comida (ver riesgo 12); los
+    pedidos viven en `localStorage`, etiquetados con `userId` solo si
+    había sesión activa al confirmar el checkout. Un pedido hecho como
+    invitado (sin sesión) nunca aparecerá en `/mi-cuenta/pedidos` de
+    nadie, y los pedidos no sobreviven a un cambio de navegador/dispositivo
+    ni a borrar el `localStorage`. Se resuelve junto con el riesgo 12
+    cuando exista una tabla `orders` real ligada a `profiles`.
+15. **Favoritos referencian productos mock** — `favorites.product_id`
+    guarda el slug del catálogo simulado (`catalog.service.ts`), no una
+    fila real de `products`; si ese slug cambia o el producto se elimina
+    del mock, el favorito queda "huérfano" (se resuelve mostrando nada
+    para ese favorito, no un error). Mismo origen que el riesgo 12.
+16. ~~**Migraciones 006-008 (panel admin, Fase B) redactadas pero no
+    aplicadas**~~ — **Resuelto 2026-07-31.** Las 3 migraciones se aplicaron
+    al proyecto Supabase real vía MCP. Categorías/Productos/Combos del
+    admin nuevo ya tienen tabla real que consultar.
+17. ~~**RLS de `orders`/`combos`/`combo_items`/`payment_proofs`/
+    `payment_accounts`/`exchange_rates` revisa `user_roles`**~~ —
+    **Resuelto 2026-07-31.** `is_staff()` (`006_fix_legacy_admin_rls.sql`)
+    ya está aplicada; un admin/operador real (vía `profiles.role`) ahora
+    pasa esas políticas.
+18. **RLS de `catalog_products` no protege `cost_cup`/`margin_usd`/
+    `pricing_mode` a nivel de columna** — la policy pública (`is_active =
+    true`) expondría esos campos admin-only si algún código público
+    hiciera `select('*')` sobre esa tabla. No explotable hoy (la tienda
+    pública sigue en catálogo mock, nada público consulta
+    `catalog_products` todavía); resolver con una vista
+    `catalog_products_public` antes de reconectar la tienda pública a este
+    esquema (ver riesgo 12).
+19. **Bug preexistente en el hook legacy `useOrderAdmin`** — llama a
+    `getOrderById` (alcance de cliente, filtra por el `customer_id` del
+    usuario autenticado) en vez de `getOrderByIdAdmin`. `DashboardOrderPage`
+    (legacy, sin enlazar) sigue usándolo tal cual; el panel admin nuevo
+    (`AdminOrderDetailPage`) usa `useAdminOrderDetail`/`getOrderByIdAdmin`
+    en su lugar. No se corrigió el hook legacy (fuera de alcance, página
+    no enlazada).
 
 Los riesgos 1, 2, 4, 5, 6, 7 y 9 no se tocaron en la fase de sistema de
 diseño y navegación (no era de lógica de negocio). Quedan como entrada de la
 Fase 1 en [ROADMAP.md](ROADMAP.md). *Actualización de la fase de carrito:*
 el riesgo 5 se atendió parcialmente (ver arriba); los riesgos 1, 2, 4, 6, 7
-y 9 siguen sin tocarse.
+y 9 siguen sin tocarse. *Actualización de la fase de panel admin:* ninguno
+de los riesgos 1-15 se tocó (fuera de alcance de esta fase); se agregaron
+los riesgos 16-19.
 
 ## Cómo actualizar este documento
 
