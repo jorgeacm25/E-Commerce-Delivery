@@ -21,6 +21,7 @@ import {
 } from '../../components/checkout';
 import { Alert, Button, EmptyState, Skeleton } from '../../components/ui';
 import { DELIVERY_MODALITY_OPTIONS } from '../../constants/checkout';
+import { useAuth } from '../../hooks';
 import { CheckoutFormValues, checkoutDefaultValues, checkoutFormSchema } from '../../lib/checkoutValidators';
 import { submitSimulatedOrder } from '../../services/checkoutSimulation.service';
 import { useCartStore } from '../../store/cart.store';
@@ -70,6 +71,7 @@ const loadDraft = (): CheckoutFormValues => {
 
 export const CheckoutPage = () => {
 	const navigate = useNavigate();
+	const { user } = useAuth();
 	const items = useCartStore(state => state.items);
 	const hasHydrated = useCartStore(state => state.hasHydrated);
 	const subtotal = useCartStore(state => state.subtotal);
@@ -140,6 +142,7 @@ export const CheckoutPage = () => {
 					comboName: item.comboName,
 				})),
 				totals: { subtotal, discount, deliveryCost, total },
+				userId: user?.id,
 			});
 
 			sessionStorage.removeItem(DRAFT_STORAGE_KEY);

@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { FiShoppingCart } from 'react-icons/fi';
 import { Link, useParams } from 'react-router-dom';
 import { ComboContents } from '../../components/product/ComboContents';
+import { FavoriteButton } from '../../components/product/FavoriteButton';
 import { ProductDeliveryZones } from '../../components/product/ProductDeliveryZones';
 import { ProductGallery } from '../../components/product/ProductGallery';
 import { RelatedProducts } from '../../components/product/RelatedProducts';
@@ -95,6 +96,9 @@ export const ProductPage = () => {
 
 	const selectedVariant = product.variants.find(variant => variant.id === selectedVariantId);
 	const displayPrice = selectedVariant?.priceUsd ?? product.priceUsd;
+	// El descuento es del producto/combo, no de una variante puntual — no
+	// aplica si hay una variante con su propio precio seleccionada.
+	const displayDiscountedPrice = selectedVariant ? undefined : product.discountPriceUsd;
 	const displayStock = selectedVariant?.stock ?? product.stock;
 	const { label: availabilityText, badgeVariant } = availabilityLabel(product.availability);
 	const inStock = product.availability !== 'out_of_stock' && displayStock > 0;
@@ -125,6 +129,7 @@ export const ProductPage = () => {
 					{ label: product.categoryName, href: `/categoria/${product.categorySlug}` },
 					{ label: product.name },
 				]}
+				actions={<FavoriteButton productId={product.slug} />}
 			/>
 
 			<div className='grid gap-8 lg:grid-cols-2'>
@@ -136,7 +141,7 @@ export const ProductPage = () => {
 						<p className='mt-2 text-sm text-neutral-500'>{product.weightOrUnitLabel}</p>
 					</div>
 
-					<CurrencyDisplay usd={displayPrice} size='lg' />
+					<CurrencyDisplay usd={displayPrice} discountedUsd={displayDiscountedPrice} size='lg' />
 
 					<p className='text-sm text-neutral-600'>{product.description}</p>
 

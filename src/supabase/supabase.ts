@@ -328,19 +328,22 @@ export type Database = {
           cantidad: number
           combo_id: string
           id: string
-          variant_id: string
+          variant_id: string | null
+          catalog_variant_id: string | null
         }
         Insert: {
           cantidad?: number
           combo_id: string
           id?: string
-          variant_id: string
+          variant_id?: string | null
+          catalog_variant_id?: string | null
         }
         Update: {
           cantidad?: number
           combo_id?: string
           id?: string
-          variant_id?: string
+          variant_id?: string | null
+          catalog_variant_id?: string | null
         }
         Relationships: [
           {
@@ -355,6 +358,164 @@ export type Database = {
             columns: ["variant_id"]
             isOneToOne: false
             referencedRelation: "variants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "combo_items_catalog_variant_id_fkey"
+            columns: ["catalog_variant_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_categories: {
+        Row: {
+          id: string
+          slug: string
+          name: string
+          image_url: string | null
+          description: string | null
+          display_order: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          name: string
+          image_url?: string | null
+          description?: string | null
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          name?: string
+          image_url?: string | null
+          description?: string | null
+          display_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      catalog_products: {
+        Row: {
+          id: string
+          category_id: string
+          slug: string
+          name: string
+          description: string
+          images: string[]
+          unit: string
+          weight_or_unit_label: string
+          price_usd: number
+          cost_cup: number | null
+          margin_usd: number | null
+          pricing_mode: string
+          stock: number
+          delivery_zone_ids: string[]
+          popularity_score: number
+          is_active: boolean
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          category_id: string
+          slug: string
+          name: string
+          description?: string
+          images?: string[]
+          unit?: string
+          weight_or_unit_label?: string
+          price_usd: number
+          cost_cup?: number | null
+          margin_usd?: number | null
+          pricing_mode?: string
+          stock?: number
+          delivery_zone_ids?: string[]
+          popularity_score?: number
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          category_id?: string
+          slug?: string
+          name?: string
+          description?: string
+          images?: string[]
+          unit?: string
+          weight_or_unit_label?: string
+          price_usd?: number
+          cost_cup?: number | null
+          margin_usd?: number | null
+          pricing_mode?: string
+          stock?: number
+          delivery_zone_ids?: string[]
+          popularity_score?: number
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_product_variants: {
+        Row: {
+          id: string
+          product_id: string
+          label: string
+          price_usd: number
+          stock: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          label: string
+          price_usd: number
+          stock?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          label?: string
+          price_usd?: number
+          stock?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
             referencedColumns: ["id"]
           },
         ]
@@ -496,6 +657,179 @@ export type Database = {
           },
         ]
       }
+      customer_addresses: {
+        Row: {
+          id: string
+          profile_id: string
+          label: string | null
+          province: string
+          municipality: string
+          address_line: string
+          reference_notes: string | null
+          is_default: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          label?: string | null
+          province: string
+          municipality: string
+          address_line: string
+          reference_notes?: string | null
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          label?: string | null
+          province?: string
+          municipality?: string
+          address_line?: string
+          reference_notes?: string | null
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_addresses_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_recipients: {
+        Row: {
+          id: string
+          profile_id: string
+          full_name: string
+          phone: string
+          national_id: string | null
+          province: string
+          municipality: string
+          address_line: string
+          notes: string | null
+          is_default: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          full_name: string
+          phone: string
+          national_id?: string | null
+          province: string
+          municipality: string
+          address_line: string
+          notes?: string | null
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          full_name?: string
+          phone?: string
+          national_id?: string | null
+          province?: string
+          municipality?: string
+          address_line?: string
+          notes?: string | null
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_recipients_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorites: {
+        Row: {
+          id: string
+          profile_id: string
+          product_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          product_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          product_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_cases: {
+        Row: {
+          id: string
+          profile_id: string
+          category: string
+          subject: string
+          message: string
+          order_reference: string | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          category: string
+          subject: string
+          message: string
+          order_reference?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          category?: string
+          subject?: string
+          message?: string
+          order_reference?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_cases_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: number
@@ -566,6 +900,10 @@ export type Database = {
     }
     Functions: {
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_staff: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

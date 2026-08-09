@@ -7,6 +7,7 @@ interface Props {
 	image: string;
 	name: string;
 	price: number;
+	discountPriceUsd?: number;
 	inStock?: boolean;
 	onAdd?: () => void;
 	className?: string;
@@ -16,10 +17,13 @@ export const ProductCard = ({
 	image,
 	name,
 	price,
+	discountPriceUsd,
 	inStock = true,
 	onAdd,
 	className,
 }: Props) => {
+	const hasDiscount = discountPriceUsd !== undefined && discountPriceUsd < price;
+
 	return (
 		<div
 			className={cn(
@@ -27,10 +31,16 @@ export const ProductCard = ({
 				className
 			)}
 		>
-			{!inStock && (
+			{!inStock ? (
 				<Badge variant='danger' className='absolute left-3 top-3 z-10'>
 					Agotado
 				</Badge>
+			) : (
+				hasDiscount && (
+					<Badge variant='success' className='absolute left-3 top-3 z-10'>
+						Oferta
+					</Badge>
+				)
 			)}
 
 			<div className='flex h-40 items-center justify-center bg-neutral-50 p-4'>
@@ -41,7 +51,7 @@ export const ProductCard = ({
 				<p className='line-clamp-2 text-sm font-medium text-neutral-800'>{name}</p>
 
 				<div className='mt-auto flex items-end justify-between gap-2'>
-					<CurrencyDisplay usd={price} size='sm' />
+					<CurrencyDisplay usd={price} discountedUsd={discountPriceUsd} size='sm' />
 
 					{onAdd && (
 						<button

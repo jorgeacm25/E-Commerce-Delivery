@@ -6,7 +6,12 @@ import { Button, PageHeader } from '../components/ui';
 
 const accountLinks = [
 	{ label: 'Mis pedidos', href: '/mi-cuenta/pedidos' },
+	{ label: 'Destinatarios', href: '/mi-cuenta/destinatarios' },
+	{ label: 'Direcciones', href: '/mi-cuenta/direcciones' },
+	{ label: 'Favoritos', href: '/mi-cuenta/favoritos' },
 	{ label: 'Perfil', href: '/mi-cuenta/perfil' },
+	{ label: 'Seguridad', href: '/mi-cuenta/seguridad' },
+	{ label: 'Soporte', href: '/mi-cuenta/soporte' },
 ];
 
 export const CustomerLayout = () => {
@@ -31,13 +36,13 @@ export const CustomerLayout = () => {
 					}
 				/>
 
-				<nav className='flex gap-1 border-b border-neutral-200'>
+				<nav className='flex gap-1 overflow-x-auto border-b border-neutral-200'>
 					{accountLinks.map(link => (
 						<NavLink
 							key={link.href}
 							to={link.href}
 							className={({ isActive }) =>
-								`-mb-px border-b-2 px-4 py-2.5 text-sm font-medium ${
+								`-mb-px shrink-0 border-b-2 px-4 py-2.5 text-sm font-medium ${
 									isActive
 										? 'border-primary-600 text-primary-700'
 										: 'border-transparent text-neutral-500 hover:text-neutral-800'

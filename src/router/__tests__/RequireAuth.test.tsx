@@ -70,6 +70,24 @@ const renderAdminRoute = () =>
 		</MemoryRouter>
 	);
 
+const renderAdminRouteWithLoginPath = () =>
+	render(
+		<MemoryRouter initialEntries={['/admin']}>
+			<Routes>
+				<Route
+					path='/admin'
+					element={
+						<RequireAuth allowedRoles={['staff']} loginPath='/admin/iniciar-sesion'>
+							<p>Contenido protegido</p>
+						</RequireAuth>
+					}
+				/>
+				<Route path='/iniciar-sesion' element={<p>Página de login de cliente</p>} />
+				<Route path='/admin/iniciar-sesion' element={<p>Página de login de admin</p>} />
+			</Routes>
+		</MemoryRouter>
+	);
+
 describe('RequireAuth', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
@@ -143,6 +161,16 @@ describe('RequireAuth', () => {
 			renderAdminRoute();
 
 			expect(screen.getByText('Contenido protegido')).toBeInTheDocument();
+		});
+
+		it('redirige a la ruta indicada en loginPath, no a /iniciar-sesion, cuando no hay sesión', () => {
+			mockAuth({ session: null, isInitializing: false });
+
+			renderAdminRouteWithLoginPath();
+
+			expect(screen.getByText('Página de login de admin')).toBeInTheDocument();
+			expect(screen.queryByText('Página de login de cliente')).not.toBeInTheDocument();
+			expect(screen.queryByText('Contenido protegido')).not.toBeInTheDocument();
 		});
 	});
 });

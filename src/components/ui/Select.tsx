@@ -57,7 +57,9 @@ export const Select = forwardRef<HTMLSelectElement, Props>(
 						required={required}
 						aria-invalid={!!error || undefined}
 						aria-describedby={cn(hintId, errorId) || undefined}
-						defaultValue={rest.defaultValue ?? (placeholder ? '' : undefined)}
+						defaultValue={
+							rest.value === undefined ? rest.defaultValue ?? (placeholder ? '' : undefined) : undefined
+						}
 						className={cn(
 							'focus-ring w-full appearance-none rounded-lg border bg-white px-3 py-2 pr-9 text-sm text-neutral-900 transition-colors',
 							'disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400',

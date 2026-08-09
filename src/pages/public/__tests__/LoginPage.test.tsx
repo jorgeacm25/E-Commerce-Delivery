@@ -36,7 +36,7 @@ describe('LoginPage', () => {
 		renderLoginPage();
 		await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-		expect(await screen.findByText('El correo electrónico es requerido')).toBeInTheDocument();
+		expect(await screen.findByText('El correo o usuario es requerido')).toBeInTheDocument();
 		expect(screen.getByText('La contraseña es requerida')).toBeInTheDocument();
 		expect(signIn).not.toHaveBeenCalled();
 	});
@@ -58,14 +58,10 @@ describe('LoginPage', () => {
 
 	it('muestra el mensaje de error del backend cuando las credenciales son inválidas', async () => {
 		// El backend .NET ya devuelve el mensaje en español (ver
-		// CustomerPasswordMatchError) — LoginPage intenta signIn (cliente) y,
-		// si falla, staffSignIn como respaldo (ver "adivinar" login en
-		// LoginPage.tsx); acá ambos fallan para simular credenciales inválidas
-		// en cualquiera de los dos.
+		// CustomerPasswordMatchError) — se muestra tal cual.
 		const signIn = vi.fn().mockRejectedValue(new Error('La contraseña no es correcta'));
-		const staffSignIn = vi.fn().mockRejectedValue(new Error('El usuario no existe'));
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		useAuthMock.mockReturnValue({ signIn, staffSignIn } as any);
+		useAuthMock.mockReturnValue({ signIn } as any);
 		const user = userEvent.setup();
 
 		renderLoginPage();

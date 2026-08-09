@@ -12,7 +12,7 @@ interface LocationState {
 }
 
 export const LoginPage = () => {
-	const { signIn, staffSignIn } = useAuth();
+	const { signIn } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [submitError, setSubmitError] = useState<string | null>(null);
@@ -24,30 +24,16 @@ export const LoginPage = () => {
 	} = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
 	const redirectTo = (location.state as LocationState | null)?.from?.pathname ?? '/';
-	// El backend tiene login de cliente y de staff separados (sin una sola
-	// identidad unificada, a diferencia de Supabase Auth). Esta pantalla es
-	// la misma para ambos: si venías de /admin, se intenta login de staff
-	// primero (y cliente como respaldo); si no, al revés. Evita tener una
-	// pantalla de login aparte para el panel admin.
-	const isStaffDestination = redirectTo.startsWith('/admin');
 
 	const onSubmit = async (values: LoginFormValues) => {
 		setSubmitError(null);
 
-		const [primary, fallback] = isStaffDestination ? [staffSignIn, signIn] : [signIn, staffSignIn];
-
 		try {
-			await primary(values);
-		} catch (primaryError) {
-			try {
-				await fallback(values);
-			} catch {
-				setSubmitError(getAuthErrorMessage(primaryError));
-				return;
-			}
+			await signIn(values);
+			navigate(redirectTo, { replace: true });
+		} catch (error) {
+			setSubmitError(getAuthErrorMessage(error));
 		}
-
-		navigate(redirectTo, { replace: true });
 	};
 
 	return (
@@ -60,8 +46,8 @@ export const LoginPage = () => {
 					{submitError && <Alert variant='danger'>{submitError}</Alert>}
 
 					<Input
-						label={isStaffDestination ? 'Correo o usuario' : 'Correo electrónico'}
-						type='text'
+						label='Correo electrónico'
+						type='email'
 						required
 						autoComplete='username'
 						error={errors.email?.message}

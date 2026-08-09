@@ -2,9 +2,11 @@ import { NavLink } from 'react-router-dom';
 import { dashboardLinks } from '../../constants/links';
 import { Logo } from '../shared/Logo';
 import { IoLogOutOutline } from 'react-icons/io5';
-import { signOut } from '../../actions';
+import { useAuth } from '../../hooks';
 
 export const Sidebar = () => {
+	const { signOut } = useAuth();
+
 	const handleLogout = async () => {
 		await signOut();
 	};

@@ -11,6 +11,11 @@ export interface Profile {
 	status: 'active' | 'suspended' | null;
 	createdAt: string | null;
 	updatedAt: string | null;
+	// Solo para role: 'staff'. El JWT no distingue User de Admin (ambos
+	// emiten tipo="admin"), así que getStaffProfile() lo resuelve probando
+	// GET /user/{id} y, si no existe ahí, GET /api/admin/{id}. Lo usan las
+	// mutaciones de producto para saber si mandar UserId o AdminId.
+	accountType?: 'user' | 'admin';
 }
 
 export interface SignUpInput {

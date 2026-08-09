@@ -27,7 +27,9 @@ export const buildCartItem = (
 	productId: product.id,
 	name: product.name,
 	variantLabel: variant?.label ?? product.weightOrUnitLabel,
-	price: variant?.priceUsd ?? product.priceUsd,
+	// Sin variante, se cobra el precio con descuento si hay uno activo — el
+	// descuento es real, no solo cosmético en el catálogo.
+	price: variant?.priceUsd ?? product.discountPriceUsd ?? product.priceUsd,
 	quantity,
 	image: product.images[0],
 	...(product.isCombo ? { comboId: product.id, comboName: product.name } : {}),

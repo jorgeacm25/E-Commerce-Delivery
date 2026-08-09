@@ -47,7 +47,11 @@ export const ProductListRow = ({ products, className }: Props) => {
 						</div>
 
 						<div className='flex shrink-0 flex-col items-end gap-2'>
-							<CurrencyDisplay usd={product.priceUsd} size='sm' />
+							<CurrencyDisplay
+								usd={product.priceUsd}
+								discountedUsd={product.discountPriceUsd}
+								size='sm'
+							/>
 							<button
 								type='button'
 								disabled={!inStock}

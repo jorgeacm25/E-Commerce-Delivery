@@ -24,6 +24,7 @@ vi.mock('../../api/client', () => ({
 	getToken: vi.fn(() => 'fake-token'),
 	setToken: vi.fn(),
 	clearToken: vi.fn(),
+	setUnauthorizedHandler: vi.fn(),
 }));
 
 const fakeSession: AuthSession = {

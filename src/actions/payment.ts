@@ -4,6 +4,8 @@ import {
 	UploadPaymentProofInput,
 } from '../interfaces';
 import { supabase } from '../supabase/client';
+import { apiFetch, ApiError } from '../api/client';
+import { ExchangeRateResultDto } from '../api/types';
 
 const PAYMENT_PROOFS_BUCKET = 'payment-proofs';
 // El bucket es privado: se guarda el PATH interno en `imagen_url` y se
@@ -65,46 +67,49 @@ export const setPaymentAccountActiva = async (
 /*           TASA DE CAMBIO           */
 /* ********************************** */
 
-export const getActiveExchangeRate = async () => {
-	const { data, error } = await supabase
-		.from('exchange_rates')
-		.select('*')
-		.order('vigente_desde', { ascending: false })
-		.limit(1)
-		.maybeSingle();
+// Migrado al backend .NET real (api/exchangeRate) — antes vivía en
+// Supabase y dependía de `supabase.auth.getUser()`, que dejó de funcionar
+// cuando la autenticación se movió por completo a .NET (no queda sesión de
+// Supabase activa). Se mantiene la misma forma de retorno (snake_case) para
+// no tocar los consumidores existentes (PricingModeFields, ExchangeRateWidget,
+// AdminSettingsPage, useAdminDashboardStats).
+interface ExchangeRateLegacyShape {
+	id: string;
+	valor_cup_por_usd: number;
+	vigente_desde: string;
+	creado_por: string | null;
+}
 
-	if (error) {
-		console.log(error);
-		throw new Error(error.message);
+const mapExchangeRate = (dto: ExchangeRateResultDto): ExchangeRateLegacyShape => ({
+	id: dto.id ?? '',
+	valor_cup_por_usd: dto.valorCupPorUsd ?? 0,
+	vigente_desde: dto.vigenteDesde ?? '',
+	creado_por: dto.creadoPorAdminId,
+});
+
+export const getActiveExchangeRate = async (): Promise<ExchangeRateLegacyShape | null> => {
+	try {
+		const dto = await apiFetch<ExchangeRateResultDto>('/api/exchangeRate/active', { auth: false });
+		return mapExchangeRate(dto);
+	} catch (error) {
+		// El backend responde 404 cuando todavía no hay ninguna tasa
+		// registrada (no un array/objeto vacío) — se traduce a null, mismo
+		// contrato que el `.maybeSingle()` de Supabase que reemplaza.
+		if (error instanceof ApiError && error.status === 404) return null;
+		throw error;
 	}
-
-	return data;
 };
 
-export const createExchangeRate = async (valorCupPorUsd: number) => {
-	const { data: userData, error: userError } =
-		await supabase.auth.getUser();
+export const createExchangeRate = async (
+	valorCupPorUsd: number,
+	adminId?: string | null
+): Promise<ExchangeRateLegacyShape> => {
+	const dto = await apiFetch<ExchangeRateResultDto>('/api/exchangeRate', {
+		method: 'POST',
+		body: { valorCupPorUsd, creadoPorAdminId: adminId ?? null },
+	});
 
-	if (userError) {
-		console.log(userError);
-		throw new Error(userError.message);
-	}
-
-	const { data, error } = await supabase
-		.from('exchange_rates')
-		.insert({
-			valor_cup_por_usd: valorCupPorUsd,
-			creado_por: userData.user.id,
-		})
-		.select()
-		.single();
-
-	if (error) {
-		console.log(error);
-		throw new Error(error.message);
-	}
-
-	return data;
+	return mapExchangeRate(dto);
 };
 
 /* ********************************** */

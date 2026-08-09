@@ -1,4 +1,5 @@
-import { OrderInput } from '../interfaces';
+import Decimal from 'decimal.js';
+import { AdminOrdersSearchParams, AdminOrdersSummary, OrderInput } from '../interfaces';
 import { supabase } from '../supabase/client';
 
 export const createOrder = async (order: OrderInput) => {
@@ -234,20 +235,83 @@ export const getOrderById = async (orderId: number) => {
 /* ********************************** */
 /*            ADMINISTRADOR           */
 /* ********************************** */
-export const getAllOrders = async () => {
-	const { data, error } = await supabase
+export const getAllOrders = async (params: AdminOrdersSearchParams = {}) => {
+	const page = params.page ?? 1;
+	const pageSize = params.pageSize ?? 10;
+	const from = (page - 1) * pageSize;
+	const to = from + pageSize - 1;
+
+	let query = supabase
 		.from('orders')
-		.select(
-			'id, total_amount, status, created_at, customers(full_name, email)'
-		)
-		.order('created_at', { ascending: false });
+		.select('id, total_amount, status, created_at, customers(full_name, email)', {
+			count: 'exact',
+		})
+		.order('created_at', { ascending: false })
+		.range(from, to);
+
+	if (params.status) query = query.eq('status', params.status);
+	// orders.id es bigint: solo se filtra si la búsqueda es numérica (número
+	// de pedido). Buscar por nombre de cliente requeriría un filtro sobre la
+	// relación embebida `customers`, que PostgREST no soporta con `.ilike`
+	// directo — fuera de alcance de esta fase.
+	if (params.search && /^\d+$/.test(params.search.trim())) {
+		query = query.eq('id', params.search.trim());
+	}
+
+	const { data, error, count } = await query;
 
 	if (error) {
 		console.log(error);
 		throw new Error(error.message);
 	}
 
-	return data;
+	return { orders: data, count: count ?? 0 };
+};
+
+// Resumen para el Dashboard admin (stats reales, no simuladas): pedidos de
+// hoy, ventas del mes y ticket promedio. Suma con decimal.js (no `number`
+// encadenado) — regla de dinero del proyecto, ver CLAUDE.md.
+export const getOrdersSummary = async (): Promise<AdminOrdersSummary> => {
+	const startOfToday = new Date();
+	startOfToday.setHours(0, 0, 0, 0);
+
+	const startOfMonth = new Date(startOfToday.getFullYear(), startOfToday.getMonth(), 1);
+
+	const { data: todayOrders, error: todayError } = await supabase
+		.from('orders')
+		.select('id')
+		.gte('created_at', startOfToday.toISOString());
+
+	if (todayError) {
+		console.log(todayError);
+		throw new Error(todayError.message);
+	}
+
+	const { data: monthOrders, error: monthError } = await supabase
+		.from('orders')
+		.select('total_amount')
+		.gte('created_at', startOfMonth.toISOString());
+
+	if (monthError) {
+		console.log(monthError);
+		throw new Error(monthError.message);
+	}
+
+	const salesUsdThisMonth = monthOrders
+		.reduce((acc, order) => acc.plus(new Decimal(order.total_amount)), new Decimal(0))
+		.toDecimalPlaces(2)
+		.toNumber();
+
+	const avgTicketUsd =
+		monthOrders.length > 0
+			? new Decimal(salesUsdThisMonth).dividedBy(monthOrders.length).toDecimalPlaces(2).toNumber()
+			: 0;
+
+	return {
+		ordersToday: todayOrders.length,
+		salesUsdThisMonth,
+		avgTicketUsd,
+	};
 };
 
 export const updateOrderStatus = async ({

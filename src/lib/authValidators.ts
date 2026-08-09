@@ -1,9 +1,8 @@
 import { z } from 'zod';
 
-// El mismo campo sirve para el correo del cliente y el nombre de usuario
-// del staff (ver LoginPage.tsx, que intenta ambos logins) — el backend
-// staff no usa formato de correo (ej. "staff"), así que no se valida como
-// email acá, solo que no esté vacío.
+// Se comparte entre el login de clientes (LoginPage.tsx) y el de staff/admin
+// (AdminLoginPage.tsx). El backend staff no usa formato de correo (ej.
+// "staff"), así que acá no se valida como email, solo que no esté vacío.
 export const loginSchema = z.object({
 	email: z.string().min(1, 'El correo o usuario es requerido'),
 	password: z.string().min(1, 'La contraseña es requerida'),

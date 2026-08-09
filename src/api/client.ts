@@ -1,8 +1,8 @@
-// Cliente HTTP para el backend .NET (Almacen-Delivery-Home_Api_new), en
-// reemplazo de src/supabase/client.ts. Todavía no está conectado a
-// AuthContext ni a los actions/services existentes (eso es trabajo
-// aparte, más grande) — por ahora expone lo mínimo para hacer requests
-// autenticados contra la API una vez esté corriendo localmente.
+// Cliente HTTP para el backend .NET (Almacen-Delivery-Home_Api_new), usado
+// por src/api/auth.ts y src/context/AuthContext.tsx. Los actions/services
+// del resto del dominio (productos, pedidos, direcciones, etc.) todavía
+// hablan con Supabase directamente — migrarlos es trabajo aparte, más
+// grande, fuera del alcance de la autenticación.
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
@@ -31,6 +31,15 @@ export const setToken = (token: string): void => {
 export const clearToken = (): void => {
 	currentToken = null;
 	localStorage.removeItem(TOKEN_STORAGE_KEY);
+};
+
+let unauthorizedHandler: (() => void) | null = null;
+
+// Registrado por AuthContext. Se dispara en cada 401 de una request
+// autenticada (token vencido o inválido) — no en logins fallidos (ver el
+// guard `auth` en apiFetch), porque ahí no hay sesión que haya expirado.
+export const setUnauthorizedHandler = (handler: (() => void) | null): void => {
+	unauthorizedHandler = handler;
 };
 
 export class ApiError extends Error {
@@ -98,6 +107,10 @@ export const apiFetch = async <T>(path: string, options: ApiFetchOptions = {}): 
 	const parsed: unknown = rawText ? JSON.parse(rawText) : null;
 
 	if (!response.ok) {
+		if (response.status === 401 && auth) {
+			unauthorizedHandler?.();
+		}
+
 		throw new ApiError(
 			response.status,
 			extractErrorMessage(parsed, `Error ${response.status} al llamar a ${path}`),

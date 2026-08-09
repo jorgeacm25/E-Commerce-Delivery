@@ -1,5 +1,63 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { getCatalogProducts } from '../catalog.service';
+import type { AdminCategory } from '../../interfaces';
+import type { ProductResultDto } from '../../api/types';
+
+const categoriesFixture: AdminCategory[] = [
+	{ id: 'cat-despensa', slug: 'despensa', name: 'Despensa' },
+	{ id: 'cat-bebidas', slug: 'bebidas', name: 'Bebidas' },
+];
+
+const product = (overrides: Partial<ProductResultDto>): ProductResultDto => ({
+	id: 'p-generic',
+	name: 'Producto genérico',
+	quantity: 10,
+	unity: 'unidad',
+	salePriceUsd: 5,
+	discountPriceUsd: null,
+	endDate: '2027-01-01T00:00:00Z',
+	nameUserorAdmin: 'Staff Demo',
+	categoryId: 'cat-despensa',
+	categoryName: 'Despensa',
+	provider: 'Proveedor Demo',
+	updateAt: '2026-08-01T00:00:00Z',
+	images: ['https://img/generic.jpg'],
+	...overrides,
+});
+
+const productsFixture: ProductResultDto[] = [
+	product({ id: 'p-arroz', name: 'Arroz 5 lb', salePriceUsd: 6.5 }),
+	product({ id: 'p-frijoles', name: 'Frijoles negros 2 lb', salePriceUsd: 3.25 }),
+	product({ id: 'p-aceite', name: 'Aceite de cocina 1 L', salePriceUsd: 4.8, images: [] }),
+	product({
+		id: 'p-jugo',
+		name: 'Jugo natural 1 L',
+		salePriceUsd: 2.9,
+		categoryId: 'cat-bebidas',
+		categoryName: 'Bebidas',
+	}),
+	product({
+		id: 'p-refresco',
+		name: 'Refresco 2 L',
+		salePriceUsd: 3.5,
+		quantity: 0,
+		categoryId: 'cat-bebidas',
+		categoryName: 'Bebidas',
+	}),
+	product({ id: 'p-cafe', name: 'Café molido 500 g', salePriceUsd: 5.75 }),
+	product({ id: 'p-galletas', name: 'Galletas surtidas 500 g', salePriceUsd: 3.9 }),
+	product({ id: 'p-leche', name: 'Leche en polvo 400 g', salePriceUsd: 6.9 }),
+	product({ id: 'p-detergente', name: 'Detergente en polvo 1 kg', salePriceUsd: 4.2 }),
+	product({ id: 'p-jabon', name: 'Jabón de baño pack x3', salePriceUsd: 3.1 }),
+];
+
+vi.mock('../../api/client', () => ({
+	apiFetch: vi.fn((path: string) => {
+		if (path === '/api/category') return Promise.resolve(categoriesFixture);
+		if (path === '/api/product') return Promise.resolve(productsFixture);
+		return Promise.reject(new Error(`ruta inesperada en el test: ${path}`));
+	}),
+}));
 
 describe('catalog.service getCatalogProducts', () => {
 	it('filtra por texto de búsqueda en nombre y descripción', async () => {
@@ -13,7 +71,7 @@ describe('catalog.service getCatalogProducts', () => {
 					item.description.toLowerCase().includes('arroz')
 			)
 		).toBe(true);
-		expect(result.items.some(item => item.slug === 'arroz-5lb')).toBe(true);
+		expect(result.items.some(item => item.slug === 'p-arroz')).toBe(true);
 	});
 
 	it('filtra por categoría', async () => {

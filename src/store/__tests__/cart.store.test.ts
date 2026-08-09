@@ -101,6 +101,8 @@ describe('useCartStore', () => {
 						price: 5.9,
 						products: { name: 'Arroz', images: ['/arroz.jpg'] },
 					},
+					catalog_variant_id: null,
+					catalog_product_variants: null,
 				},
 				{
 					id: 'ci-2',
@@ -113,6 +115,8 @@ describe('useCartStore', () => {
 						price: 6.5,
 						products: { name: 'Aceite', images: ['/aceite.jpg'] },
 					},
+					catalog_variant_id: null,
+					catalog_product_variants: null,
 				},
 			],
 		};

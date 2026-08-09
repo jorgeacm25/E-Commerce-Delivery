@@ -1,8 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { HomePage } from '../HomePage';
+
+// Los "productos populares" del home salen del backend real (ver
+// src/services/home.service.ts) — se mockea acá solo para que este test no
+// intente red real; no hay ninguna aserción sobre esa sección.
+vi.mock('../../../api/client', () => ({
+	apiFetch: vi.fn(() => Promise.resolve([])),
+}));
 
 const renderHomePage = () => {
 	const queryClient = new QueryClient({

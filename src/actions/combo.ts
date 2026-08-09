@@ -1,34 +1,23 @@
-import { ComboInput, ComboWithItems } from '../interfaces';
+import { ComboWithItems } from '../interfaces';
 import { supabase } from '../supabase/client';
 
+// combo_items.catalog_variant_id referencia catalog_product_variants
+// (dominio comida, ver supabase/migrations/007_catalog_admin.sql y
+// 008_combo_items_catalog_variants.sql). El campo legacy `variant_id`
+// (celulares) se conserva en el select para no romper filas viejas.
+//
+// El panel admin de combos ya no usa este archivo (ver
+// src/services/adminCombos.service.ts, contra el backend .NET real,
+// api/combo) — queda solo getActiveCombos, todavía referenciada por el
+// hook useActiveCombos, que a su vez solo usa la página pública legacy
+// src/pages/CombosPage.tsx (no la que está enrutada hoy en
+// src/pages/public/CombosPage.tsx).
 const COMBO_SELECT = `*,
 	combo_items(
-		id, cantidad, variant_id,
-		variants(id, color_name, storage, price, products(name, images))
+		id, cantidad, variant_id, catalog_variant_id,
+		variants(id, color_name, storage, price, products(name, images)),
+		catalog_product_variants(id, label, price_usd, catalog_products(name, images))
 	)`;
-
-/* ********************************** */
-/*      SELECTOR DE VARIANTES         */
-/* ********************************** */
-
-// Todas las variantes de todos los productos, para elegir qué incluir en un combo
-export const getVariantsForComboSelector = async () => {
-	const { data, error } = await supabase
-		.from('products')
-		.select('name, variants(id, color_name, storage, price)')
-		.order('name', { ascending: true });
-
-	if (error) {
-		console.log(error);
-		throw new Error(error.message);
-	}
-
-	return data;
-};
-
-/* ********************************** */
-/*              PÚBLICO                */
-/* ********************************** */
 
 export const getActiveCombos = async () => {
 	const { data, error } = await supabase
@@ -43,82 +32,4 @@ export const getActiveCombos = async () => {
 	}
 
 	return data as unknown as ComboWithItems[];
-};
-
-/* ********************************** */
-/*           ADMINISTRADOR            */
-/* ********************************** */
-
-export const getAllCombosAdmin = async () => {
-	const { data, error } = await supabase
-		.from('combos')
-		.select(COMBO_SELECT)
-		.order('created_at', { ascending: false });
-
-	if (error) {
-		console.log(error);
-		throw new Error(error.message);
-	}
-
-	return data as unknown as ComboWithItems[];
-};
-
-export const createCombo = async ({
-	nombre,
-	slug,
-	descripcion,
-	precioComboUsd,
-	items,
-}: ComboInput) => {
-	const { data: combo, error: comboError } = await supabase
-		.from('combos')
-		.insert({
-			nombre,
-			slug,
-			descripcion: descripcion ?? null,
-			precio_combo_usd: precioComboUsd,
-		})
-		.select()
-		.single();
-
-	if (comboError) {
-		console.log(comboError);
-		throw new Error(comboError.message);
-	}
-
-	const { error: itemsError } = await supabase.from('combo_items').insert(
-		items.map(item => ({
-			combo_id: combo.id,
-			variant_id: item.variantId,
-			cantidad: item.cantidad,
-		}))
-	);
-
-	if (itemsError) {
-		console.log(itemsError);
-		throw new Error(itemsError.message);
-	}
-
-	return combo;
-};
-
-export const setComboActivo = async (id: string, activo: boolean) => {
-	const { error } = await supabase
-		.from('combos')
-		.update({ activo })
-		.eq('id', id);
-
-	if (error) {
-		console.log(error);
-		throw new Error(error.message);
-	}
-};
-
-export const deleteCombo = async (id: string) => {
-	const { error } = await supabase.from('combos').delete().eq('id', id);
-
-	if (error) {
-		console.log(error);
-		throw new Error(error.message);
-	}
 };

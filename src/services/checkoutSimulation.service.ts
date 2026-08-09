@@ -71,6 +71,7 @@ export interface SubmitSimulatedOrderInput {
 	form: CheckoutFormValues;
 	items: SimulatedOrderItem[];
 	totals: SimulatedOrderTotals;
+	userId?: string;
 }
 
 // Simula el envío del pedido + "pago" (nunca captura datos de tarjeta real,
@@ -80,6 +81,7 @@ export const submitSimulatedOrder = async ({
 	form,
 	items,
 	totals,
+	userId,
 }: SubmitSimulatedOrderInput): Promise<SimulatedOrder> => {
 	await simulateNetworkDelay();
 
@@ -93,6 +95,7 @@ export const submitSimulatedOrder = async ({
 	const order: SimulatedOrder = {
 		orderNumber,
 		createdAt: new Date().toISOString(),
+		userId,
 		buyer: form.buyer,
 		recipient: form.recipient,
 		address: form.address,
@@ -114,6 +117,18 @@ export const submitSimulatedOrder = async ({
 export const getSimulatedOrder = (orderNumber: string): SimulatedOrder | null => {
 	const orders = readAllOrders();
 	return orders[orderNumber.trim().toUpperCase()] ?? null;
+};
+
+// Pedidos del cliente autenticado para /mi-cuenta/pedidos, ordenados del
+// más reciente al más antiguo. Los pedidos hechos como invitado (sin
+// sesión al momento del checkout, userId undefined) no pertenecen a nadie
+// y por lo tanto nunca aparecen aquí.
+export const getSimulatedOrdersByUserId = (userId: string): SimulatedOrder[] => {
+	const orders = readAllOrders();
+
+	return Object.values(orders)
+		.filter(order => order.userId === userId)
+		.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
 export const computeTrackingStage = (order: SimulatedOrder): OrderTrackingStage => {

@@ -18,12 +18,28 @@ export interface CategoryResultDto {
 	slug: string | null;
 }
 
+export interface ProvinceResultDto {
+	id: string | null;
+	name: string | null;
+}
+
+// Sin provinceName: el backend no incluye el nombre de la provincia en la
+// respuesta (no hace Include() de la navegación) — se resuelve cruzando con
+// GET /api/province por provinceId, igual que categoryId en productos.
+export interface MunicipalityResultDto {
+	id: string | null;
+	name: string | null;
+	provinceId: string | null;
+	deliveryFeeUsd: number;
+}
+
 export interface ProductResultDto {
 	id: string;
 	name: string;
 	quantity: number;
 	unity: string;
 	salePriceUsd: number;
+	discountPriceUsd: number | null;
 	endDate: string; // ISO date
 	nameUserorAdmin: string | null;
 	categoryId: string;
@@ -44,6 +60,7 @@ export interface ComboResultDto {
 	id: string;
 	name: string;
 	salePriceUsd: number;
+	discountPriceUsd: number | null;
 	products: ProductComboResultDto[];
 	nameUserOrAdmin: string | null;
 }
@@ -114,6 +131,7 @@ export type OrderStatus = 'Pending' | 'Paid' | 'Shipped' | 'Delivered' | 'Cancel
 export interface OrderResultDto {
 	id: string | null;
 	customerId: string | null;
+	sellerId: string | null;
 	status: OrderStatus | string | null;
 	totalAmount: number | null;
 	addressLine1: string | null;
@@ -135,6 +153,7 @@ export interface OrderItemInput {
 
 export interface CreateOrderInput {
 	customerId: string;
+	sellerId?: string | null;
 	addressLine1: string;
 	addressLine2?: string | null;
 	city: string;
@@ -195,12 +214,65 @@ export interface AdminResultDto {
 }
 
 // Movimiento del histórico de almacén (api/history). El backend no expone
-// un DTO propio para esto — devuelve la entidad directamente.
+// un DTO propio para esto — devuelve la entidad directamente. Nombres de
+// campo confirmados contra la respuesta real (no coinciden con
+// HistoryEntity.Type en C#, que se serializa como `actionType`).
 export interface HistoryEntry {
 	id: string;
-	type: 'Creaciones' | 'Modificaciones' | 'Entrada' | 'Salida' | string;
-	responsable: string;
-	mensaje: string;
-	fecha: string | null;
+	actionType: 'Creaciones' | 'Modificaciones' | 'Eliminaciones' | 'Entrada' | 'Salida' | string;
+	userOrAdminUserName: string;
+	description: string;
 	createdAt: string;
+}
+
+// Fases E-H (Vendedores/Comisiones, Trabajadores, Remesas, Contabilidad),
+// módulos nuevos construidos en el backend .NET real
+// (Almacen-Delivery-Home_Api_new) para esta fase del panel admin.
+export interface SellerResultDto {
+	id: string | null;
+	fullName: string | null;
+	phone: string | null;
+	commissionPercentage: number | null;
+	active: boolean | null;
+	createdAt: string | null;
+}
+
+export interface CommissionResultDto {
+	id: string | null;
+	sellerId: string | null;
+	orderId: string | null;
+	amountUsd: number | null;
+	status: 'Pending' | 'Settled' | string | null;
+	settledAt: string | null;
+	createdAt: string | null;
+}
+
+export interface WorkerResultDto {
+	id: string | null;
+	fullName: string | null;
+	role: string | null;
+	pendingAmountUsd: number | null;
+	active: boolean | null;
+	createdAt: string | null;
+}
+
+export interface RemittanceResultDto {
+	id: string | null;
+	customerId: string | null;
+	recipientName: string | null;
+	amountUsd: number | null;
+	amountCup: number | null;
+	status: 'Pending' | 'Sent' | 'Delivered' | string | null;
+	notes: string | null;
+	createdAt: string | null;
+}
+
+export interface ExpenseResultDto {
+	id: string | null;
+	description: string | null;
+	amountUsd: number | null;
+	amountCup: number | null;
+	category: string | null;
+	date: string | null;
+	createdAt: string | null;
 }

@@ -71,7 +71,31 @@ export const CustomerSectionPlaceholderPage = lazyNamed(
 	() => import('../pages/customer/CustomerSectionPlaceholderPage'),
 	'CustomerSectionPlaceholderPage'
 );
+export const CustomerRecipientsPage = lazyNamed(
+	() => import('../pages/customer/CustomerRecipientsPage'),
+	'CustomerRecipientsPage'
+);
+export const CustomerAddressesPage = lazyNamed(
+	() => import('../pages/customer/CustomerAddressesPage'),
+	'CustomerAddressesPage'
+);
+export const CustomerFavoritesPage = lazyNamed(
+	() => import('../pages/customer/CustomerFavoritesPage'),
+	'CustomerFavoritesPage'
+);
+export const CustomerSecurityPage = lazyNamed(
+	() => import('../pages/customer/CustomerSecurityPage'),
+	'CustomerSecurityPage'
+);
+export const CustomerSupportPage = lazyNamed(
+	() => import('../pages/customer/CustomerSupportPage'),
+	'CustomerSupportPage'
+);
 
+export const AdminLoginPage = lazyNamed(
+	() => import('../pages/admin/AdminLoginPage'),
+	'AdminLoginPage'
+);
 export const AdminOverviewPage = lazyNamed(
 	() => import('../pages/admin/AdminOverviewPage'),
 	'AdminOverviewPage'
@@ -79,4 +103,72 @@ export const AdminOverviewPage = lazyNamed(
 export const AdminSectionPlaceholderPage = lazyNamed(
 	() => import('../pages/admin/AdminSectionPlaceholderPage'),
 	'AdminSectionPlaceholderPage'
+);
+export const AdminOrdersPage = lazyNamed(
+	() => import('../pages/admin/orders/AdminOrdersPage'),
+	'AdminOrdersPage'
+);
+export const AdminOrderDetailPage = lazyNamed(
+	() => import('../pages/admin/orders/AdminOrderDetailPage'),
+	'AdminOrderDetailPage'
+);
+export const AdminPaymentVerificationPage = lazyNamed(
+	() => import('../pages/admin/orders/AdminPaymentVerificationPage'),
+	'AdminPaymentVerificationPage'
+);
+export const AdminProductsPage = lazyNamed(
+	() => import('../pages/admin/products/AdminProductsPage'),
+	'AdminProductsPage'
+);
+export const AdminProductFormPage = lazyNamed(
+	() => import('../pages/admin/products/AdminProductFormPage'),
+	'AdminProductFormPage'
+);
+export const AdminCategoriesPage = lazyNamed(
+	() => import('../pages/admin/categories/AdminCategoriesPage'),
+	'AdminCategoriesPage'
+);
+export const AdminCombosPage = lazyNamed(
+	() => import('../pages/admin/combos/AdminCombosPage'),
+	'AdminCombosPage'
+);
+export const AdminWarehousePage = lazyNamed(
+	() => import('../pages/admin/almacen/AdminWarehousePage'),
+	'AdminWarehousePage'
+);
+export const AdminPaymentAccountsPage = lazyNamed(
+	() => import('../pages/admin/payments/AdminPaymentAccountsPage'),
+	'AdminPaymentAccountsPage'
+);
+export const AdminCustomersPage = lazyNamed(
+	() => import('../pages/admin/customers/AdminCustomersPage'),
+	'AdminCustomersPage'
+);
+export const AdminSellersPage = lazyNamed(
+	() => import('../pages/admin/sellers/AdminSellersPage'),
+	'AdminSellersPage'
+);
+export const AdminWorkersPage = lazyNamed(
+	() => import('../pages/admin/workers/AdminWorkersPage'),
+	'AdminWorkersPage'
+);
+export const AdminRemittancesPage = lazyNamed(
+	() => import('../pages/admin/remittances/AdminRemittancesPage'),
+	'AdminRemittancesPage'
+);
+export const AdminAccountingPage = lazyNamed(
+	() => import('../pages/admin/accounting/AdminAccountingPage'),
+	'AdminAccountingPage'
+);
+export const AdminSettingsPage = lazyNamed(
+	() => import('../pages/admin/settings/AdminSettingsPage'),
+	'AdminSettingsPage'
+);
+export const AdminPerformancePage = lazyNamed(
+	() => import('../pages/admin/performance/AdminPerformancePage'),
+	'AdminPerformancePage'
+);
+export const AdminDeliveryZonesPage = lazyNamed(
+	() => import('../pages/admin/deliveryZones/AdminDeliveryZonesPage'),
+	'AdminDeliveryZonesPage'
 );

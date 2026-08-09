@@ -6,6 +6,7 @@ const statusVariant: Record<string, BadgeVariant> = {
 	Paid: 'primary',
 	Shipped: 'secondary',
 	Delivered: 'success',
+	Cancelled: 'danger',
 };
 
 interface Props {

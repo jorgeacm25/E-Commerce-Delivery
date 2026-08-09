@@ -49,6 +49,10 @@ export const catalogProductSchema = z.object({
 	categorySlug: z.string(),
 	categoryName: z.string(),
 	priceUsd: z.number(),
+	// Precio rebajado (menor que priceUsd) — undefined/ausente = sin
+	// descuento. Ver src/components/ui/CurrencyDisplay.tsx para cómo se
+	// muestra (precio original tachado + este al lado).
+	discountPriceUsd: z.number().optional(),
 	unit: z.string(),
 	weightOrUnitLabel: z.string(),
 	stock: z.number(),

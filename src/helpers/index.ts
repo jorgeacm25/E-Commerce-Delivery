@@ -1,6 +1,25 @@
-import { Color, Product, VariantProduct } from '../interfaces';
+import { Color, Product, Profile, VariantProduct } from '../interfaces';
 
 export * from './cn';
+
+// Toda mutación contra el backend .NET real que registra "quién lo hizo"
+// (productos, salidas de almacén, gastos...) necesita saber si el staff
+// logueado es Admin o User — el backend rechaza mandar ambos a la vez. Ver
+// Profile.accountType en auth.interface.ts.
+export const actorIdsFromProfile = (
+	profile: Profile | null
+): { adminId: string | null; userId: string | null } => ({
+	adminId: profile?.accountType === 'admin' ? profile.id : null,
+	userId: profile?.accountType === 'user' ? profile.id : null,
+});
+
+// Cualquier campo `DateTime` del backend .NET real exige UTC (Npgsql
+// rechaza `Kind=Unspecified` contra `timestamp with time zone` y esto
+// tumba el proceso, no solo la request). Un input HTML `type="date"` da
+// "yyyy-MM-dd" sin zona horaria — hay que convertirlo antes de mandarlo.
+// `new Date("yyyy-MM-dd")` ya se interpreta como medianoche UTC (spec de
+// Date de JS), así que `.toISOString()` alcanza.
+export const toUtcDateTime = (dateOnly: string): string => new Date(dateOnly).toISOString();
 
 // Función para formatear el precio a dólares
 export const formatPrice = (price: number) => {
@@ -103,6 +122,8 @@ export const getStatus = (status: string): string => {
 			return 'Enviado';
 		case 'Delivered':
 			return 'Entregado';
+		case 'Cancelled':
+			return 'Cancelado';
 		default:
 			return status;
 	}

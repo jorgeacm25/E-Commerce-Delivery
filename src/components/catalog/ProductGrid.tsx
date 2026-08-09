@@ -21,6 +21,7 @@ export const ProductGrid = ({ products, className }: Props) => {
 						image={product.images[0]}
 						name={product.name}
 						price={product.priceUsd}
+						discountPriceUsd={product.discountPriceUsd}
 						inStock={product.availability !== 'out_of_stock'}
 						onAdd={() => addItem(buildCartItem(product))}
 					/>

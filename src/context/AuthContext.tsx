@@ -1,9 +1,10 @@
-import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getToken, clearToken } from '../api/client';
+import { getToken, clearToken, setUnauthorizedHandler } from '../api/client';
 import * as authApi from '../api/auth';
 import type { AuthSession, AuthUser } from '../api/auth';
 import { Profile, SignInInput, SignUpInput, SignUpResult } from '../interfaces';
+import { showErrorToast } from '../components/ui';
 
 export interface AuthContextValue {
 	session: AuthSession | null;
@@ -57,6 +58,31 @@ export const AuthProvider = ({ children }: Props) => {
 		}
 	}, []);
 
+	// Se usa dentro del handler de 401 de más abajo para saber si hay sesión
+	// sin recrear el efecto en cada cambio de `session`.
+	const sessionRef = useRef(session);
+	useEffect(() => {
+		sessionRef.current = session;
+	}, [session]);
+
+	// El JWT no tiene refresh token: si expira a mitad de sesión, la próxima
+	// request autenticada devuelve 401 (ver apiFetch en src/api/client.ts).
+	// Antes eso fallaba en silencio en el hook/mutación que lo disparó; acá
+	// se cierra la sesión centralizadamente para que RequireAuth redirija al
+	// login correspondiente (cliente o admin, según el loginPath del layout).
+	useEffect(() => {
+		setUnauthorizedHandler(() => {
+			if (!sessionRef.current) return;
+
+			authApi.signOut();
+			setSession(null);
+			queryClient.removeQueries({ queryKey: ['profile'] });
+			showErrorToast('Tu sesión expiró. Vuelve a iniciar sesión.');
+		});
+
+		return () => setUnauthorizedHandler(null);
+	}, [queryClient]);
+
 	const userId = session?.user.id;
 	const role = session?.role;
 
@@ -98,12 +124,34 @@ export const AuthProvider = ({ children }: Props) => {
 		queryClient.removeQueries({ queryKey: ['profile'] });
 	}, [queryClient]);
 
-	const requestPasswordReset = useCallback((email: string) => authApi.requestPasswordReset(email), []);
+	// El backend no distingue "no existe esta cuenta" de "existe pero es de
+	// staff" (por diseño, para no filtrar qué cuentas existen) — así que ni
+	// esta función ni las páginas que la usan saben si el email/username es
+	// de cliente o de staff. Se disparan ambos endpoints; el que corresponda
+	// devuelve el devResetToken (en Development), el otro responde vacío.
+	const requestPasswordReset = useCallback(async (email: string) => {
+		const [customerResult, staffResult] = await Promise.allSettled([
+			authApi.requestPasswordReset(email),
+			authApi.staffRequestPasswordReset(email),
+		]);
 
-	const resetPassword = useCallback(
-		(token: string, newPassword: string) => authApi.resetPassword(token, newPassword),
-		[]
-	);
+		const devResetToken =
+			(customerResult.status === 'fulfilled' && customerResult.value.devResetToken) ||
+			(staffResult.status === 'fulfilled' && staffResult.value.devResetToken) ||
+			undefined;
+
+		return { devResetToken };
+	}, []);
+
+	// Mismo patrón primario/fallback que staffSignIn/signIn en LoginPage: se
+	// prueba primero como cliente y, si el token no es válido ahí, como staff.
+	const resetPassword = useCallback(async (token: string, newPassword: string) => {
+		try {
+			await authApi.resetPassword(token, newPassword);
+		} catch {
+			await authApi.staffResetPassword(token, newPassword);
+		}
+	}, []);
 
 	const updatePassword = useCallback(
 		async (password: string) => {

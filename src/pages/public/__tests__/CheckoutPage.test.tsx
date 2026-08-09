@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ICartItem } from '../../../components/shared/CartItem';
 import { SimulatedOrder } from '../../../interfaces';
 import { useCartStore } from '../../../store/cart.store';
+import { useAuth } from '../../../hooks';
 import { CheckoutPage } from '../CheckoutPage';
 import * as checkoutSimulationService from '../../../services/checkoutSimulation.service';
 
@@ -13,7 +14,13 @@ vi.mock('../../../services/checkoutSimulation.service', () => ({
 	submitSimulatedOrder: vi.fn(),
 }));
 
+vi.mock('../../../hooks', async () => {
+	const actual = await vi.importActual<typeof import('../../../hooks')>('../../../hooks');
+	return { ...actual, useAuth: vi.fn() };
+});
+
 const submitSimulatedOrderMock = vi.mocked(checkoutSimulationService.submitSimulatedOrder);
+const useAuthMock = vi.mocked(useAuth);
 
 const arroz: ICartItem = {
 	variantId: 'arroz-5lb',
@@ -98,6 +105,8 @@ describe('CheckoutPage', () => {
 		localStorage.clear();
 		sessionStorage.clear();
 		submitSimulatedOrderMock.mockReset();
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		useAuthMock.mockReturnValue({ user: { id: 'user-1' } } as any);
 		useCartStore.setState({
 			items: [],
 			coupon: null,

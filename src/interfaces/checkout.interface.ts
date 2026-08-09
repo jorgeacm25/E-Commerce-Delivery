@@ -29,12 +29,18 @@ export type OrderTrackingStage =
 
 // Pedido "creado" por el checkout simulado. No se envía a Supabase: se
 // guarda en localStorage (ver src/services/checkoutSimulation.service.ts)
-// únicamente para que la página de confirmación y el rastreo simulado
-// puedan leerlo después de navegar. Sustituir por `createOrder` real
-// (src/actions/order.ts) cuando este checkout se conecte al backend.
+// únicamente para que la página de confirmación, el rastreo simulado y
+// /mi-cuenta/pedidos puedan leerlo después de navegar. Sustituir por
+// `createOrder` real (src/actions/order.ts) cuando este checkout se
+// conecte al backend.
 export interface SimulatedOrder {
 	orderNumber: string;
 	createdAt: string;
+	// Id del usuario autenticado que confirmó el pedido (session.user.id de
+	// Supabase Auth), si había sesión activa al momento del checkout. El
+	// checkout sigue funcionando sin sesión (invitado); en ese caso queda
+	// undefined y el pedido no aparece en /mi-cuenta/pedidos de nadie.
+	userId?: string;
 	buyer: CheckoutFormValues['buyer'];
 	recipient: CheckoutFormValues['recipient'];
 	address: CheckoutFormValues['address'];
