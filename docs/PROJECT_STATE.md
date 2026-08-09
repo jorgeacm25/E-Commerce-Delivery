@@ -1,8 +1,29 @@
 # Estado del proyecto
 
-> Última actualización: 2026-08-09 (más reciente, misma sesión que la
-> entrada de abajo — continuación tras "avanza hacia el siguiente módulo
-> incompleto y termínalo"). Cerró el último gap documentado de Fase I
+> Última actualización: 2026-08-09 (más reciente, misma sesión que las
+> entradas de abajo). A pedido explícito del usuario ("arregla la 5"), se
+> corrigió el bug de foco reportado en la entrada anterior:
+> `Modal.tsx` (`src/components/ui/Modal.tsx`) reenfocaba el panel del
+> diálogo en su `useEffect` cada vez que `onClose` cambiaba de referencia
+> (estaba en el array de dependencias) — en modales con estado controlado
+> por `useState` (re-renderizan en cada tecla, como
+> `RegisterProductOutModal.tsx`), eso recreaba `onClose` en cada tecla y
+> le robaba el foco al input a mitad de escritura. Arreglo: `onClose` se
+> guarda en un `ref` que se actualiza en un efecto aparte sin
+> dependencias; el efecto que reenfoca/adjunta el listener de Escape ahora
+> solo depende de `isOpen` y lee `onCloseRef.current()`, así nunca queda
+> con una versión vieja de `onClose` ni se re-dispara por re-renders del
+> contenido. Es un fix en el componente compartido, así que cubre
+> cualquier modal futuro con estado controlado, no solo el de Almacén.
+> `src/pages/admin/almacen/__tests__/AdminWarehousePage.test.tsx` se
+> actualizó para escribir con `user.type` (tecla por tecla) en vez del
+> `fireEvent.change` que se había usado como workaround — con el bug
+> presente esta prueba habría fallado. Verificado también a mano en el
+> navegador: `/admin/almacen` → "Registrar salida" → campo "Motivo" acepta
+> `"merma por vencimiento"` completo. `npm run lint`, `npx tsc -b` y
+> `npx vitest run` (49 archivos, 243 pruebas) en verde.
+>
+> Actualización anterior: 2026-08-09. Cerró el último gap documentado de Fase I
 > (Configuración): **"Datos de contacto" (WhatsApp) pasó de hardcoded en
 > el código a un dato real, editable desde el panel, respaldado por el
 > backend .NET.**
@@ -905,9 +926,6 @@ staff, actualizar el WhatsApp de contacto real, todo contra el backend
 real), pero no por el usuario. Sigue sin tocarse, deferido explícitamente:
 - Dashboard → "Actividad reciente": sigue en `adminDashboard.mock.ts`, no
   hay endpoint de auditoría en el backend todavía.
-- `RegisterProductOutModal.tsx` (`/admin/almacen`) le roba el foco al
-  input en cada tecla (bug real, no arreglado a propósito — ver "Última
-  actualización" arriba); flagueado como tarea aparte.
 
 Deuda técnica heredada (RPC transaccional de stock, auditoría real de
 inventario, idempotencia de pagos, procesador de pago real, CI, Docker)
