@@ -13,7 +13,12 @@ export const CartLink = () => {
 		>
 			<FiShoppingBag className='text-xl' aria-hidden='true' />
 			{totalItemsInCart > 0 && (
-				<span className='absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-600 px-1 text-[10px] font-bold text-white'>
+				// `key` reinicia el nodo en cada cambio de cantidad para
+				// reproducir el rebote (pop) del contador.
+				<span
+					key={totalItemsInCart}
+					className='absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-600 px-1 text-[10px] font-bold text-white animate-pop'
+				>
 					{totalItemsInCart}
 				</span>
 			)}

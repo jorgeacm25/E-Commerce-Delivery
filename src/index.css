@@ -33,3 +33,16 @@ input::-webkit-inner-spin-button{
 input[type=number]{
 	-moz-appearance: textfield;
 }
+
+/* Accesibilidad: quien prefiera menos movimiento en el sistema operativo
+   recibe las animaciones/transiciones instantáneas en su lugar. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

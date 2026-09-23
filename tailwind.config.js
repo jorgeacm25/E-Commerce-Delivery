@@ -106,6 +106,23 @@ export default {
 					'0%': { transform: 'scale(0.95)', opacity: '0' },
 					'100%': { transform: 'scale(1)', opacity: '1' },
 				},
+				// Rebote del badge del carrito al añadir un artículo
+				pop: {
+					'0%': { transform: 'scale(1)' },
+					'35%': { transform: 'scale(1.4)' },
+					'70%': { transform: 'scale(0.9)' },
+					'100%': { transform: 'scale(1)' },
+				},
+				// Entrada suave del contenido al cambiar de página (la tienda)
+				'page-in': {
+					'0%': { opacity: '0', transform: 'translateY(8px)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
+				// Aparición de secciones al hacer scroll ( componente <Reveal/>)
+				reveal: {
+					'0%': { opacity: '0', transform: 'translateY(1.5rem)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
 			},
 
 			animation: {
@@ -115,6 +132,9 @@ export default {
 				'slide-up': 'slide-up 0.2s ease-out',
 				'scale-in': 'scale-in 0.15s ease-out',
 				'spin-slow': 'spin 2s linear infinite',
+				pop: 'pop 0.4s ease-out',
+				'page-in': 'page-in 0.25s ease-out',
+				reveal: 'reveal 0.6s ease-out both',
 			},
 		},
 	},

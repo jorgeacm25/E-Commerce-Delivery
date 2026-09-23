@@ -5,7 +5,8 @@ export type StatTrend = 'up' | 'down' | 'neutral';
 
 interface Props {
 	label: string;
-	value: string;
+	/** String plano o componente (p. ej. <AnimatedNumber/> para contadores). */
+	value: React.ReactNode;
 	icon?: React.ReactNode;
 	trend?: StatTrend;
 	trendLabel?: string;

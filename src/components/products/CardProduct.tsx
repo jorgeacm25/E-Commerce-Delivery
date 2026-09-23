@@ -63,7 +63,7 @@ export const CardProduct = ({
 	const stock = selectedVariant?.stock || 0;
 
 	return (
-		<div className='flex flex-col gap-6 relative'>
+		<div className='flex flex-col gap-6 relative group/card transition-transform duration-300 ease-out group-hover/card:-translate-y-1'>
 			<Link
 				to={`/celulares/${slug}`}
 				className='flex relative group overflow-hidden '
@@ -72,7 +72,7 @@ export const CardProduct = ({
 					<img
 						src={img}
 						alt={name}
-						className='object-contain h-full w-full'
+						className='object-contain h-full w-full transition-transform duration-500 ease-out group-hover/card:scale-105'
 					/>
 				</div>
 

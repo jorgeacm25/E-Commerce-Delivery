@@ -24,6 +24,8 @@ export * from './ErrorState';
 export * from './ConfirmDialog';
 export * from './PageHeader';
 export * from './StatCard';
+export * from './Reveal';
+export * from './AnimatedNumber';
 export * from './CurrencyDisplay';
 export * from './QuantitySelector';
 export * from './ProductCard';

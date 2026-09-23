@@ -9,7 +9,7 @@ import {
 	FiTruck,
 	FiUserCheck,
 } from 'react-icons/fi';
-import { PageHeader, StatCard } from '../../components/ui';
+import { AnimatedNumber, PageHeader, StatCard } from '../../components/ui';
 import { RecentActivityList } from '../../components/admin/dashboard/RecentActivityList';
 import {
 	useAdminDashboardMockStats,
@@ -49,25 +49,31 @@ export const AdminOverviewPage = () => {
 			<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
 				<StatCard
 					label='Pedidos hoy'
-					value={String(realStats.ordersToday)}
+					value={<AnimatedNumber value={String(realStats.ordersToday)} />}
 					icon={<FiShoppingBag />}
 					isLoading={isLoadingReal}
 				/>
 				<StatCard
 					label='Ventas del mes'
-					value={formatPrice(realStats.salesUsdThisMonth)}
+					value={<AnimatedNumber value={formatPrice(realStats.salesUsdThisMonth)} />}
 					icon={<FiCreditCard />}
 					isLoading={isLoadingReal}
 				/>
 				<StatCard
 					label='Ticket promedio'
-					value={formatPrice(realStats.avgTicketUsd)}
+					value={<AnimatedNumber value={formatPrice(realStats.avgTicketUsd)} />}
 					icon={<FiTrendingUp />}
 					isLoading={isLoadingReal}
 				/>
 				<StatCard
 					label='Tasa de cambio (CUP por USD)'
-					value={realStats.activeExchangeRate ? formatCup(realStats.activeExchangeRate) : '—'}
+					value={
+						realStats.activeExchangeRate ? (
+							<AnimatedNumber value={formatCup(realStats.activeExchangeRate)} />
+						) : (
+							'—'
+						)
+					}
 					icon={<FiDollarSign />}
 					isLoading={isLoadingReal}
 				/>
@@ -79,37 +85,37 @@ export const AdminOverviewPage = () => {
 				<div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
 					<StatCard
 						label='Stock bajo'
-						value={String(lowStockCount)}
+						value={<AnimatedNumber value={String(lowStockCount)} />}
 						icon={<FiArchive />}
 						isLoading={isLoadingAlerts}
 					/>
 					<StatCard
 						label='Próximos a vencer'
-						value={String(expiringProductsCount)}
+						value={<AnimatedNumber value={String(expiringProductsCount)} />}
 						icon={<FiClock />}
 						isLoading={isLoadingAlerts}
 					/>
 					<StatCard
 						label='Entregas pendientes'
-						value={String(shippedOrders.length)}
+						value={<AnimatedNumber value={String(shippedOrders.length)} />}
 						icon={<FiTruck />}
 						isLoading={isLoadingShipped}
 					/>
 					<StatCard
 						label='Comisiones pendientes'
-						value={formatPrice(pendingCommissionsUsd)}
+						value={<AnimatedNumber value={formatPrice(pendingCommissionsUsd)} />}
 						icon={<FiUserCheck />}
 						isLoading={isLoadingSellers}
 					/>
 					<StatCard
 						label='Pagos pendientes'
-						value={formatPrice(pendingPayrollUsd)}
+						value={<AnimatedNumber value={formatPrice(pendingPayrollUsd)} />}
 						icon={<FiUserCheck />}
 						isLoading={isLoadingWorkers}
 					/>
 					<StatCard
 						label='Gastos registrados'
-						value={formatPrice(ledgerSummary.expensesUsd)}
+						value={<AnimatedNumber value={formatPrice(ledgerSummary.expensesUsd)} />}
 						icon={<FiAlertTriangle />}
 						isLoading={isLoadingLedger}
 					/>
