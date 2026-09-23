@@ -1,5 +1,15 @@
 import { JSONContent } from '@tiptap/react';
-import { Json } from '../supabase/supabase';
+
+// Tipo `Json` de Supabase (antes vivía en el generado src/supabase/supabase.ts,
+// eliminado junto con el cliente Supabase — ver .env: el backend .NET es la
+// única fuente de datos).
+export type Json =
+	| string
+	| number
+	| boolean
+	| null
+	| { [key: string]: Json | undefined }
+	| Json[];
 
 export interface Color {
 	name: string;

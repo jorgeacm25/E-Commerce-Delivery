@@ -1,6 +1,6 @@
 import { EditorContent, JSONContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Json } from '../../supabase/supabase';
+import { Json } from '../../interfaces/product.interface';
 
 interface Props {
 	content: JSONContent | Json;

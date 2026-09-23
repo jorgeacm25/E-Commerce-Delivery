@@ -1,44 +1,16 @@
 /* ********************************** */
-/*              PRODUCTOS             */
-/* ********************************** */
-export * from './products/useProducts';
-export * from './products/useFilteredProducts';
-export * from './products/useHomeProducts';
-export * from './products/useCreateProduct';
-export * from './products/useProduct';
-export * from './products/useDeleteProduct';
-export * from './products/useUpdateProduct';
-
-/* ********************************** */
 /*                AUTH                */
 /* ********************************** */
 export * from './auth/useAuth';
 
 /* ********************************** */
-/*               ORDERS               */
-/* ********************************** */
-export * from './orders/useCreateOrder';
-export * from './orders/useOrder';
-export * from './orders/useOrders';
-export * from './orders/useAllOrders';
-export * from './orders/useChangeStatusOrder';
-export * from './orders/useOrderAdmin';
-
-/* ********************************** */
 /*               PAGOS                */
 /* ********************************** */
-export * from './payments/useActivePaymentAccount';
 export * from './payments/useUploadPaymentProof';
 export * from './payments/usePendingPaymentProofs';
 export * from './payments/useReviewPaymentProof';
-export * from './payments/usePaymentProofSignedUrl';
 export * from './payments/useActiveExchangeRate';
 export * from './payments/useUpdateExchangeRate';
-
-/* ********************************** */
-/*               COMBOS               */
-/* ********************************** */
-export * from './combos/useActiveCombos';
 
 /* ********************************** */
 /*    INICIO (contenido simulado)     */
@@ -86,7 +58,6 @@ export * from './adminProducts/useAdminProduct';
 export * from './adminProducts/useManageProducts';
 export * from './adminDashboard/useAdminDashboardMockStats';
 export * from './adminDashboard/useAdminDashboardStats';
-export * from './orders/useOrdersSummary';
 export * from './orders/useAdminOrderDetail';
 export * from './orders/useAdminOrders';
 export * from './orders/useAdminOrderStatus';
