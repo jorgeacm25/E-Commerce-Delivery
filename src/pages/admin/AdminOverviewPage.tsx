@@ -12,9 +12,9 @@ import {
 import { AnimatedNumber, PageHeader, StatCard } from '../../components/ui';
 import { RecentActivityList } from '../../components/admin/dashboard/RecentActivityList';
 import {
-	useAdminDashboardMockStats,
 	useAdminDashboardStats,
 	useAdminOrders,
+	useAdminRecentActivity,
 	useAdminSellers,
 	useAdminWorkers,
 	useLedgerEntries,
@@ -28,7 +28,7 @@ import { formatCup, formatPrice } from '../../helpers';
 // vez de duplicar su lógica de agregación.
 export const AdminOverviewPage = () => {
 	const { stats: realStats, isLoading: isLoadingReal } = useAdminDashboardStats();
-	const { activity, isLoadingActivity } = useAdminDashboardMockStats();
+	const { activity, isLoading: isLoadingActivity } = useAdminRecentActivity();
 	const { alerts, isLoading: isLoadingAlerts } = useStockAlerts();
 	const { orders: shippedOrders, isLoading: isLoadingShipped } = useAdminOrders({ status: 'Shipped', pageSize: 1000 });
 	const { sellers, isLoading: isLoadingSellers } = useAdminSellers();

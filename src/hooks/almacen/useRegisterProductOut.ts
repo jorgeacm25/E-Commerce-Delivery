@@ -15,6 +15,10 @@ export const useRegisterProductOut = () => {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['almacen'] });
 			queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+			// La salida también cambia el stock que ve el catálogo público
+			// (mismas queryKeys que useManageProducts).
+			queryClient.invalidateQueries({ queryKey: ['catalog'] });
+			queryClient.invalidateQueries({ queryKey: ['home', 'popularProducts'] });
 			showSuccessToast('Salida de almacén registrada');
 		},
 		onError: (error: Error) => showErrorToast(error.message),

@@ -17,3 +17,16 @@ export interface RegisterProductOutInput {
 	motive: string;
 	customer?: string;
 }
+
+// Entrada (reabastecimiento) registrada desde /admin/almacen. El backend no
+// tiene endpoint propio de entrada — el handler de PUT /api/product ya
+// escribe el movimiento `Entrada` en api/history, así que la "entrada" es
+// una actualización de stock (ver registerProductIn en
+// src/services/almacen.service.ts). `endDate` opcional = vencimiento de un
+// lote nuevo (mismo comportamiento que el formulario de producto).
+export interface RegisterProductInInput {
+	productId: string;
+	quantity: number;
+	provider: string;
+	endDate?: string;
+}

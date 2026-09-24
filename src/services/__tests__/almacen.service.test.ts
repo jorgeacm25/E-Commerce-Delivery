@@ -1,11 +1,27 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { getWarehouseHistory, getStockAlerts, registerProductOut } from '../almacen.service';
+import { getWarehouseHistory, getStockAlerts, registerProductIn, registerProductOut } from '../almacen.service';
 
 const apiFetchMock = vi.fn();
 
 vi.mock('../../api/client', () => ({
 	apiFetch: (...args: unknown[]) => apiFetchMock(...args),
 }));
+
+const currentProductDto = {
+	id: 'p-1',
+	name: 'Arroz',
+	quantity: 5,
+	unity: 'lb',
+	salePriceUsd: 2,
+	discountPriceUsd: null,
+	endDate: '2026-12-31T00:00:00Z',
+	nameUserorAdmin: 'admin',
+	categoryId: 'c-1',
+	categoryName: 'Despensa',
+	provider: 'Proveedor X',
+	updateAt: '2026-01-01T00:00:00Z',
+	images: ['img-1'],
+};
 
 describe('almacen.service', () => {
 	beforeEach(() => {
@@ -75,6 +91,62 @@ describe('almacen.service', () => {
 					customer: 'Cliente X',
 				}),
 			});
+		});
+	});
+
+	describe('registerProductIn', () => {
+		it('suma la cantidad al stock actual y envía el total con el actor', async () => {
+			apiFetchMock.mockResolvedValueOnce(currentProductDto).mockResolvedValueOnce(null);
+
+			await registerProductIn(
+				{ productId: 'p-1', quantity: 3, provider: 'Proveedor Y' },
+				{ adminId: 'admin-1', userId: null }
+			);
+
+			expect(apiFetchMock).toHaveBeenNthCalledWith(1, '/api/product/p-1', { auth: false });
+			expect(apiFetchMock).toHaveBeenNthCalledWith(2, '/api/product', {
+				method: 'PUT',
+				body: expect.objectContaining({
+					id: 'p-1',
+					quantity: 8,
+					salePriceUsd: 2,
+					discountPriceUsd: null,
+					endDate: null,
+					adminId: 'admin-1',
+					userId: null,
+					provider: 'Proveedor Y',
+					categoryId: 'c-1',
+					images: ['img-1'],
+				}),
+			});
+		});
+
+		it('manda la fecha como lote nuevo solo si es distinta del vencimiento actual', async () => {
+			apiFetchMock.mockResolvedValueOnce(currentProductDto).mockResolvedValueOnce(null);
+
+			await registerProductIn(
+				{ productId: 'p-1', quantity: 3, provider: 'Proveedor X', endDate: '2027-06-15' },
+				{ adminId: null, userId: 'user-1' }
+			);
+
+			expect(apiFetchMock).toHaveBeenNthCalledWith(2, '/api/product', {
+				method: 'PUT',
+				body: expect.objectContaining({
+					endDate: '2027-06-15T00:00:00.000Z',
+					adminId: null,
+					userId: 'user-1',
+				}),
+			});
+		});
+
+		it('rechaza sin hacer el PUT cuando el stock actual tiene decimales', async () => {
+			apiFetchMock.mockResolvedValueOnce({ ...currentProductDto, quantity: 5.5 });
+
+			await expect(
+				registerProductIn({ productId: 'p-1', quantity: 3, provider: 'Proveedor X' }, { adminId: 'admin-1', userId: null })
+			).rejects.toThrow(/decimales/);
+
+			expect(apiFetchMock).toHaveBeenCalledTimes(1);
 		});
 	});
 });

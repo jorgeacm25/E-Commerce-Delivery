@@ -1,20 +1,15 @@
-// Stats del dashboard admin (`/admin`). Se dividen explícitamente en reales
-// (ya hay tabla/datos) vs. simuladas (pertenecen a fases del roadmap C-I
-// que todavía no se construyen, ver src/services/adminDashboard.service.ts).
+// Stats del dashboard admin (`/admin`). Solo quedan las reales aquí: las
+// de las fases C-I (stock, entregas, comisiones, nómina, gastos) se
+// calculan en AdminOverviewPage desde los hooks reales de cada módulo — el
+// antiguo AdminDashboardMockStats se eliminó al cerrar la Fase C
+// (Almacén), cuando ya ningún placeholder usaba sus campos. La actividad
+// reciente (AdminActivityItem) sigue simulada: le falta un endpoint de
+// auditoría en el backend (ver src/services/adminDashboard.service.ts).
 export interface AdminDashboardRealStats {
 	ordersToday: number;
 	salesUsdThisMonth: number;
 	avgTicketUsd: number;
 	activeExchangeRate: number | null;
-}
-
-export interface AdminDashboardMockStats {
-	lowStockCount: number;
-	expiringProductsCount: number;
-	pendingDeliveriesCount: number;
-	pendingCommissionsUsd: number;
-	pendingPayrollUsd: number;
-	expensesUsd: number;
 }
 
 export type AdminActivityType =

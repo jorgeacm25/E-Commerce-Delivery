@@ -1,5 +1,47 @@
 # Estado del proyecto
 
+> Última actualización: 2026-09-24. Cierre de la Fase C (Almacén), a
+> pedido explícito del usuario ("vamos a terminar la parte del almacén"):
+> - **Registrar entrada**: `/admin/almacen` gana el botón "Registrar
+>   entrada" + modal `RegisterProductInModal` (producto, cantidad a sumar,
+>   proveedor con prefill del producto actual, vencimiento de lote
+>   opcional). El backend no tiene endpoint propio de entrada: se
+>   reutiliza `PUT /api/product`, cuyo handler ya escribe el movimiento
+>   `Entrada` en `api/history` (`UpdateProductEntityCommandHandler`).
+>   `registerProductIn` (`src/services/almacen.service.ts`) relee el
+>   producto vía `GET /api/product/{id}`, calcula `total = stock +
+>   cantidad` y envía el PUT con actor (`adminId`/`userId`), precio,
+>   descuento, categoría e imágenes actuales sin tocarlos (las imágenes
+>   son solo URLs existentes, nunca pasan por upload/borrado) y `endDate`
+>   solo si es un lote nuevo distinto del vencimiento actual (mismo
+>   criterio que `updateProduct`). Validación client-side: el total debe
+>   ser entero (`UpdateProductEntityCommand.Quantity` es `int`; un stock
+>   actual con decimales daría un 400 ilegible, así que se avisa antes de
+>   hacer el PUT).
+> - **Historial filtrable con badges**: filtro por tipo (Entradas y
+>   salidas por defecto, todo el histórico, solo entradas o solo salidas)
+>   + badge coloreado por `actionType` en la columna Tipo — antes la
+>   página mezclaba TODO el histórico del sistema (logins, creaciones de
+>   clientes, eliminaciones...) contradiciendo su propio subtítulo, y el
+>   tipo se mostraba como texto crudo.
+> - **Restos de fase limpiados**: eliminados `AdminDashboardMockStats` /
+>   `getAdminDashboardMockStats` (los 6 campos —stock bajo, vencimientos,
+>   entregas, comisiones, nómina, gastos— ya los calcula reales
+>   `AdminOverviewPage` desde los hooks de cada módulo) y el hook
+>   renombrado `useAdminDashboardMockStats` → `useAdminRecentActivity`
+>   (solo queda la actividad reciente en mock, pendiente de un endpoint
+>   de auditoría); eliminado el dropdown decorativo "Almacén principal
+>   (próximamente — Fase C)" del `AdminHeader` (ya existe la página real
+>   `/admin/almacen`); `useRegisterProductOut` ahora también invalida
+>   `['catalog']`/`['home','popularProducts']` (paridad con
+>   `useManageProducts`: el stock afecta la disponibilidad pública).
+> - Validado contra el backend local (:5456): entrada real desde la API y
+>   desde el modal en el navegador → movimiento `Entrada` + stock
+>   actualizado y refrescado (reversado después para dejar el stock como
+>   estaba); filtro y badges verificados en vivo; `npm run lint`,
+>   `npx tsc -b`, `npx vitest run` (245 pruebas) y `npm run build` en
+>   verde.
+>
 > Última actualización: 2026-08-09 (más reciente, misma sesión que las
 > entradas de abajo). A pedido explícito del usuario ("arregla la 5"), se
 > corrigió el bug de foco reportado en la entrada anterior:

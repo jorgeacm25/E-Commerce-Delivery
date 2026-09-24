@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiBell, FiHome, FiLogOut, FiMenu, FiUser } from 'react-icons/fi';
+import { FiBell, FiLogOut, FiMenu, FiUser } from 'react-icons/fi';
 import { IconButton, SearchInput, Dropdown } from '../ui';
 import { useAuth } from '../../hooks';
 import { useAdminUiStore } from '../../store/adminUi.store';
@@ -59,18 +59,6 @@ export const AdminHeader = () => {
 			</div>
 
 			<div className='flex flex-wrap items-center gap-2'>
-				<Dropdown
-					trigger={
-						<span className='flex items-center gap-2 rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-500'>
-							<FiHome aria-hidden='true' />
-							Almacén principal
-						</span>
-					}
-					items={[{ label: 'Almacén principal (próximamente — Fase C)', value: 'default', disabled: true }]}
-					onSelect={() => {}}
-					align='right'
-				/>
-
 				<AdminDateRangeSelector />
 
 				<Dropdown

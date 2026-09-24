@@ -4,8 +4,8 @@ import { AdminDashboardRealStats } from '../../interfaces';
 
 // Stats reales del Dashboard admin: pedidos/ventas (backend .NET real,
 // api/order) + tasa de cambio vigente (tabla `exchange_rates`, ya real).
-// Distinto de useAdminDashboardMockStats, que sirve placeholders de fases
-// sin construir.
+// Distinto de useAdminRecentActivity, que sirve la actividad reciente
+// simulada (mock, le falta un endpoint de auditoría).
 export const useAdminDashboardStats = () => {
 	const { summary, isLoading: isLoadingSummary } = useAdminOrdersSummary();
 	const { data: exchangeRate, isLoading: isLoadingRate } = useActiveExchangeRate();

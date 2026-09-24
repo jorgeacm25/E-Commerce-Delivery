@@ -1,16 +1,55 @@
 import { useState } from 'react';
-import { FiAlertTriangle, FiPlus } from 'react-icons/fi';
-import { Badge, Button, DataTable, PageHeader } from '../../../components/ui';
+import { FiAlertTriangle, FiMinus, FiPlus } from 'react-icons/fi';
+import { Badge, BadgeVariant, Button, DataTable, PageHeader, Select } from '../../../components/ui';
+import { RegisterProductInModal } from '../../../components/admin/warehouse/RegisterProductInModal';
 import { RegisterProductOutModal } from '../../../components/admin/warehouse/RegisterProductOutModal';
-import { useStockAlerts, useWarehouseHistory, useRegisterProductOut } from '../../../hooks';
+import {
+	useRegisterProductIn,
+	useRegisterProductOut,
+	useStockAlerts,
+	useWarehouseHistory,
+} from '../../../hooks';
 import { formatDateLong } from '../../../helpers';
+
+// Variantes del badge por tipo de movimiento del histórico (el enum del
+// backend se serializa como string — JsonStringEnumConverter en
+// Program.cs). Cualquier tipo nuevo cae en 'neutral'.
+const actionTypeVariant: Record<string, BadgeVariant> = {
+	Entrada: 'success',
+	Salida: 'warning',
+	Creaciones: 'primary',
+	Modificaciones: 'secondary',
+	Eliminaciones: 'danger',
+	login: 'neutral',
+};
+
+// GET /api/history devuelve TODO el histórico del sistema (logins,
+// clientes, pedidos...) sin filtro server-side. Por defecto se muestran
+// solo los movimientos de stock (Entrada/Salida), que es lo que promete el
+// subtítulo de la página; el resto queda disponible bajo "Todo el
+// histórico".
+const historyFilterOptions = [
+	{ value: 'movements', label: 'Entradas y salidas' },
+	{ value: 'all', label: 'Todo el histórico' },
+	{ value: 'Entrada', label: 'Solo entradas' },
+	{ value: 'Salida', label: 'Solo salidas' },
+];
 
 export const AdminWarehousePage = () => {
 	const { alerts, isLoading: isLoadingAlerts } = useStockAlerts();
 	const { history, isLoading: isLoadingHistory } = useWarehouseHistory();
-	const { mutate: registerOut, isPending } = useRegisterProductOut();
+	const { mutate: registerIn, isPending: isRegisteringIn } = useRegisterProductIn();
+	const { mutate: registerOut, isPending: isRegisteringOut } = useRegisterProductOut();
 
-	const [modalOpen, setModalOpen] = useState(false);
+	const [inModalOpen, setInModalOpen] = useState(false);
+	const [outModalOpen, setOutModalOpen] = useState(false);
+	const [historyFilter, setHistoryFilter] = useState('movements');
+
+	const filteredHistory = history.filter(entry => {
+		if (historyFilter === 'all') return true;
+		if (historyFilter === 'movements') return entry.actionType === 'Entrada' || entry.actionType === 'Salida';
+		return entry.actionType === historyFilter;
+	});
 
 	return (
 		<div className='flex flex-col gap-6'>
@@ -18,9 +57,14 @@ export const AdminWarehousePage = () => {
 				title='Almacén'
 				description='Alertas de inventario e historial de entradas/salidas.'
 				actions={
-					<Button leftIcon={<FiPlus />} onClick={() => setModalOpen(true)}>
-						Registrar salida
-					</Button>
+					<>
+						<Button leftIcon={<FiPlus />} onClick={() => setInModalOpen(true)}>
+							Registrar entrada
+						</Button>
+						<Button variant='outline' leftIcon={<FiMinus />} onClick={() => setOutModalOpen(true)}>
+							Registrar salida
+						</Button>
+					</>
 				}
 			/>
 
@@ -74,11 +118,29 @@ export const AdminWarehousePage = () => {
 			</div>
 
 			<div className='flex flex-col gap-3'>
-				<h2 className='text-sm font-semibold text-neutral-900'>Historial de movimientos</h2>
+				<div className='flex flex-wrap items-center justify-between gap-3'>
+					<h2 className='text-sm font-semibold text-neutral-900'>Historial de movimientos</h2>
+
+					<Select
+						aria-label='Filtrar historial por tipo'
+						value={historyFilter}
+						onChange={event => setHistoryFilter(event.target.value)}
+						options={historyFilterOptions}
+						containerClassName='w-full sm:w-64'
+					/>
+				</div>
 
 				<DataTable
 					columns={[
-						{ key: 'type', header: 'Tipo', render: entry => entry.actionType },
+						{
+							key: 'type',
+							header: 'Tipo',
+							render: entry => (
+								<Badge variant={actionTypeVariant[entry.actionType] ?? 'neutral'}>
+									{entry.actionType}
+								</Badge>
+							),
+						},
 						{ key: 'responsable', header: 'Responsable', render: entry => entry.userOrAdminUserName },
 						{
 							key: 'mensaje',
@@ -93,19 +155,30 @@ export const AdminWarehousePage = () => {
 							render: entry => formatDateLong(entry.createdAt),
 						},
 					]}
-					data={history}
+					data={filteredHistory}
 					getRowId={entry => entry.id}
 					isLoading={isLoadingHistory}
 					emptyTitle='Sin movimientos'
-					emptyDescription='Todavía no hay historial de almacén registrado.'
+					emptyDescription={
+						historyFilter === 'all'
+							? 'Todavía no hay historial de almacén registrado.'
+							: 'No hay movimientos de este tipo.'
+					}
 				/>
 			</div>
 
+			<RegisterProductInModal
+				isOpen={inModalOpen}
+				onClose={() => setInModalOpen(false)}
+				isSubmitting={isRegisteringIn}
+				onSubmit={input => registerIn(input, { onSuccess: () => setInModalOpen(false) })}
+			/>
+
 			<RegisterProductOutModal
-				isOpen={modalOpen}
-				onClose={() => setModalOpen(false)}
-				isSubmitting={isPending}
-				onSubmit={input => registerOut(input, { onSuccess: () => setModalOpen(false) })}
+				isOpen={outModalOpen}
+				onClose={() => setOutModalOpen(false)}
+				isSubmitting={isRegisteringOut}
+				onSubmit={input => registerOut(input, { onSuccess: () => setOutModalOpen(false) })}
 			/>
 		</div>
 	);

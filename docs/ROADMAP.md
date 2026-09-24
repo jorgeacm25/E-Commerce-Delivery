@@ -120,10 +120,20 @@ real, no en esta fase.
 > actividad reciente (necesita endpoint de auditoría). Configuración →
 > datos de contacto (WhatsApp) se cerró el 2026-08-09 (ver
 > `docs/PROJECT_STATE.md`): `api/agencyContact` real en el backend.
+>
+> **2026-09-24 — Fase C (Almacén) cerrada por completo, a pedido
+> explícito del usuario ("vamos a terminar la parte del almacén").** Se
+> agregó "Registrar entrada" (el backend no tenía endpoint propio —
+> reutiliza `PUT /api/product`, cuyo handler ya audita `Entrada` en
+> `api/history`), filtro por tipo + badges en el historial, y limpieza de
+> los últimos restos de fase (stats mock del dashboard y el dropdown
+> "próximamente — Fase C" del header). Ver `docs/PROJECT_STATE.md`.
 
-- `/admin/almacen` (Fase C): alertas de stock bajo/vencimiento derivadas de
-  `GET /api/product`, historial real vía `GET /api/history`, registrar
-  salida de producto (`POST /api/productOut`).
+- `/admin/almacen` (Fase C ✅): alertas de stock bajo/vencimiento derivadas
+  de `GET /api/product`, historial real filtrable por tipo vía
+  `GET /api/history` (badge por tipo de movimiento), registrar salida
+  (`POST /api/productOut`) y registrar entrada/reabastecimiento (vía
+  `PUT /api/product`, que el backend audita como `Entrada`).
 - `/admin/clientes` (Fase D): listado con deuda pendiente derivada de
   pedidos `Pending` (`GET /api/customer` + `GET /api/order`), editar
   (nombre/teléfono/contraseña) y eliminar contra `PUT`/`DELETE

@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	useAdminProducts,
+	useRegisterProductIn,
 	useRegisterProductOut,
 	useStockAlerts,
 	useWarehouseHistory,
@@ -17,6 +18,7 @@ vi.mock('../../../../hooks', async () => {
 		...actual,
 		useStockAlerts: vi.fn(),
 		useWarehouseHistory: vi.fn(),
+		useRegisterProductIn: vi.fn(),
 		useRegisterProductOut: vi.fn(),
 		useAdminProducts: vi.fn(),
 	};
@@ -24,6 +26,7 @@ vi.mock('../../../../hooks', async () => {
 
 const useStockAlertsMock = vi.mocked(useStockAlerts);
 const useWarehouseHistoryMock = vi.mocked(useWarehouseHistory);
+const useRegisterProductInMock = vi.mocked(useRegisterProductIn);
 const useRegisterProductOutMock = vi.mocked(useRegisterProductOut);
 const useAdminProductsMock = vi.mocked(useAdminProducts);
 
@@ -40,6 +43,7 @@ const renderPage = () => {
 };
 
 describe('AdminWarehousePage', () => {
+	const registerIn = vi.fn();
 	const registerOut = vi.fn();
 
 	beforeEach(() => {
@@ -69,9 +73,21 @@ describe('AdminWarehousePage', () => {
 					description: 'Salida manual',
 					createdAt: '2026-01-01T00:00:00Z',
 				},
+				{
+					id: 'h-2',
+					actionType: 'Creaciones',
+					userOrAdminUserName: 'Admin',
+					description: 'Producto creado',
+					createdAt: '2026-01-02T00:00:00Z',
+				},
 			],
 			isLoading: false,
 			isError: false,
+		});
+
+		useRegisterProductInMock.mockReturnValue({
+			mutate: registerIn,
+			isPending: false,
 		});
 
 		useRegisterProductOutMock.mockReturnValue({
@@ -80,7 +96,7 @@ describe('AdminWarehousePage', () => {
 		});
 
 		useAdminProductsMock.mockReturnValue({
-			products: [{ id: 'p-1', name: 'Arroz', stock: 5 } as never],
+			products: [{ id: 'p-1', name: 'Arroz', stock: 5, unit: 'lb', provider: 'Proveedor X' } as never],
 			total: 1,
 			totalPages: 1,
 			isLoading: false,
@@ -125,5 +141,44 @@ describe('AdminWarehousePage', () => {
 			motive: 'merma',
 			customer: undefined,
 		});
+	});
+
+	it('abre el modal y registra una entrada con el proveedor prellenado', async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		await user.click(screen.getByRole('button', { name: /registrar entrada/i }));
+
+		await user.selectOptions(screen.getByLabelText(/^producto\*?$/i), 'p-1');
+		await user.type(screen.getByLabelText(/^cantidad a ingresar\*?$/i), '7');
+
+		await user.click(screen.getByRole('button', { name: /^registrar$/i }));
+
+		expect(registerIn).toHaveBeenCalledTimes(1);
+		expect(registerIn.mock.calls[0][0]).toEqual({
+			productId: 'p-1',
+			quantity: 7,
+			provider: 'Proveedor X',
+			endDate: undefined,
+		});
+	});
+
+	it('por defecto muestra solo entradas/salidas y permite ver todo el histórico', async () => {
+		const user = userEvent.setup();
+		renderPage();
+
+		// Por defecto: solo movimientos de stock (Entrada/Salida).
+		expect(screen.getByText('Salida manual')).toBeInTheDocument();
+		expect(screen.queryByText('Producto creado')).not.toBeInTheDocument();
+
+		await user.selectOptions(screen.getByLabelText('Filtrar historial por tipo'), 'all');
+
+		expect(screen.getByText('Producto creado')).toBeInTheDocument();
+	});
+
+	it('muestra el tipo de movimiento como badge', () => {
+		renderPage();
+
+		expect(screen.getByText('Salida')).toBeInTheDocument();
 	});
 });

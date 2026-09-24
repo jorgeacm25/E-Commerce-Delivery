@@ -1,18 +1,11 @@
-import { AdminActivityItem, AdminDashboardMockStats } from '../interfaces';
+import { AdminActivityItem } from '../interfaces';
 
-// Placeholders de las Fases C-I del roadmap (docs/ROADMAP.md), que todavía
-// no tienen tabla/lógica real: almacén (stock bajo/vencimientos, Fase C),
-// entregas (Fase F), comisiones (Fase E), nómina (Fase F), gastos (Fase H).
-// Ver src/services/adminDashboard.service.ts.
-export const adminDashboardMockStats: AdminDashboardMockStats = {
-	lowStockCount: 6,
-	expiringProductsCount: 3,
-	pendingDeliveriesCount: 8,
-	pendingCommissionsUsd: 142.5,
-	pendingPayrollUsd: 320,
-	expensesUsd: 890.25,
-};
-
+// Actividad reciente simulada — el único bloque del dashboard que sigue en
+// mock: no hay endpoint de auditoría en el backend para alimentarlo
+// (pendiente fuera de las fases C-I, ver docs/ROADMAP.md). Las stats que
+// antes estaban aquí (stock bajo/vencimientos, entregas, comisiones,
+// nómina, gastos) ya se calculan reales en AdminOverviewPage desde los
+// hooks de cada módulo. Ver src/services/adminDashboard.service.ts.
 export const adminRecentActivityMock: AdminActivityItem[] = [
 	{
 		id: 'activity-1',
