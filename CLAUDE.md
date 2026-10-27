@@ -95,6 +95,9 @@ arquitectura" más abajo antes de asumir que el proyecto usa Next.js/Prisma.
 
 ## Comandos disponibles
 
+Versión de Node: **24 LTS** (fijada en `.nvmrc` y en `engines` de
+`package.json`). Con nvm: `nvm use` en la raíz del repo.
+
 Definidos en `package.json` (gestor de paquetes: npm, hay `package-lock.json`):
 
 ```bash
