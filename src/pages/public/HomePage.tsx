@@ -18,7 +18,7 @@ import { Reveal } from '../../components/ui';
 // (IntersectionObserver). El Hero se queda fuera: ya está visible al cargar.
 export const HomePage = () => {
 	return (
-		<div className='flex flex-col gap-14 py-8'>
+		<div className='flex flex-col gap-14 pb-8'>
 			<HeroSection />
 			<Reveal>
 				<FeaturedCategoriesSection />

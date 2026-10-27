@@ -35,7 +35,7 @@ describe('HomePage', () => {
 			})
 		).toBeInTheDocument();
 
-		expect(screen.getByRole('link', { name: /comprar ahora/i })).toHaveAttribute(
+		expect(screen.getByRole('link', { name: /ver todos los productos/i })).toHaveAttribute(
 			'href',
 			'/catalogo'
 		);

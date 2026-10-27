@@ -123,6 +123,16 @@ export default {
 					'0%': { opacity: '0', transform: 'translateY(1.5rem)' },
 					'100%': { opacity: '1', transform: 'translateY(0)' },
 				},
+				// Logo del hero: sube y baja como un globo de helio
+				float: {
+					'0%, 100%': { transform: 'translateY(0) rotate(-1deg)' },
+					'50%': { transform: 'translateY(-14px) rotate(1deg)' },
+				},
+				// Sombra bajo el logo: se encoge cuando el logo sube
+				'float-shadow': {
+					'0%, 100%': { transform: 'scaleX(1)', opacity: '0.45' },
+					'50%': { transform: 'scaleX(0.75)', opacity: '0.25' },
+				},
 			},
 
 			animation: {
@@ -135,6 +145,8 @@ export default {
 				pop: 'pop 0.4s ease-out',
 				'page-in': 'page-in 0.25s ease-out',
 				reveal: 'reveal 0.6s ease-out both',
+				float: 'float 4s ease-in-out infinite',
+				'float-shadow': 'float-shadow 4s ease-in-out infinite',
 			},
 		},
 	},

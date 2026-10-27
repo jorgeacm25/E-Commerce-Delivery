@@ -22,6 +22,95 @@
 	@apply border border-slate-400 text-slate-600 py-2 px-3 text-sm font-medium rounded-md;
 }
 
+/* EFECTO GLASS3D
+   Vidrio esmerilado con relieve (sombras exteriores escalonadas + brillo
+   interior). Se declara en la capa `components` para que las utilidades de
+   Tailwind (absolute, shadow-none, rounded-*) puedan sobrescribirlo.
+   El ruido es un SVG inline (feTurbulence) en lugar de una textura remota,
+   así no dependemos de un dominio de terceros. */
+@layer components {
+	.glass3d {
+		--filter-glass3d: blur(32px) brightness(0.85) saturate(2.5);
+		--color-glass3d: hsl(189 80% 10% / 0.2);
+		--noise-glass3d: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+		position: relative;
+		z-index: 4;
+		box-shadow:
+			0 0 0.75px hsl(205 20% 10% / 0.2),
+			0.7px 0.8px 1.2px -0.4px hsl(205 20% 10% / 0.1),
+			1.3px 1.5px 2.2px -0.8px hsl(205 20% 10% / 0.1),
+			2.3px 2.6px 3.9px -1.2px hsl(205 20% 10% / 0.1),
+			3.9px 4.4px 6.6px -1.7px hsl(205 20% 10% / 0.1),
+			6.5px 7.2px 10.9px -2.1px hsl(205 20% 10% / 0.1),
+			8px 9px 14px -2.5px hsl(205 20% 10% / 0.2);
+	}
+
+	.glass3d::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		border-radius: inherit;
+		overflow: hidden;
+		z-index: 3;
+		-webkit-backdrop-filter: var(--filter-glass3d);
+		backdrop-filter: var(--filter-glass3d);
+		background-color: var(--color-glass3d);
+		background-image: var(--noise-glass3d);
+		background-size: 100px;
+		background-repeat: repeat;
+	}
+
+	.glass3d::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		border-radius: inherit;
+		overflow: hidden;
+		z-index: 5;
+		box-shadow:
+			inset 2px 2px 1px -3px hsl(205 20% 90% / 0.8),
+			inset 4px 4px 2px -6px hsl(205 20% 90% / 0.3),
+			inset 1.5px 1.5px 1.5px -0.75px hsl(205 20% 90% / 0.15),
+			inset 1.5px 1.5px 0.25px hsl(205 20% 90% / 0.03),
+			inset 0 0 0.25px 0.5px hsl(205 20% 90% / 0.03);
+	}
+
+	.glass3d > * {
+		position: relative;
+		z-index: 6;
+	}
+
+	/* Variante naranja: conserva la paleta de la marca en vez del tinte
+	   verde-azulado original. El brillo 0.85 oscurece un poco el fondo y
+	   garantiza contraste suficiente para el texto blanco encima. */
+	.glass3d-orange {
+		--filter-glass3d: blur(40px) brightness(0.85) saturate(1.8);
+		--color-glass3d: hsl(18 90% 45% / 0.18);
+	}
+
+	/* Variante clara para la barra de navegación y tarjetas sobre el naranja */
+	.glass3d-light {
+		--filter-glass3d: blur(24px) brightness(1.1) saturate(1.4);
+		--color-glass3d: hsl(30 60% 98% / 0.72);
+	}
+
+	/* Funde los bordes de una imagen con el fondo (sin marco marcado) */
+	.fade-edges {
+		-webkit-mask-image: radial-gradient(ellipse 80% 85% at 50% 45%, #000 55%, transparent 100%);
+		mask-image: radial-gradient(ellipse 80% 85% at 50% 45%, #000 55%, transparent 100%);
+	}
+
+	/* Versión suave para imágenes completas: solo difumina el borde mismo,
+	   sin comerse el contenido de las orillas (p. ej. el logo arriba). */
+	.fade-edges-soft {
+		-webkit-mask-image: radial-gradient(ellipse 58% 58% at 50% 50%, #000 78%, transparent 100%);
+		mask-image: radial-gradient(ellipse 58% 58% at 50% 50%, #000 78%, transparent 100%);
+	}
+}
+
 /* Para Chrome, Safari, Edge y Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button{
