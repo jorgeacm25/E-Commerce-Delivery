@@ -66,19 +66,30 @@ export const PricingModeFields = ({ register, watch, setValue, errors }: Props) 
 			/>
 
 			{pricingMode === 'fixed' ? (
-				<Input
-					label='Precio (USD)'
-					type='number'
-					step='0.01'
-					min={0}
-					error={errors.priceUsd?.message}
-					{...register('priceUsd')}
-				/>
+				<div className='grid gap-4 sm:grid-cols-2'>
+					<Input
+						label='Precio (USD)'
+						type='number'
+						step='0.01'
+						min={0}
+						error={errors.priceUsd?.message}
+						{...register('priceUsd')}
+					/>
+					<Input
+						label='Precio de compra (CUP)'
+						type='number'
+						step='0.01'
+						min={0}
+						hint='Opcional — alimenta el rendimiento por venta del inventario'
+						error={errors.costCup?.message}
+						{...register('costCup')}
+					/>
+				</div>
 			) : (
 				<>
 					<div className='grid gap-4 sm:grid-cols-2'>
 						<Input
-							label='Costo (CUP)'
+							label='Precio de compra (CUP)'
 							type='number'
 							step='0.01'
 							min={0}

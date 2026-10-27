@@ -1,13 +1,15 @@
-import { PaymentProofWithOrder } from '../../../interfaces';
+import { AdminOrder, AdminPaymentAccount, RealPaymentProof } from '../../../interfaces';
 import { EmptyState, Skeleton } from '../../ui';
 import { PaymentProofCard } from './PaymentProofCard';
 
 interface Props {
-	proofs: PaymentProofWithOrder[];
+	proofs: RealPaymentProof[];
 	isLoading: boolean;
+	ordersById: Map<string, AdminOrder>;
+	accountsById: Map<string, AdminPaymentAccount>;
 }
 
-export const PaymentProofsQueue = ({ proofs, isLoading }: Props) => {
+export const PaymentProofsQueue = ({ proofs, isLoading, ordersById, accountsById }: Props) => {
 	if (isLoading) {
 		return (
 			<div className='flex flex-col gap-4'>
@@ -29,7 +31,12 @@ export const PaymentProofsQueue = ({ proofs, isLoading }: Props) => {
 	return (
 		<div className='flex flex-col gap-4'>
 			{proofs.map(proof => (
-				<PaymentProofCard key={proof.id} proof={proof} />
+				<PaymentProofCard
+					key={proof.id}
+					proof={proof}
+					order={ordersById.get(proof.orderId)}
+					account={proof.paymentAccountId ? accountsById.get(proof.paymentAccountId) : undefined}
+				/>
 			))}
 		</div>
 	);

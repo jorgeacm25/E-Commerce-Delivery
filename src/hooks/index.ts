@@ -47,6 +47,7 @@ export * from './favorites/useToggleFavorite';
 export * from './support/useSupportCases';
 export * from './support/useCreateSupportCase';
 export * from './orders/useCustomerOrders';
+export * from './orders/useCustomerOrder';;
 
 /* ********************************** */
 /*          PANEL ADMIN (Fase B)      */
@@ -66,6 +67,7 @@ export * from './almacen/useWarehouseHistory';
 export * from './almacen/useStockAlerts';
 export * from './almacen/useRegisterProductOut';
 export * from './almacen/useRegisterProductIn';
+export * from './almacen/useProductOuts';
 export * from './paymentAccounts/usePaymentAccounts';
 export * from './paymentAccounts/useManagePaymentAccounts';
 export * from './adminCustomers/useAdminCustomers';

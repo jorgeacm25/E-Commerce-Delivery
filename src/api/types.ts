@@ -40,6 +40,9 @@ export interface ProductResultDto {
 	unity: string;
 	salePriceUsd: number;
 	discountPriceUsd: number | null;
+	// Precio de compra en CUP (null = producto sin costo registrado).
+	// Agregado en la sección Inventario (campo CostCup en el backend).
+	costCup: number | null;
 	endDate: string; // ISO date
 	nameUserorAdmin: string | null;
 	categoryId: string;
@@ -47,6 +50,20 @@ export interface ProductResultDto {
 	provider: string;
 	updateAt: string; // ISO date
 	images: string[];
+}
+
+// Salida de stock registrada (api/productOut): manual desde el almacén o
+// venta web. El backend solo tenía POST hasta la sección Inventario — el
+// GET devuelve todas las filas (ProductId + Quantity) para sumar las
+// salidas por producto con datos estructurados.
+export interface ProductOutResultDto {
+	id: string;
+	productId: string;
+	productName: string;
+	quantity: number;
+	outMotive: string;
+	customer: string | null;
+	createdAt: string; // ISO date
 }
 
 export interface ProductComboResultDto {

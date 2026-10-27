@@ -1,8 +1,8 @@
-// Destinatario en Cuba guardado por el cliente (tabla
-// `customer_recipients`, ver supabase/migrations/005_customer_account.sql).
+// Destinatario en Cuba guardado por el cliente, contra el backend .NET real
+// (api/customerRecipient).
 export interface CustomerRecipient {
 	id: string;
-	profileId: string;
+	customerId: string;
 	fullName: string;
 	phone: string;
 	nationalId: string | null;

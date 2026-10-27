@@ -1,100 +1,122 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FiCheck, FiSearch } from 'react-icons/fi';
-import { Alert, Button, Input, PageHeader } from '../../components/ui';
+import { Alert, Badge, Button, Input, PageHeader } from '../../components/ui';
 import { cn } from '../../helpers';
-import { SimulatedOrder } from '../../interfaces';
-import {
-	ORDER_TRACKING_STAGE_LABELS,
-	ORDER_TRACKING_STAGE_ORDER,
-	computeTrackingStage,
-	getSimulatedOrder,
-} from '../../services/checkoutSimulation.service';
+import { useAuth } from '../../hooks';
+import { getOrderById } from '../../services/order.service';
+import { CustomerOrder } from '../../interfaces';
 
-// Rastreo simulado: el "estado" del pedido se calcula a partir del tiempo
-// transcurrido desde que se creó (ver computeTrackingStage), ya que no hay
-// backend real que actualice el estado del pedido en esta fase del proyecto.
+// Rastreo real contra el backend (api/order/{id}) — reemplaza el rastreo
+// simulado por temporizador. El backend no valida que el pedido pertenezca
+// a quien pregunta (ver OrderController.GetById), así que la comprobación
+// de dueño se hace acá como defensa en profundidad; la corrección real
+// (que el backend la exija) queda pendiente como deuda técnica.
+const STATUS_ORDER: CustomerOrder['status'][] = ['Pending', 'Paid', 'Shipped', 'Delivered'];
+const STATUS_LABELS: Record<CustomerOrder['status'], string> = {
+	Pending: 'Pedido recibido, pago pendiente de confirmación',
+	Paid: 'Pago confirmado',
+	Shipped: 'En camino al destinatario',
+	Delivered: 'Entregado',
+	Cancelled: 'Cancelado',
+};
+
 export const TrackOrderPage = () => {
 	const [searchParams] = useSearchParams();
-	const [orderNumber, setOrderNumber] = useState(searchParams.get('numero') ?? '');
-	const [order, setOrder] = useState<SimulatedOrder | null>(null);
+	const { user } = useAuth();
+	const [orderId, setOrderId] = useState(searchParams.get('numero') ?? '');
+	const [order, setOrder] = useState<CustomerOrder | null>(null);
 	const [notFound, setNotFound] = useState(false);
+	const [isSearching, setIsSearching] = useState(false);
 
-	const handleSubmit = (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-
-		if (!orderNumber.trim()) {
+		if (!orderId.trim()) {
 			setOrder(null);
 			setNotFound(false);
 			return;
 		}
 
-		const found = getSimulatedOrder(orderNumber);
-		setOrder(found);
-		setNotFound(!found);
+		setIsSearching(true);
+		try {
+			const found = await getOrderById(orderId.trim());
+			const belongsToUser = user && found.customerId === user.id;
+			setOrder(belongsToUser ? found : null);
+			setNotFound(!belongsToUser);
+		} catch {
+			setOrder(null);
+			setNotFound(true);
+		} finally {
+			setIsSearching(false);
+		}
 	};
 
-	const currentStage = order ? computeTrackingStage(order) : null;
-	const currentStageIndex = currentStage ? ORDER_TRACKING_STAGE_ORDER.indexOf(currentStage) : -1;
+	const currentStageIndex = order ? STATUS_ORDER.indexOf(order.status) : -1;
+	const isCancelled = order?.status === 'Cancelled';
 
 	return (
 		<div className='container flex flex-col gap-8 py-8'>
 			<PageHeader
 				title='Rastrear pedido'
-				description='Ingresa tu número de pedido para ver su estado.'
+				description='Ingresa el número de tu pedido para ver su estado.'
 				breadcrumb={[{ label: 'Inicio', href: '/' }, { label: 'Rastrear pedido' }]}
 			/>
 
 			<form onSubmit={handleSubmit} className='flex max-w-md flex-col gap-4'>
 				<Input
 					label='Número de pedido'
-					placeholder='Ej. DH-123456'
-					value={orderNumber}
-					onChange={e => setOrderNumber(e.target.value)}
+					value={orderId}
+					onChange={e => setOrderId(e.target.value)}
 					leftIcon={<FiSearch />}
 				/>
-				<Button type='submit'>Buscar pedido</Button>
+				<Button type='submit' isLoading={isSearching}>
+					Buscar pedido
+				</Button>
 			</form>
 
 			{notFound && (
 				<Alert variant='danger' title='No encontramos ese pedido' className='max-w-md'>
-					Verifica el número e inténtalo de nuevo.
+					Verifica el número e inténtalo de nuevo, o revísalo desde tu cuenta.
 				</Alert>
 			)}
 
-			{order && currentStage && (
+			{order && (
 				<div className='flex max-w-md flex-col gap-4 rounded-2xl border border-neutral-200 p-5'>
 					<div>
 						<p className='text-sm text-neutral-500'>Pedido</p>
-						<p className='text-lg font-bold text-neutral-900'>#{order.orderNumber}</p>
+						<p className='text-lg font-bold text-neutral-900'>#{order.id.slice(0, 8)}</p>
 					</div>
 
-					<ol className='flex flex-col gap-3'>
-						{ORDER_TRACKING_STAGE_ORDER.map((stage, index) => {
-							const isDone = index <= currentStageIndex;
+					{isCancelled ? (
+						<Badge variant='danger'>{STATUS_LABELS.Cancelled}</Badge>
+					) : (
+						<ol className='flex flex-col gap-3'>
+							{STATUS_ORDER.map((status, index) => {
+								const isDone = index <= currentStageIndex;
 
-							return (
-								<li key={stage} className='flex items-center gap-3'>
-									<span
-										className={cn(
-											'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-											isDone ? 'bg-primary-600 text-white' : 'bg-neutral-200 text-neutral-500'
-										)}
-									>
-										{isDone ? <FiCheck aria-hidden='true' /> : index + 1}
-									</span>
-									<span
-										className={cn(
-											'text-sm',
-											isDone ? 'font-medium text-neutral-900' : 'text-neutral-500'
-										)}
-									>
-										{ORDER_TRACKING_STAGE_LABELS[stage]}
-									</span>
-								</li>
-							);
-						})}
-					</ol>
+								return (
+									<li key={status} className='flex items-center gap-3'>
+										<span
+											className={cn(
+												'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+												isDone ? 'bg-primary-600 text-white' : 'bg-neutral-200 text-neutral-500'
+											)}
+										>
+											{isDone ? <FiCheck aria-hidden='true' /> : index + 1}
+										</span>
+										<span
+											className={cn(
+												'text-sm',
+												isDone ? 'font-medium text-neutral-900' : 'text-neutral-500'
+											)}
+										>
+											{STATUS_LABELS[status]}
+										</span>
+									</li>
+								);
+							})}
+						</ol>
+					)}
 				</div>
 			)}
 		</div>

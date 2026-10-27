@@ -19,6 +19,7 @@ const product = (overrides: Partial<ProductResultDto>): ProductResultDto => ({
 	unity: 'unidad',
 	salePriceUsd: 5,
 	discountPriceUsd: null,
+	costCup: null,
 	endDate: '2027-01-01T00:00:00Z',
 	nameUserorAdmin: 'Staff Demo',
 	categoryId: 'cat-despensa',

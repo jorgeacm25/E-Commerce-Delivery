@@ -2,24 +2,36 @@ import { FiPackage } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { Badge, DataTable, DataTableColumn, EmptyState } from '../../components/ui';
 import { useAuth, useCustomerOrders } from '../../hooks';
-import { SimulatedOrder } from '../../interfaces';
-import {
-	ORDER_TRACKING_STAGE_LABELS,
-	computeTrackingStage,
-} from '../../services/checkoutSimulation.service';
+import { CustomerOrder } from '../../interfaces';
 
 const formatDate = (isoDate: string) =>
 	new Date(isoDate).toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' });
 
-const columns: DataTableColumn<SimulatedOrder>[] = [
-	{ key: 'orderNumber', header: 'Pedido', render: order => `#${order.orderNumber}` },
+const STATUS_BADGE_VARIANT: Record<CustomerOrder['status'], 'primary' | 'success' | 'danger' | 'warning'> = {
+	Pending: 'warning',
+	Paid: 'primary',
+	Shipped: 'primary',
+	Delivered: 'success',
+	Cancelled: 'danger',
+};
+
+const STATUS_LABEL: Record<CustomerOrder['status'], string> = {
+	Pending: 'Pago pendiente',
+	Paid: 'Pago confirmado',
+	Shipped: 'En camino',
+	Delivered: 'Entregado',
+	Cancelled: 'Cancelado',
+};
+
+const columns: DataTableColumn<CustomerOrder>[] = [
+	{ key: 'id', header: 'Pedido', render: order => `#${order.id.slice(0, 8)}` },
 	{ key: 'createdAt', header: 'Fecha', render: order => formatDate(order.createdAt) },
 	{
 		key: 'status',
 		header: 'Estado',
-		render: order => <Badge variant='primary'>{ORDER_TRACKING_STAGE_LABELS[computeTrackingStage(order)]}</Badge>,
+		render: order => <Badge variant={STATUS_BADGE_VARIANT[order.status]}>{STATUS_LABEL[order.status]}</Badge>,
 	},
-	{ key: 'total', header: 'Total', render: order => `$${order.totals.total.toFixed(2)}` },
+	{ key: 'total', header: 'Total', render: order => `$${order.totalAmount.toFixed(2)}` },
 ];
 
 export const CustomerOrdersPage = () => {
@@ -41,9 +53,9 @@ export const CustomerOrdersPage = () => {
 		<DataTable
 			columns={columns}
 			data={orders}
-			getRowId={order => order.orderNumber}
+			getRowId={order => order.id}
 			isLoading={isLoading}
-			onRowClick={order => navigate(`/mi-cuenta/pedidos/${order.orderNumber}`)}
+			onRowClick={order => navigate(`/mi-cuenta/pedidos/${order.id}`)}
 		/>
 	);
 };

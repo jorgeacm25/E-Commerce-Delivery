@@ -2,24 +2,16 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { createProduct, getAdminProductById, getAdminProducts, updateProduct } from '../adminProducts.service';
 
 const apiFetchMock = vi.fn();
-const storageUploadMock = vi.fn();
-const storageGetPublicUrlMock = vi.fn();
-const storageRemoveMock = vi.fn();
+const uploadFileMock = vi.fn();
+const deleteFileMock = vi.fn();
 
 vi.mock('../../api/client', () => ({
 	apiFetch: (...args: unknown[]) => apiFetchMock(...args),
 }));
 
-vi.mock('../../supabase/client', () => ({
-	supabase: {
-		storage: {
-			from: () => ({
-				upload: storageUploadMock,
-				getPublicUrl: storageGetPublicUrlMock,
-				remove: storageRemoveMock,
-			}),
-		},
-	},
+vi.mock('../files.service', () => ({
+	uploadFile: (...args: unknown[]) => uploadFileMock(...args),
+	deleteFile: (...args: unknown[]) => deleteFileMock(...args),
 }));
 
 const productDto = {
@@ -81,10 +73,7 @@ describe('adminProducts.service', () => {
 
 	describe('createProduct', () => {
 		it('sube las imágenes y crea el producto con el actor correcto', async () => {
-			storageUploadMock.mockResolvedValue({ data: { path: 'catalog/tmp/img.jpg' }, error: null });
-			storageGetPublicUrlMock.mockReturnValue({
-				data: { publicUrl: 'https://cdn/product-images/catalog/tmp/img.jpg' },
-			});
+			uploadFileMock.mockResolvedValue('https://cdn/product-images/catalog/tmp/img.jpg');
 			apiFetchMock.mockResolvedValue(productDto);
 
 			const file = new File(['contenido'], 'img.jpg', { type: 'image/jpeg' });
@@ -104,7 +93,7 @@ describe('adminProducts.service', () => {
 				{ adminId: 'admin-1', userId: null }
 			);
 
-			expect(storageUploadMock).toHaveBeenCalledTimes(1);
+			expect(uploadFileMock).toHaveBeenCalledWith(file, 'products');
 			expect(apiFetchMock).toHaveBeenCalledWith(
 				'/api/product',
 				expect.objectContaining({

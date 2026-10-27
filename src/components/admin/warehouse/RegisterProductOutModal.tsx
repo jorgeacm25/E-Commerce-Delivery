@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Input, Modal, Select } from '../../ui';
 import { useAdminProducts } from '../../../hooks';
 
@@ -7,9 +7,11 @@ interface Props {
 	onClose: () => void;
 	onSubmit: (input: { productId: string; quantity: number; motive: string; customer?: string }) => void;
 	isSubmitting: boolean;
+	// Producto preseleccionado al abrir desde una fila del inventario.
+	initialProductId?: string;
 }
 
-export const RegisterProductOutModal = ({ isOpen, onClose, onSubmit, isSubmitting }: Props) => {
+export const RegisterProductOutModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialProductId }: Props) => {
 	const { products } = useAdminProducts({ pageSize: 200 });
 
 	const [productId, setProductId] = useState('');
@@ -30,6 +32,12 @@ export const RegisterProductOutModal = ({ isOpen, onClose, onSubmit, isSubmittin
 		reset();
 		onClose();
 	};
+
+	// Prefill al abrir desde una fila del inventario.
+	useEffect(() => {
+		if (!isOpen || !initialProductId) return;
+		setProductId(initialProductId);
+	}, [isOpen, initialProductId]);
 
 	const handleSubmit = () => {
 		const parsedQuantity = Number(quantity);

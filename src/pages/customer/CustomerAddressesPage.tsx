@@ -14,7 +14,7 @@ import {
 	Select,
 	Skeleton,
 } from '../../components/ui';
-import { useAddresses, useAuth, useDeliveryZones, useManageAddresses } from '../../hooks';
+import { useAddresses, useAdminMunicipalities, useAdminProvinces, useAuth, useManageAddresses } from '../../hooks';
 import { CustomerAddress } from '../../interfaces';
 import { AddressFormValues, addressFormSchema } from '../../lib/accountValidators';
 
@@ -31,7 +31,8 @@ export const CustomerAddressesPage = () => {
 	const { user } = useAuth();
 	const { addresses, isLoading } = useAddresses(user?.id);
 	const { create, isCreating, update, isUpdating, remove } = useManageAddresses(user?.id);
-	const { zones } = useDeliveryZones();
+	const { provinces } = useAdminProvinces();
+	const { municipalities } = useAdminMunicipalities();
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editing, setEditing] = useState<CustomerAddress | null>(null);
@@ -46,7 +47,10 @@ export const CustomerAddressesPage = () => {
 	} = useForm<AddressFormValues>({ resolver: zodResolver(addressFormSchema), defaultValues: emptyValues });
 
 	const selectedProvince = watch('province');
-	const selectedZone = zones.find(zone => zone.province === selectedProvince);
+	const selectedProvinceEntity = provinces.find(province => province.name === selectedProvince);
+	const municipalitiesInProvince = municipalities.filter(
+		municipality => municipality.provinceId === selectedProvinceEntity?.id
+	);
 
 	const openCreate = () => {
 		setEditing(null);
@@ -163,17 +167,17 @@ export const CustomerAddressesPage = () => {
 						required
 						placeholder='Selecciona una provincia'
 						error={errors.province?.message}
-						options={zones.map(zone => ({ value: zone.province, label: zone.province, disabled: !zone.available }))}
+						options={provinces.map(province => ({ value: province.name, label: province.name }))}
 						{...register('province')}
 					/>
 
 					<Select
 						label='Municipio'
 						required
-						placeholder={selectedZone ? 'Selecciona un municipio' : 'Primero selecciona una provincia'}
-						disabled={!selectedZone}
+						placeholder={selectedProvinceEntity ? 'Selecciona un municipio' : 'Primero selecciona una provincia'}
+						disabled={!selectedProvinceEntity}
 						error={errors.municipality?.message}
-						options={(selectedZone?.municipalities ?? []).map(m => ({ value: m, label: m }))}
+						options={municipalitiesInProvince.map(m => ({ value: m.name, label: m.name }))}
 						{...register('municipality')}
 					/>
 

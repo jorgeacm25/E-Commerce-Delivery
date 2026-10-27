@@ -1,5 +1,4 @@
 import {
-	FiArchive,
 	FiBarChart2,
 	FiBookOpen,
 	FiBox,
@@ -34,10 +33,12 @@ export interface AdminNavItem {
 export const adminNavigation: AdminNavItem[] = [
 	{ label: 'Dashboard', href: '/admin', icon: FiGrid, phase: 'B', isBuilt: true },
 	{ label: 'Pedidos', href: '/admin/pedidos', icon: FiShoppingBag, phase: 'B', isBuilt: true },
-	{ label: 'Productos', href: '/admin/productos', icon: FiBox, phase: 'B', isBuilt: true },
+	// Inventario = fusión de Productos (Fase B) y Almacén (Fase C): tabla de
+	// productos con columnas de negocio + acciones por fila, y pestañas de
+	// alertas e historial. /admin/productos y /admin/almacen redirigen aquí.
+	{ label: 'Inventario', href: '/admin/inventario', icon: FiBox, phase: 'C', isBuilt: true },
 	{ label: 'Categorías', href: '/admin/categorias', icon: FiTag, phase: 'B', isBuilt: true },
 	{ label: 'Combos', href: '/admin/combos', icon: FiPackage, phase: 'B', isBuilt: true },
-	{ label: 'Almacén', href: '/admin/almacen', icon: FiArchive, phase: 'C', isBuilt: true },
 	{ label: 'Clientes', href: '/admin/clientes', icon: FiUsers, phase: 'D', isBuilt: true },
 	{ label: 'Vendedores', href: '/admin/vendedores', icon: FiUserCheck, phase: 'E', isBuilt: true },
 	{ label: 'Trabajadores', href: '/admin/trabajadores', icon: FiTruck, phase: 'F', isBuilt: true },

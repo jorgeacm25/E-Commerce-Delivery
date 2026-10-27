@@ -1,16 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { getSimulatedOrdersByUserId } from '../../services/checkoutSimulation.service';
+import { getOrdersByCustomer } from '../../services/order.service';
 
-// Distinto del resto de src/hooks/orders/* (legacy, dominio "celulares"):
-// este hook lee los pedidos simulados del checkout actual (localStorage,
-// ver src/services/checkoutSimulation.service.ts) filtrados por el usuario
-// autenticado. Se envuelve en useQuery igual que el resto de la app para
-// mantener loading/error/refetch consistentes, aunque no golpee Supabase.
-export const useCustomerOrders = (userId?: string) => {
+// Pedidos reales del cliente autenticado (api/order/customer/{customerId}),
+// en reemplazo de los pedidos simulados en localStorage
+// (antes checkoutSimulation.service.ts).
+export const useCustomerOrders = (customerId?: string) => {
 	const { data, isLoading, isError, refetch } = useQuery({
-		queryKey: ['customer-orders', userId],
-		queryFn: () => getSimulatedOrdersByUserId(userId as string),
-		enabled: Boolean(userId),
+		queryKey: ['customer-orders', customerId],
+		queryFn: () => getOrdersByCustomer(customerId as string),
+		enabled: Boolean(customerId),
 		retry: 1,
 	});
 

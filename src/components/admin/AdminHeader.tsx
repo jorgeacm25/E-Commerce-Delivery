@@ -8,11 +8,11 @@ import { AdminDateRangeSelector } from './AdminDateRangeSelector';
 
 // Búsqueda global: MVP simplificado, no es un índice unificado real. Si el
 // texto es solo dígitos se interpreta como número de pedido; en cualquier
-// otro caso se busca en Productos. Confirmado como suficiente para Fase B.
+// otro caso se busca en la sección Inventario (pestaña Productos).
 const resolveSearchDestination = (query: string) =>
 	/^\d+$/.test(query.trim())
 		? `/admin/pedidos?buscar=${encodeURIComponent(query.trim())}`
-		: `/admin/productos?buscar=${encodeURIComponent(query.trim())}`;
+		: `/admin/inventario?buscar=${encodeURIComponent(query.trim())}`;
 
 export const AdminHeader = () => {
 	const navigate = useNavigate();

@@ -1,18 +1,16 @@
 import { useState } from 'react';
-import { PaymentProofWithOrder } from '../../../interfaces';
-import { usePaymentProofSignedUrl, useReviewPaymentProof } from '../../../hooks';
+import { AdminOrder, AdminPaymentAccount, RealPaymentProof } from '../../../interfaces';
+import { useReviewPaymentProof } from '../../../hooks';
 import { formatDateLong, formatPrice } from '../../../helpers';
-import { Button, ConfirmDialog, Input, Skeleton } from '../../ui';
+import { Button, ConfirmDialog, Input } from '../../ui';
 
-// Restyle de src/components/dashboard/payments/PaymentProofCard.tsx (legacy,
-// sin enlazar) sobre el sistema de diseño nuevo, con confirmación antes de
-// confirmar/rechazar (acción sensible: cascada a orders.payment_status).
 interface Props {
-	proof: PaymentProofWithOrder;
+	proof: RealPaymentProof;
+	order?: AdminOrder;
+	account?: AdminPaymentAccount;
 }
 
-export const PaymentProofCard = ({ proof }: Props) => {
-	const { url, isLoading: isLoadingUrl } = usePaymentProofSignedUrl(proof.imagen_url);
+export const PaymentProofCard = ({ proof, order, account }: Props) => {
 	const { confirm, isConfirming, reject, isRejecting } = useReviewPaymentProof();
 
 	const [nota, setNota] = useState('');
@@ -21,48 +19,40 @@ export const PaymentProofCard = ({ proof }: Props) => {
 	const isBusy = isConfirming || isRejecting;
 
 	const runPendingAction = () => {
-		if (pendingAction === 'confirm') confirm({ proofId: proof.id, nota });
-		if (pendingAction === 'reject') reject({ proofId: proof.id, nota });
+		if (pendingAction === 'confirm') confirm({ proofId: proof.id, orderId: proof.orderId, nota });
+		if (pendingAction === 'reject') reject({ proofId: proof.id, orderId: proof.orderId, nota });
 		setPendingAction(null);
 	};
 
 	return (
 		<div className='flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-card md:flex-row'>
 			<div className='w-full shrink-0 md:w-56'>
-				{isLoadingUrl ? (
-					<Skeleton className='h-56 w-full' />
-				) : (
-					<a href={url} target='_blank' rel='noreferrer'>
-						<img
-							src={url}
-							alt='Comprobante de pago'
-							className='h-56 w-full rounded-lg border border-neutral-200 object-cover'
-						/>
-					</a>
-				)}
+				<a href={proof.imagenUrl} target='_blank' rel='noreferrer'>
+					<img
+						src={proof.imagenUrl}
+						alt='Comprobante de pago'
+						className='h-56 w-full rounded-lg border border-neutral-200 object-cover'
+					/>
+				</a>
 			</div>
 
 			<div className='flex-1 space-y-2 text-sm'>
 				<div className='flex items-start justify-between'>
 					<div>
-						<p className='font-semibold text-neutral-900'>Pedido #{proof.order_id}</p>
-						<p className='text-neutral-600'>
-							{proof.orders?.customers?.full_name} — {proof.orders?.customers?.email}
-						</p>
+						<p className='font-semibold text-neutral-900'>Pedido #{proof.orderId.slice(0, 8)}</p>
+						<p className='text-neutral-600'>{order?.customerName ?? '—'} — {order?.customerEmail ?? '—'}</p>
 					</div>
-					<p className='text-xs text-neutral-500'>{formatDateLong(proof.created_at)}</p>
+					<p className='text-xs text-neutral-500'>{proof.createdAt ? formatDateLong(proof.createdAt) : '—'}</p>
 				</div>
 
 				<div className='flex flex-wrap gap-x-6 gap-y-1 text-neutral-700'>
 					<p>
 						<span className='font-medium'>Monto del pedido:</span>{' '}
-						{proof.orders ? formatPrice(proof.orders.total_amount) : '—'}
+						{order ? formatPrice(order.totalAmount) : '—'}
 					</p>
 					<p>
 						<span className='font-medium'>Cuenta usada:</span>{' '}
-						{proof.payment_accounts
-							? `${proof.payment_accounts.tipo.toUpperCase()} · ${proof.payment_accounts.referencia}`
-							: '—'}
+						{account ? `${account.tipo.toUpperCase()} · ${account.referencia}` : '—'}
 					</p>
 				</div>
 

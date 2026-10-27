@@ -4,23 +4,25 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ICartItem } from '../../../components/shared/CartItem';
-import { SimulatedOrder } from '../../../interfaces';
+import { CustomerOrder } from '../../../interfaces';
 import { useCartStore } from '../../../store/cart.store';
-import { useAuth } from '../../../hooks';
+import { useAdminMunicipalities, useAdminProvinces, useAuth } from '../../../hooks';
 import { CheckoutPage } from '../CheckoutPage';
-import * as checkoutSimulationService from '../../../services/checkoutSimulation.service';
+import * as orderService from '../../../services/order.service';
 
-vi.mock('../../../services/checkoutSimulation.service', () => ({
-	submitSimulatedOrder: vi.fn(),
+vi.mock('../../../services/order.service', () => ({
+	createOrder: vi.fn(),
 }));
 
 vi.mock('../../../hooks', async () => {
 	const actual = await vi.importActual<typeof import('../../../hooks')>('../../../hooks');
-	return { ...actual, useAuth: vi.fn() };
+	return { ...actual, useAuth: vi.fn(), useAdminProvinces: vi.fn(), useAdminMunicipalities: vi.fn() };
 });
 
-const submitSimulatedOrderMock = vi.mocked(checkoutSimulationService.submitSimulatedOrder);
+const createOrderMock = vi.mocked(orderService.createOrder);
 const useAuthMock = vi.mocked(useAuth);
+const useAdminProvincesMock = vi.mocked(useAdminProvinces);
+const useAdminMunicipalitiesMock = vi.mocked(useAdminMunicipalities);
 
 const arroz: ICartItem = {
 	variantId: 'arroz-5lb',
@@ -32,18 +34,19 @@ const arroz: ICartItem = {
 	image: '/arroz.jpg',
 };
 
-const fakeOrder: SimulatedOrder = {
-	orderNumber: 'DH-000001',
+const fakeOrder: CustomerOrder = {
+	id: 'order-1',
+	customerId: 'user-1',
+	status: 'Pending',
+	totalAmount: 11.8,
+	addressLine1: 'Calle 23 #456',
+	addressLine2: null,
+	city: 'Plaza',
+	state: 'La Habana',
+	postalCode: null,
+	country: 'Cuba',
 	createdAt: new Date().toISOString(),
-	buyer: { fullName: 'Juana Pérez', email: 'juana@example.com', phone: '+1 305 555 1234', country: 'Estados Unidos' },
-	recipient: { fullName: 'Pedro Pérez', phone: '+53 5 123 4567', relationship: '' },
-	address: { addressLine1: 'Calle 23 #456', addressLine2: '' },
-	location: { provinceId: 'la-habana', municipality: 'Plaza' },
-	references: { referencePoint: 'Frente al parque', alternatePhone: '' },
-	deliveryModality: 'home_delivery',
-	paymentMethod: 'cash_on_delivery',
 	items: [],
-	totals: { subtotal: 11.8, discount: 0, deliveryCost: 5, total: 16.8 },
 };
 
 const renderCheckoutPage = () => {
@@ -56,7 +59,7 @@ const renderCheckoutPage = () => {
 			<MemoryRouter initialEntries={['/checkout']}>
 				<Routes>
 					<Route path='/checkout' element={<CheckoutPage />} />
-					<Route path='/pedido-confirmado/:orderNumber' element={<div>Confirmación simulada</div>} />
+					<Route path='/pedido-confirmado/:orderNumber' element={<div>Confirmación real</div>} />
 					<Route path='/catalogo' element={<div>Catálogo</div>} />
 				</Routes>
 			</MemoryRouter>
@@ -104,9 +107,19 @@ describe('CheckoutPage', () => {
 	beforeEach(() => {
 		localStorage.clear();
 		sessionStorage.clear();
-		submitSimulatedOrderMock.mockReset();
+		createOrderMock.mockReset();
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		useAuthMock.mockReturnValue({ user: { id: 'user-1' } } as any);
+		useAdminProvincesMock.mockReturnValue({
+			provinces: [{ id: 'la-habana', name: 'La Habana' }],
+			isLoading: false,
+			isError: false,
+		});
+		useAdminMunicipalitiesMock.mockReturnValue({
+			municipalities: [{ id: 'plaza', name: 'Plaza', provinceId: 'la-habana', deliveryFeeUsd: 0 }],
+			isLoading: false,
+			isError: false,
+		});
 		useCartStore.setState({
 			items: [],
 			coupon: null,
@@ -140,7 +153,7 @@ describe('CheckoutPage', () => {
 
 	it('completa el flujo principal del checkout y navega a la confirmación', async () => {
 		useCartStore.getState().addItem(arroz);
-		submitSimulatedOrderMock.mockResolvedValueOnce(fakeOrder);
+		createOrderMock.mockResolvedValueOnce(fakeOrder);
 		renderCheckoutPage();
 
 		const user = userEvent.setup();
@@ -148,15 +161,21 @@ describe('CheckoutPage', () => {
 
 		await user.click(screen.getByRole('button', { name: 'Confirmar y pagar' }));
 
-		expect(await screen.findByText('Confirmación simulada')).toBeInTheDocument();
-		expect(submitSimulatedOrderMock).toHaveBeenCalledTimes(1);
+		expect(await screen.findByText('Confirmación real')).toBeInTheDocument();
+		expect(createOrderMock).toHaveBeenCalledTimes(1);
+		expect(createOrderMock).toHaveBeenCalledWith(
+			expect.objectContaining({
+				customerId: 'user-1',
+				items: [{ productId: 'arroz', quantity: 2 }],
+			})
+		);
 		expect(useCartStore.getState().items).toHaveLength(0);
 	});
 
-	it('muestra un error si la simulación de pago falla y permite reintentar', async () => {
+	it('muestra un error si la creación del pedido falla y permite reintentar', async () => {
 		useCartStore.getState().addItem(arroz);
-		submitSimulatedOrderMock.mockRejectedValueOnce(new Error('Fallo simulado de pago'));
-		submitSimulatedOrderMock.mockResolvedValueOnce(fakeOrder);
+		createOrderMock.mockRejectedValueOnce(new Error('El producto: Arroz no se le puede dar salida'));
+		createOrderMock.mockResolvedValueOnce(fakeOrder);
 		renderCheckoutPage();
 
 		const user = userEvent.setup();
@@ -165,19 +184,19 @@ describe('CheckoutPage', () => {
 		const confirmButton = screen.getByRole('button', { name: 'Confirmar y pagar' });
 		await user.click(confirmButton);
 
-		expect(await screen.findByText('Fallo simulado de pago')).toBeInTheDocument();
+		expect(await screen.findByText('El producto: Arroz no se le puede dar salida')).toBeInTheDocument();
 
 		await user.click(screen.getByRole('button', { name: 'Confirmar y pagar' }));
 
-		expect(await screen.findByText('Confirmación simulada')).toBeInTheDocument();
-		expect(submitSimulatedOrderMock).toHaveBeenCalledTimes(2);
+		expect(await screen.findByText('Confirmación real')).toBeInTheDocument();
+		expect(createOrderMock).toHaveBeenCalledTimes(2);
 	});
 
-	it('evita el doble envío mientras el pago simulado está en proceso', async () => {
+	it('evita el doble envío mientras el pedido se está creando', async () => {
 		useCartStore.getState().addItem(arroz);
-		let resolveSubmit: (order: SimulatedOrder) => void = () => {};
-		submitSimulatedOrderMock.mockReturnValueOnce(
-			new Promise<SimulatedOrder>(resolve => {
+		let resolveSubmit: (order: CustomerOrder) => void = () => {};
+		createOrderMock.mockReturnValueOnce(
+			new Promise<CustomerOrder>(resolve => {
 				resolveSubmit = resolve;
 			})
 		);
@@ -191,9 +210,22 @@ describe('CheckoutPage', () => {
 		// El botón queda deshabilitado mientras se procesa: un segundo click no dispara un segundo envío.
 		await user.click(confirmButton);
 
-		expect(submitSimulatedOrderMock).toHaveBeenCalledTimes(1);
+		expect(createOrderMock).toHaveBeenCalledTimes(1);
 
 		resolveSubmit(fakeOrder);
-		expect(await screen.findByText('Confirmación simulada')).toBeInTheDocument();
+		expect(await screen.findByText('Confirmación real')).toBeInTheDocument();
+	});
+
+	it('bloquea el envío si el carrito tiene un combo', async () => {
+		useCartStore.getState().addItem({ ...arroz, comboId: 'combo-1', comboName: 'Combo familiar' });
+		renderCheckoutPage();
+
+		const user = userEvent.setup();
+		await completeStepsBeforePayment(user);
+
+		await user.click(screen.getByRole('button', { name: 'Confirmar y pagar' }));
+
+		expect(await screen.findByText(/los combos todavía no se pueden pagar/i)).toBeInTheDocument();
+		expect(createOrderMock).not.toHaveBeenCalled();
 	});
 });

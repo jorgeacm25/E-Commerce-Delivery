@@ -23,7 +23,7 @@ import { Alert, Button, EmptyState, Skeleton } from '../../components/ui';
 import { DELIVERY_MODALITY_OPTIONS } from '../../constants/checkout';
 import { useAuth } from '../../hooks';
 import { CheckoutFormValues, checkoutDefaultValues, checkoutFormSchema } from '../../lib/checkoutValidators';
-import { submitSimulatedOrder } from '../../services/checkoutSimulation.service';
+import { createOrder } from '../../services/order.service';
 import { useCartStore } from '../../store/cart.store';
 
 const DRAFT_STORAGE_KEY = 'dh-checkout-draft';
@@ -74,10 +74,6 @@ export const CheckoutPage = () => {
 	const { user } = useAuth();
 	const items = useCartStore(state => state.items);
 	const hasHydrated = useCartStore(state => state.hasHydrated);
-	const subtotal = useCartStore(state => state.subtotal);
-	const discount = useCartStore(state => state.discount);
-	const deliveryCost = useCartStore(state => state.deliveryCost);
-	const total = useCartStore(state => state.total);
 	const setDeliveryCost = useCartStore(state => state.setDeliveryCost);
 	const cleanCart = useCartStore(state => state.cleanCart);
 
@@ -123,31 +119,40 @@ export const CheckoutPage = () => {
 		if (index >= 0) setCurrentStepIndex(index);
 	};
 
+	// Los combos no son "productos" reales para el backend (api/order solo
+	// acepta ProductId de ProductEntity, ver CreateOrderEntityCommandHandler):
+	// expandir un combo en sus productos y cobrar el precio individual de
+	// cada uno sobrecargaría al cliente frente al precio propio del combo.
+	// Hasta que el backend soporte líneas de combo en el pedido, se bloquea
+	// el envío en vez de cobrar de más o fallar con un error críptico del 400.
+	const comboItemsInCart = items.filter(item => item.comboId);
+
 	const onSubmit = async (data: CheckoutFormValues) => {
-		if (isSubmitting) return;
+		if (isSubmitting || !user) return;
+
+		if (comboItemsInCart.length > 0) {
+			setSubmitError(
+				'Los combos todavía no se pueden pagar por este checkout. Quítalos del carrito para continuar (los productos sueltos sí se pueden comprar).'
+			);
+			return;
+		}
 
 		setIsSubmitting(true);
 		setSubmitError(null);
 
 		try {
-			const order = await submitSimulatedOrder({
-				form: data,
-				items: items.map(item => ({
-					variantId: item.variantId,
-					name: item.name,
-					variantLabel: item.variantLabel,
-					image: item.image,
-					price: item.price,
-					quantity: item.quantity,
-					comboName: item.comboName,
-				})),
-				totals: { subtotal, discount, deliveryCost, total },
-				userId: user?.id,
+			const order = await createOrder({
+				customerId: user.id,
+				addressLine1: data.address.addressLine1,
+				addressLine2: data.address.addressLine2,
+				provinceId: data.location.provinceId,
+				municipality: data.location.municipality,
+				items: items.map(item => ({ productId: item.productId, quantity: item.quantity })),
 			});
 
 			sessionStorage.removeItem(DRAFT_STORAGE_KEY);
 			cleanCart();
-			navigate(`/pedido-confirmado/${order.orderNumber}`);
+			navigate(`/pedido-confirmado/${order.id}`, { state: { paymentMethod: data.payment.method } });
 		} catch (error) {
 			setSubmitError(
 				error instanceof Error ? error.message : 'Ocurrió un error inesperado. Inténtalo de nuevo.'

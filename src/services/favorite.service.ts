@@ -1,65 +1,42 @@
-import { supabase } from '../supabase/client';
+import { apiFetch, ApiError } from '../api/client';
+import { FavoriteResultDto } from '../api/types';
 import { Favorite } from '../interfaces';
 
-type FavoriteRow = {
-	id: string;
-	profile_id: string;
-	product_id: string;
-	created_at: string;
-};
-
-const mapFavoriteRow = (row: FavoriteRow): Favorite => ({
-	id: row.id,
-	profileId: row.profile_id,
-	productId: row.product_id,
-	createdAt: row.created_at,
+// Favoritos reales, contra el backend .NET (api/favorite) — antes escribía
+// a Supabase (`favorites`, RLS `auth.uid() = profile_id`), rota desde que
+// el login es 100% .NET (ver docs/PROJECT_STATE.md). `productId` ya
+// referencia un producto real del catálogo (api/product), no un slug
+// simulado.
+const mapFavorite = (dto: FavoriteResultDto): Favorite => ({
+	id: dto.id ?? '',
+	customerId: dto.customerId ?? '',
+	productId: dto.productId ?? '',
+	createdAt: dto.createdAt ?? '',
 });
 
-export const getFavorites = async (profileId: string): Promise<Favorite[]> => {
-	const { data, error } = await supabase
-		.from('favorites')
-		.select('*')
-		.eq('profile_id', profileId)
-		.order('created_at', { ascending: false });
-
-	if (error) throw new Error('No pudimos cargar tus favoritos.');
-
-	return (data as FavoriteRow[]).map(mapFavoriteRow);
+export const getFavorites = async (customerId: string): Promise<Favorite[]> => {
+	const dtos = await apiFetch<FavoriteResultDto[]>(`/api/favorite/customer/${customerId}`);
+	return dtos.map(mapFavorite).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 };
 
-export const addFavorite = async (profileId: string, productId: string): Promise<Favorite> => {
-	const { data, error } = await supabase
-		.from('favorites')
-		.insert({ profile_id: profileId, product_id: productId })
-		.select()
-		.single();
-
-	// 23505 = unique_violation: ya estaba marcado como favorito (doble clic,
-	// pestañas duplicadas). Tratarlo como éxito idempotente en vez de error.
-	if (error) {
-		if (error.code === '23505') {
-			const existing = await supabase
-				.from('favorites')
-				.select('*')
-				.eq('profile_id', profileId)
-				.eq('product_id', productId)
-				.single();
-
-			if (!existing.error) return mapFavoriteRow(existing.data as FavoriteRow);
+// El backend rechaza un favorito duplicado (400, "Este producto ya está en
+// tus favoritos") en vez de aceptarlo en silencio — se trata como éxito
+// idempotente acá (doble clic, pestañas duplicadas), mismo criterio que la
+// versión anterior sobre Supabase.
+export const addFavorite = async (customerId: string, productId: string): Promise<void> => {
+	try {
+		await apiFetch('/api/favorite', { method: 'POST', body: { customerId, productId } });
+	} catch (error) {
+		if (error instanceof ApiError && error.status === 400 && /ya está en tus favoritos/i.test(error.message)) {
+			return;
 		}
-
-		throw new Error('No pudimos guardar el favorito.');
+		throw error;
 	}
-
-	return mapFavoriteRow(data as FavoriteRow);
 };
 
-export const removeFavorite = async (profileId: string, productId: string): Promise<void> => {
-	const { error } = await supabase
-		.from('favorites')
-		.delete()
-		.eq('profile_id', profileId)
-		.eq('product_id', productId);
-
-	if (error) throw new Error('No pudimos quitar el favorito.');
+// A diferencia de Supabase (delete por profileId+productId), el backend
+// borra por el id propio del favorito (DELETE /api/favorite/{id}) — el
+// caller (useToggleFavorite) resuelve ese id desde la lista ya cargada.
+export const removeFavorite = async (favoriteId: string): Promise<void> => {
+	await apiFetch(`/api/favorite/${favoriteId}`, { method: 'DELETE' });
 };

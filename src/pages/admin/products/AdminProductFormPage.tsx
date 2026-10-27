@@ -60,7 +60,7 @@ export const AdminProductFormPage = () => {
 			endDate: toDateInputValue(product.endDate),
 			pricingMode: 'fixed',
 			priceUsd: product.priceUsd,
-			costCup: undefined,
+			costCup: product.costCup ?? undefined,
 			marginUsd: undefined,
 			stock: product.stock,
 			hasDiscount: product.discountPriceUsd != null,
@@ -84,6 +84,7 @@ export const AdminProductFormPage = () => {
 			endDate: data.endDate,
 			priceUsd: data.priceUsd,
 			discountPriceUsd: data.hasDiscount ? (data.discountPriceUsd ?? null) : null,
+			costCup: data.costCup ?? null,
 			stock: data.stock,
 			images,
 		};
@@ -91,10 +92,10 @@ export const AdminProductFormPage = () => {
 		if (isEditing && id && product) {
 			update(
 				{ id, input, currentImages: product.images, currentEndDate: toDateInputValue(product.endDate) },
-				{ onSuccess: () => navigate('/admin/productos') }
+				{ onSuccess: () => navigate('/admin/inventario') }
 			);
 		} else {
-			create(input, { onSuccess: () => navigate('/admin/productos') });
+			create(input, { onSuccess: () => navigate('/admin/inventario') });
 		}
 	};
 
@@ -112,7 +113,7 @@ export const AdminProductFormPage = () => {
 			<PageHeader
 				title={isEditing ? 'Editar producto' : 'Nuevo producto'}
 				breadcrumb={[
-					{ label: 'Productos', href: '/admin/productos' },
+					{ label: 'Inventario', href: '/admin/inventario' },
 					{ label: isEditing ? 'Editar' : 'Nuevo' },
 				]}
 			/>
@@ -180,7 +181,7 @@ export const AdminProductFormPage = () => {
 				<ProductImagesUploader images={images} onChange={setImages} error={imagesError} />
 
 				<div className='flex justify-end gap-2'>
-					<Button type='button' variant='outline' onClick={() => navigate('/admin/productos')}>
+					<Button type='button' variant='outline' onClick={() => navigate('/admin/inventario')}>
 						Cancelar
 					</Button>
 					<Button type='submit' isLoading={isCreating || isUpdating}>

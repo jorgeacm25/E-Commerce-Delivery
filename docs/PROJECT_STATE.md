@@ -42,7 +42,247 @@
 >   `npx tsc -b`, `npx vitest run` (245 pruebas) y `npm run build` en
 >   verde.
 >
-> Última actualización: 2026-08-09 (más reciente, misma sesión que las
+> Última actualización: 2026-08-12 (más reciente). A pedido explícito del
+> usuario ("migra toda esta funcionalidad al backend, ya no utilizo
+> supabase"), se eliminó Supabase Storage por completo (el último uso real
+> que quedaba: subida de imágenes de producto y comprobantes de pago) y se
+> reemplazó por un endpoint de subida de archivos real en el backend .NET.
+> - **Backend** (`Almacen-Delivery-Home_Api_new`, repo separado):
+>   `FileUploadController` nuevo (`POST /api/files/upload?folder=...`,
+>   `DELETE /api/files?url=...`, ambos `[Authorize]`) — guarda el archivo en
+>   disco (`wwwroot/uploads/{folder}/{guid}.{ext}`) y lo sirve como estático
+>   (`app.UseStaticFiles()` en `Program.cs`). Valida tipo (solo
+>   jpeg/png/webp/gif) y tamaño (5 MB máx.), genera nombre aleatorio (nunca
+>   usa el nombre original del archivo) y en el delete resuelve la ruta
+>   real con `Path.GetFullPath` para no poder borrar nada fuera de
+>   `wwwroot/uploads` aunque el cliente mande `../../` en la URL. Sin tabla
+>   ni entidad propia (infraestructura pura, no dominio) — `ProductEntity.Images`
+>   y `PaymentProofEntity.ImagenUrl` ya tenían un comentario describiendo
+>   exactamente este diseño (`api/files/upload`, `wwwroot/uploads`) desde el
+>   commit inicial del backend, nunca implementado hasta ahora.
+>   **Encontrado al investigar**: el repo del backend tenía trabajo real sin
+>   commitear de otra sesión en curso (repositorio/UnitOfWork de
+>   PaymentProof, migración `AddOrderIdempotencyKey`, cambios en
+>   CustomerAddress/CustomerRecipient/Favorite/Order) — se evitó tocar
+>   cualquiera de esos archivos (`AppDbContext.cs`, migraciones, DI,
+>   handlers ya modificados); `FileUploadController.cs` y el cambio en
+>   `Program.cs` son 100% aditivos, sin superposición. Compilación
+>   verificada (`dotnet build` a un output aparte, 0 errores) sin tocar el
+>   proceso ya corriendo en `localhost:5228`.
+> - **Frontend**: `src/services/files.service.ts` (nuevo) — `uploadFile`/
+>   `deleteFile` contra el endpoint real, vía `apiFetch` (que ahora soporta
+>   `FormData` como body, ver `src/api/client.ts` — detecta el caso y deja
+>   que el navegador arme el `Content-Type: multipart/form-data` con
+>   boundary, en vez de forzar JSON). `adminProducts.service.ts`
+>   (`uploadProductImages`) y `paymentProofs.service.ts`
+>   (`createPaymentProof`) migrados. El comprobante de pago ya no necesita
+>   URL firmada (era un bucket privado): las imágenes ahora son públicas
+>   igual que las de producto, así que se eliminó `usePaymentProofSignedUrl`
+>   y `PaymentProofCard.tsx` usa `proof.imagenUrl` directo.
+> - Los buckets de Supabase Storage (`product-images`, `payment-proofs`,
+>   creados en esta misma sesión — ver entradas de abajo) **quedan huérfanos,
+>   no se borraron**: la app ya no los usa, pero borrarlos es una acción
+>   destructiva sobre el proyecto real que no se tomó sin pedirlo
+>   explícitamente. Si se quiere limpiar del todo, es un paso aparte.
+> - **Supabase ya no se usa desde ningún código alcanzable por el router**:
+>   confirmado revisando `router/lazyPages.ts` (todas las páginas se
+>   importan por ruta directa, ninguna pasa por los barrels legacy). Sí
+>   quedan referencias a `supabase/client` en código **muerto** de la era
+>   "celulares" (`src/actions/{product,order,combo}.ts`,
+>   `src/services/auth.service.ts`, y sus consumidores en
+>   `src/pages/dashboard/*`, `src/pages/{CellPhonePage,CellPhonesPage,
+>   HomePage,OrdersUserPage,OrderUserPage,CombosPage,AboutPage}.tsx`,
+>   `src/components/dashboard/*`, algunos `src/components/shared/*` como
+>   `Search.tsx`/`Cart.tsx`/`Footer.tsx`/`NavbarMobile.tsx`/`Sheet.tsx`/
+>   `DualPrice.tsx` — ninguno alcanzable desde `router/index.tsx`). No se
+>   tocaron en esta fase (no pedido explícitamente); mientras sigan en el
+>   repo, `@supabase/supabase-js` sigue siendo una dependencia real del
+>   proyecto aunque ningún camino navegable la ejecute. Purgarlos del todo
+>   (y con eso poder desinstalar `@supabase/supabase-js` y borrar
+>   `src/supabase/*`) es la misma limpieza de código muerto pedida antes en
+>   esta conversación, todavía pendiente como paso aparte.
+> `npm run lint`, `npx tsc -b`, `npm run build` y `npx vitest run` (48
+> archivos, 240 pruebas) en verde.
+>
+> Actualización anterior: 2026-08-11. A pedido explícito del
+> usuario ("aun no me deja subir imagenes de los productos"), se encontró
+> que el bucket `product-images` **nunca se había creado** en el proyecto
+> Supabase real — `src/services/adminProducts.service.ts`
+> (`uploadProductImages`) siempre asumió que existía, así que cualquier
+> subida de imagen de producto fallaba contra un bucket inexistente
+> (silencioso: se veía como "no pudimos subir una de las imágenes").
+> Migración `010_product_images_bucket.sql` (aplicada, confirmada
+> explícitamente por el usuario): crea el bucket como público (el código
+> usa `getPublicUrl`, no URLs firmadas) con políticas `anon` insert/select/
+> delete — mismo patrón que `009_payment_proofs_storage_anon.sql`. El
+> usuario pidió explícitamente recordar que **el proyecto ya no usa
+> Supabase salvo como blob storage puro** (Auth, Postgres y RLS de negocio
+> están descartados desde la migración al backend .NET): este bucket, igual
+> que `payment-proofs`, solo guarda archivos — la referencia (URL pública)
+> se manda al backend real (`Images: string[]` en `api/product`), que es
+> quien de verdad valida/persiste el dato. No usar Supabase para nada más
+> que esto en fases futuras sin decisión explícita del usuario.
+> `get_advisors(security)` sin warnings nuevos tras aplicar.
+>
+> Actualización anterior: 2026-08-11 (misma fecha que la
+> entrada de abajo). A pedido explícito del usuario ("es necesario completar
+> todas las secciones de la vista del cliente"), se auditaron y conectaron
+> al backend real las 5 secciones de `/mi-cuenta/*` que seguían escribiendo
+> a Supabase: **Perfil (guardar cambios), Destinatarios, Direcciones,
+> Favoritos y Soporte.**
+> - **Causa raíz encontrada** (mismo patrón que el bug de `payment-proofs`
+>   de la entrada de abajo, pero sin migración de por medio): estas 5
+>   secciones seguían leyendo/escribiendo contra tablas de Supabase
+>   (`profiles`, `customer_addresses`, `customer_recipients`, `favorites`,
+>   `support_cases`) protegidas por RLS `auth.uid() = ...`. Como el login es
+>   100% .NET desde 2026-08-04, la app nunca vuelve a autenticarse contra
+>   Supabase (siempre corre como `anon`) — los `SELECT` devolvían listas
+>   vacías (se veía como "no tienes destinatarios/direcciones/favoritos/
+>   casos" aunque hubiera datos) y los `INSERT`/`UPDATE` fallaban en
+>   silencio con un toast de error genérico. Nadie lo había notado porque
+>   ninguna de las 5 páginas tiene pruebas de Vitest.
+> - **Resuelto migrando al backend real, no parchando RLS**: a diferencia
+>   del bucket de `payment-proofs` (que solo existe en Supabase Storage), acá
+>   el backend .NET (`Almacen-Delivery-Home_Api_new`) ya tenía controladores
+>   reales construidos y sin usar: `PUT /api/customer` (perfil),
+>   `api/customerAddress`, `api/customerRecipient`, `api/favorite`,
+>   `api/supportCase` — los 4 últimos con guarda de dueño en el propio
+>   controlador (`CustomerId` del body/query debe coincidir con el `sub` del
+>   JWT, si no `403`). Hasta los DTOs de TypeScript (`CustomerAddressResultDto`,
+>   `CustomerRecipientResultDto`, `FavoriteResultDto`, `SupportCaseResultDto`
+>   en `src/api/types.ts`) ya estaban escritos y sin usar — quedaron de una
+>   sesión anterior que preparó el terreno pero no conectó las páginas.
+> - `src/services/{profile,address,recipient,favorite,support}.service.ts`
+>   reescritos contra `apiFetch` en vez de `supabase`. `Create`/`Update`/
+>   `Delete` en el backend no devuelven la fila (`Result<Unit>`): los hooks
+>   ya invalidaban la query de listado en éxito (sin cambios ahí), así que
+>   alcanzó con que el servicio devuelva `void` y deje que el refetch traiga
+>   el dato real.
+> - **Favoritos, caso particular**: el backend borra por el id propio del
+>   favorito (`DELETE /api/favorite/{id}`), no por `customerId+productId`
+>   como hacía Supabase. `useToggleFavorite.ts` resuelve ese id contra la
+>   lista ya cacheada por `useFavorites` (misma `queryKey`, sin pegar de
+>   nuevo al backend) — así `FavoriteButton.tsx` y `CustomerFavoritesPage.tsx`
+>   siguen llamando `remove(productId)` sin cambios. También se encontró que
+>   el backend rechaza un favorito duplicado con 400 (`FavoriteAlreadyExistsError`)
+>   en vez de aceptarlo en silencio como hacía el `insert` de Supabase — se
+>   absorbe como éxito idempotente en el servicio (doble clic, pestañas
+>   duplicadas), mismo criterio que antes.
+> - **Direcciones y Destinatarios, provincia/municipio real**: estas dos
+>   páginas usaban `useDeliveryZones` (servicio simulado de `home.service.ts`,
+>   el mismo que usa `HomePage`), no las zonas reales que ya administra
+>   `/admin/zonas-entrega` ni las que ya usa el checkout desde la fase
+>   anterior. Se cambiaron a `useAdminProvinces`/`useAdminMunicipalities`
+>   (públicos, `api/province`/`api/municipality`), mismo patrón que
+>   `LocationStep.tsx`.
+> - Interfaces (`address`, `recipient`, `favorite`, `support`.interface.ts):
+>   se renombró `profileId` → `customerId` en las 4, para reflejar que ya no
+>   hay una fila `profiles` de Supabase detrás — es el id real del cliente
+>   en el backend .NET (`user.id`, mismo valor que ya usa `order.service.ts`).
+> - `npm run lint`, `npx tsc -b`, `npm run build` y `npx vitest run` (48
+>   archivos, 240 pruebas) en verde — **sin pruebas nuevas**: ninguna de las
+>   5 páginas tenía cobertura de Vitest antes de este cambio ni la tiene
+>   ahora, deuda preexistente no cerrada en esta fase.
+> - **No se pudo verificar en vivo end-to-end en el navegador**: se intentó
+>   registrar una cuenta de cliente de prueba contra el backend .NET local
+>   (`localhost:5228`) para probar las 5 secciones con datos reales, pero
+>   `POST /api/customer/register` falló a nivel de red (`net::ERR_FAILED`,
+>   consistente en 2 intentos) aunque el preflight `OPTIONS` respondía 204 —
+>   síntoma de que ese proceso del backend (corriendo fuera de esta sesión)
+>   no estaba realmente disponible para escritura en ese momento, no un
+>   error del código de esta fase (los logs del servidor de Vite/frontend no
+>   mostraron ningún error). **Pendiente que el usuario lo confirme
+>   manualmente** con el backend corriendo.
+>
+> Actualización anterior (misma fecha): A pedido explícito del usuario ("el
+> backend debe exigir autenticación de usuario antes de la compra, dejar de
+> simular el checkout, hacer las conexiones reales"), se conectó el checkout
+> público al backend .NET real, cerrando el riesgo 14 y buena parte del 12
+> (más abajo). El backend real (`Almacen-Delivery-Home_Api_new`, repo
+> hermano) ya tenía todo lo necesario construido (`POST /api/order`
+> transaccional con descuento de stock + auditoría real vía
+> `ProductOutEntity`/`HistoryEntity`, precio calculado server-side; `POST
+> /api/paymentProof` + `PUT /api/paymentProof/{id}/review`) — el trabajo fue
+> 100% de frontend + una migración de Supabase Storage:
+> - **`/checkout` y `/rastrear-pedido` ahora exigen sesión de cliente**
+>   (`RequireAuth allowedRoles={['customer']}`, mismo mecanismo que
+>   `/admin`): el backend no soporta checkout de invitado (`CustomerId`
+>   obligatorio en `CreateOrderEntityCommand`). Decisión explícita del
+>   usuario, no default.
+> - `src/services/order.service.ts` (nuevo) reemplaza a
+>   `checkoutSimulation.service.ts` (eliminado, junto con
+>   `SimulatedOrder`/`OrderTrackingStage` de `checkout.interface.ts`,
+>   también eliminado): `createOrder`/`getOrderById`/`getOrdersByCustomer`
+>   contra `api/order` real. `LocationStep.tsx` pasó de las zonas de entrega
+>   simuladas (`home.service.ts`) a las reales (`api/province`/
+>   `api/municipality`, las mismas que administra `/admin/zonas-entrega`).
+> - **Los combos no se pueden pagar todavía por este checkout**: el backend
+>   solo acepta `ProductId` de `ProductEntity` en las líneas del pedido, no
+>   hay concepto de combo — expandir un combo en sus productos y cobrar el
+>   precio individual de cada uno sobrecargaría al cliente frente al precio
+>   propio del combo. Se bloquea el envío con un mensaje claro si el carrito
+>   tiene un combo, en vez de cobrar de más o fallar con un 400 críptico.
+>   Pendiente: que el backend soporte líneas de combo, o decidir cómo
+>   facturarlas.
+> - **Comprobantes de pago migrados a backend real**:
+>   `src/services/paymentProofs.service.ts` (nuevo) sube la imagen a
+>   Supabase Storage (bucket `payment-proofs`, blob puro) y registra el
+>   comprobante en `api/paymentProof`. Se encontró que **las 3 políticas del
+>   bucket exigían `role = authenticated` + la tabla legacy `user_roles`**
+>   — como el login es 100% .NET desde 2026-08-04, la app nunca vuelve a
+>   autenticarse contra Supabase (siempre corre como `anon`), así que subir
+>   o revisar un comprobante llevaba tiempo roto en silencio. Migración
+>   `009_payment_proofs_storage_anon.sql` (aplicada al proyecto real,
+>   confirmada explícitamente por el usuario): reemplaza esas políticas por
+>   2 nuevas que permiten `anon` subir/leer objetos de ese bucket — mismo
+>   patrón que `product-images` (autorización real en el backend .NET +
+>   rutas admin, Supabase Storage como blob puro, bucket sigue siendo
+>   privado). `get_advisors(security)` sin warnings nuevos tras aplicarla.
+> - `AdminPaymentVerificationPage`/`PaymentProofsQueue`/`PaymentProofCard`
+>   (admin) migrados de Supabase a `api/paymentProof` real. Al confirmar un
+>   pago también se llama `PUT /api/order/{id}/status` (`Paid`) — el backend
+>   no encadena ese cambio como efecto del review, queda documentado en el
+>   propio `ReviewPaymentProofCommandHandler`.
+> - **Código muerto eliminado** (a pedido explícito del usuario, confirmado
+>   antes de borrar): `DashboardPaymentVerificationPage.tsx` +
+>   `components/dashboard/payments/{PaymentProofsQueue,PaymentProofCard}.tsx`
+>   (legacy Supabase, sin ruta), `components/checkout/PaymentProofUpload.tsx`
+>   (huérfano, nunca se renderizaba — tenía `orderId: number`, del esquema
+>   "celulares"), `hooks/payments/useActivePaymentAccount.ts` y las
+>   funciones Supabase de `src/actions/payment.ts`
+>   (`uploadPaymentProof`/`confirmPaymentProof`/`rejectPaymentProof`/
+>   `getPendingPaymentProofs`/`getActivePaymentAccount`/etc. — estas dos
+>   últimas ya duplicaban a `paymentAccounts.service.ts`, real). Ese archivo
+>   queda solo con la tasa de cambio real. `payment.interface.ts` quedó
+>   vacío y se eliminó.
+> - **`/pedido-confirmado/:id`, `/mi-cuenta/pedidos` y `/rastrear-pedido`**
+>   leen del backend real (`CustomerOrder`, `adminOrder.interface.ts`
+>   reutilizado) en vez de `localStorage`. El rastreo se simplificó a los 5
+>   estados reales del backend (`Pending/Paid/Shipped/Delivered/Cancelled`)
+>   en vez de las 5 etapas simuladas por temporizador.
+> - `OrderConfirmedPage` ofrece subir el comprobante ahí mismo si el método
+>   de pago elegido no es "efectivo al recibir" (`zelle`/`bank_transfer`/
+>   `card_manual`), reutilizando la cuenta de cobro activa real
+>   (`paymentAccounts.service.ts`).
+> - **Deuda encontrada, no cerrada en esta fase**: `GET /api/order/{id}` no
+>   valida que quien pregunta sea el dueño del pedido o staff (a diferencia
+>   de `GET /api/order/customer/{customerId}`, que sí lo documenta). Se
+>   agregó una comprobación de dueño en el cliente
+>   (`TrackOrderPage`/`CustomerOrderDetailPage`) como defensa en
+>   profundidad, pero la barrera real falta en el backend — cualquier
+>   cliente autenticado podría, en teoría, pedir cualquier pedido por id.
+>   Corrección real pendiente en `Almacen-Delivery-Home_Api_new`
+>   (`GetOrderByIdQueryHandler`).
+> Verificado: `npm run lint`, `npx tsc -b`, `npm run build` y `npx vitest
+> run` (48 archivos, 240 pruebas) en verde. Verificado también en el
+> navegador (servidor propio en :5184, para no chocar con el servidor de
+> otra sesión en :5183 que resultó estar sirviendo un worktree distinto):
+> `/checkout` sin sesión redirige a `/iniciar-sesion` correctamente. No se
+> pudo probar el flujo completo de creación de pedido en el navegador
+> (crear cuenta de cliente real + pedido real) dentro de esta sesión —
+> pendiente de que el usuario lo confirme manualmente.
+>
+> Actualización anterior: 2026-08-09 (misma sesión que las
 > entradas de abajo). A pedido explícito del usuario ("arregla la 5"), se
 > corrigió el bug de foco reportado en la entrada anterior:
 > `Modal.tsx` (`src/components/ui/Modal.tsx`) reenfocaba el panel del
@@ -770,6 +1010,19 @@ resumen editable por bloque + checkbox de consentimiento de políticas
 
 ### Área privada del cliente (`/mi-cuenta/*`)
 
+> **Desactualizado en 2 puntos, corregido en la entrada "Última
+> actualización" del 2026-08-11 al principio de este documento — no confiar
+> en el detalle de abajo para esos dos puntos:**
+> 1. Esta sección describe RLS de Supabase (`auth.uid() = profile_id`) como
+>    la barrera de autorización de Perfil/Destinatarios/Direcciones/
+>    Favoritos/Soporte. Eso dejó de funcionar el 2026-08-04 (login movido a
+>    .NET) y quedó roto en silencio hasta el 2026-08-11, cuando se migraron
+>    las 5 secciones al backend .NET real.
+> 2. "Pedidos... sigue sin tabla `orders` real" — resuelto el 2026-08-11
+>    (checkout conectado a `api/order` real, ver esa entrada).
+> El resto de esta sección (rutas, estructura de UI, migración
+> `005_customer_account.sql` en sí) sigue siendo información válida.
+
 Las 8 rutas pedidas (`/mi-cuenta`, `pedidos`, `pedidos/:id`,
 `destinatarios`, `direcciones`, `favoritos`, `perfil`, `seguridad`,
 `soporte`) están construidas y enrutadas en `CustomerLayout`/
@@ -1045,15 +1298,13 @@ en [ROADMAP.md](ROADMAP.md).
     `useActiveCombos`/`useHomeProducts` (que sí pegan a Supabase, pero sobre
     el esquema heredado de "celulares"). Reemplazar cuando se defina el
     modelo de datos de categorías/combos para el dominio de alimentos.
-12. **Contenido del catálogo público es simulado** — igual que el riesgo
-    11 para `HomePage`, `src/services/catalog.service.ts` sirve datos fijos
-    en memoria (`src/data/catalog.mock.ts`), no filas reales de Supabase.
-    El catálogo legacy real (`src/actions/product.ts`,
-    `src/hooks/products/*`, sobre el esquema heredado de "celulares") sigue
-    sin usarse desde el router público. Reemplazar `catalog.service.ts` por
-    llamadas reales cuando exista una tabla `products`/`categories` para el
-    dominio de alimentos — probablemente ese sea el punto en que se decida
-    si esa migración reutiliza o reemplaza el esquema legacy.
+12. ~~**Contenido del catálogo público es simulado**~~ — **Desactualizado,
+    ya resuelto antes de esta entrada (ver actualización 2026-08-05 más
+    arriba):** `src/services/catalog.service.ts` pega contra el backend
+    .NET real (`api/product`/`api/category`/`api/combo`) desde esa fecha,
+    no contra `catalog.mock.ts`. Este riesgo quedó sin tachar por error —
+    los riesgos 14 y 15 de abajo que lo citaban como causa también están
+    afectados (ver su propia nota).
 13. **Puerto de desarrollo cambiado en `.claude/launch.json`** — el puerto
     3000 configurado en `vite.config.ts` está reservado por el sistema
     operativo en este entorno Windows y no se puede enlazar. Se ajustó
@@ -1061,19 +1312,18 @@ en [ROADMAP.md](ROADMAP.md).
     --port 5183` solo con fines de verificación visual en este entorno;
     `vite.config.ts` (sí trackeado) se dejó sin tocar. Si el puerto 3000
     tampoco está disponible en otra máquina, aplicar el mismo ajuste local.
-14. **`/mi-cuenta/pedidos` sigue sobre el checkout simulado** — no hay
-    tabla `orders` real para el dominio de comida (ver riesgo 12); los
-    pedidos viven en `localStorage`, etiquetados con `userId` solo si
-    había sesión activa al confirmar el checkout. Un pedido hecho como
-    invitado (sin sesión) nunca aparecerá en `/mi-cuenta/pedidos` de
-    nadie, y los pedidos no sobreviven a un cambio de navegador/dispositivo
-    ni a borrar el `localStorage`. Se resuelve junto con el riesgo 12
-    cuando exista una tabla `orders` real ligada a `profiles`.
-15. **Favoritos referencian productos mock** — `favorites.product_id`
-    guarda el slug del catálogo simulado (`catalog.service.ts`), no una
-    fila real de `products`; si ese slug cambia o el producto se elimina
-    del mock, el favorito queda "huérfano" (se resuelve mostrando nada
-    para ese favorito, no un error). Mismo origen que el riesgo 12.
+14. ~~**`/mi-cuenta/pedidos` sigue sobre el checkout simulado**~~ —
+    **Resuelto 2026-08-11.** El checkout ahora exige sesión y crea el
+    pedido real contra `api/order` (ver "Última actualización" arriba);
+    `/mi-cuenta/pedidos`, `/pedido-confirmado/:id` y `/rastrear-pedido` leen
+    de ahí, no de `localStorage`.
+15. **Favoritos referencian productos del catálogo, no un `products` propio
+    del dominio de comida** — `favorites.product_id` guarda el id/slug del
+    producto tal como lo expone `catalog.service.ts` (real desde
+    2026-08-05, ver nota del riesgo 12); si ese producto se elimina del
+    backend, el favorito queda "huérfano" (se resuelve mostrando nada para
+    ese favorito, no un error). Sigue siendo un riesgo real, solo que ya no
+    por depender de un mock.
 16. ~~**Migraciones 006-008 (panel admin, Fase B) redactadas pero no
     aplicadas**~~ — **Resuelto 2026-07-31.** Las 3 migraciones se aplicaron
     al proyecto Supabase real vía MCP. Categorías/Productos/Combos del
@@ -1098,6 +1348,19 @@ en [ROADMAP.md](ROADMAP.md).
     (`AdminOrderDetailPage`) usa `useAdminOrderDetail`/`getOrderByIdAdmin`
     en su lugar. No se corrigió el hook legacy (fuera de alcance, página
     no enlazada).
+20. **`GET /api/order/{id}` no valida dueño** (backend real,
+    `Almacen-Delivery-Home_Api_new`, `GetOrderByIdQueryHandler`) — a
+    diferencia de `GET /api/order/customer/{customerId}` (cuyo propio
+    comentario en `OrderController` dice que el frontend debe validar que
+    el `customerId` pedido coincide con el `sub` del JWT salvo que sea
+    staff), `GetById` no tiene ese chequeo ni en el controlador ni en el
+    handler: cualquier cliente autenticado puede pedir cualquier pedido por
+    id, no solo los propios. Se agregó una comprobación de dueño en el
+    cliente (`TrackOrderPage`, `CustomerOrderDetailPage`) como defensa en
+    profundidad, pero no es la barrera real — la corrección necesita tocar
+    el backend. *Severidad: media (expone dirección/items/total de pedidos
+    ajenos a cualquier cliente logueado que adivine o enumere un id, no
+    datos de pago).*
 
 Los riesgos 1, 2, 4, 5, 6, 7 y 9 no se tocaron en la fase de sistema de
 diseño y navegación (no era de lógica de negocio). Quedan como entrada de la

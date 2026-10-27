@@ -1,7 +1,7 @@
 import { apiFetch } from '../api/client';
 import { ProductResultDto } from '../api/types';
-import { supabase } from '../supabase/client';
-import { extractFilePath, toUtcDateTime } from '../helpers';
+import { deleteFile, uploadFile } from './files.service';
+import { toUtcDateTime } from '../helpers';
 import { AdminProduct, AdminProductInput, AdminProductSearchParams, AdminProductSearchResult } from '../interfaces';
 
 export interface ProductActorIds {
@@ -17,6 +17,7 @@ const mapProduct = (dto: ProductResultDto): AdminProduct => ({
 	unit: dto.unity,
 	priceUsd: dto.salePriceUsd,
 	discountPriceUsd: dto.discountPriceUsd,
+	costCup: dto.costCup ?? null,
 	stock: dto.quantity,
 	provider: dto.provider,
 	endDate: dto.endDate,
@@ -62,38 +63,22 @@ export const getAdminProductById = async (id: string): Promise<AdminProduct> => 
 	return mapProduct(dto);
 };
 
-// El backend no tiene endpoint de subida de archivos: las imágenes se suben
-// a Supabase Storage (solo como blob storage, sin usar su Auth/Postgres
-// para nada más) y se manda la URL resultante al backend real, que ya
-// acepta `Images: string[]`.
+// Imágenes reales, contra el backend .NET (api/files/upload?folder=products)
+// — ya no depende de Supabase para nada. Ya no hace falta un folderId por
+// producto (Supabase organizaba por carpeta `catalog/{folderId}/...`):
+// api/files namespacea con un `folder` fijo ("products"), y cada archivo ya
+// tiene un nombre único (GUID) generado por el propio backend.
 const uploadProductImages = async (
-	folderId: string,
 	images: (File | string)[],
 	existingImages: string[]
 ): Promise<string[]> => {
 	const validImages = images.filter(Boolean);
 	const imagesToDelete = existingImages.filter(image => !validImages.includes(image));
 
-	if (imagesToDelete.length > 0) {
-		const { error } = await supabase.storage
-			.from('product-images')
-			.remove(imagesToDelete.map(extractFilePath));
-
-		if (error) throw new Error('No pudimos eliminar las imágenes anteriores.');
-	}
+	await Promise.all(imagesToDelete.map(deleteFile));
 
 	return Promise.all(
-		validImages.map(async image => {
-			if (typeof image === 'string') return image;
-
-			const { data, error } = await supabase.storage
-				.from('product-images')
-				.upload(`catalog/${folderId}/${crypto.randomUUID()}-${image.name}`, image);
-
-			if (error) throw new Error('No pudimos subir una de las imágenes.');
-
-			return supabase.storage.from('product-images').getPublicUrl(data.path).data.publicUrl;
-		})
+		validImages.map(image => (typeof image === 'string' ? image : uploadFile(image, 'products')))
 	);
 };
 
@@ -101,11 +86,11 @@ export const createProduct = async (
 	input: AdminProductInput,
 	actor: ProductActorIds
 ): Promise<AdminProduct> => {
-	// Se sube a una carpeta temporal (no depende del id del producto, que
-	// todavía no existe) para poder mandar las imágenes ya resueltas en el
-	// mismo Create y evitar un segundo PUT — el backend registra cada PUT
-	// como un reabastecimiento (ver adminProduct.interface.ts).
-	const uploadedImages = await uploadProductImages(crypto.randomUUID(), input.images, []);
+	// Se suben antes del Create (el producto todavía no tiene id) para poder
+	// mandar las imágenes ya resueltas en el mismo POST y evitar un segundo
+	// PUT — el backend registra cada PUT como un reabastecimiento (ver
+	// adminProduct.interface.ts).
+	const uploadedImages = await uploadProductImages(input.images, []);
 
 	const created = await apiFetch<ProductResultDto>('/api/product', {
 		method: 'POST',
@@ -115,6 +100,7 @@ export const createProduct = async (
 			unity: input.unit,
 			salePriceUsd: input.priceUsd,
 			discountPriceUsd: input.discountPriceUsd,
+			costCup: input.costCup ?? null,
 			endDate: toUtcDateTime(input.endDate),
 			provider: input.provider,
 			adminId: actor.adminId ?? null,
@@ -139,7 +125,7 @@ export const updateProduct = async (
 	currentImages: string[],
 	currentEndDate: string
 ): Promise<AdminProduct> => {
-	const uploadedImages = await uploadProductImages(id, input.images, currentImages);
+	const uploadedImages = await uploadProductImages(input.images, currentImages);
 	const nextEndDate = input.endDate && input.endDate !== currentEndDate ? input.endDate : null;
 
 	const updated = await apiFetch<ProductResultDto>('/api/product', {
@@ -149,6 +135,7 @@ export const updateProduct = async (
 			quantity: input.stock,
 			salePriceUsd: input.priceUsd,
 			discountPriceUsd: input.discountPriceUsd,
+			costCup: input.costCup ?? null,
 			endDate: nextEndDate ? toUtcDateTime(nextEndDate) : null,
 			adminId: actor.adminId ?? null,
 			userId: actor.userId ?? null,

@@ -2,10 +2,11 @@ import { z } from 'zod';
 
 // El backend .NET real (api/product) no modela variantes/presentaciones
 // múltiples, slug ni descripción — solo nombre, cantidad, unidad,
-// proveedor, categoría, precio, vencimiento e imágenes. `pricingMode`/
-// `costCup`/`marginUsd` son campos solo-de-formulario (nunca se envían al
-// backend): se usan para calcular `priceUsd` en el cliente antes de
-// mandarlo (ver PricingModeFields.tsx).
+// proveedor, categoría, precio, vencimiento e imágenes. `costCup` SÍ se
+// persiste en el backend (precio de compra, campo CostCup — habilita el
+// rendimiento por venta del inventario) y se usa además para calcular
+// `priceUsd` en modo automático. `pricingMode`/`marginUsd` siguen siendo
+// campos solo-de-formulario (nunca se envían al backend).
 export const productFormSchema = z
 	.object({
 		categoryId: z.string().min(1, 'Selecciona una categoría'),

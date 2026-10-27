@@ -116,9 +116,9 @@ export const AdminPaymentVerificationPage = lazyNamed(
 	() => import('../pages/admin/orders/AdminPaymentVerificationPage'),
 	'AdminPaymentVerificationPage'
 );
-export const AdminProductsPage = lazyNamed(
-	() => import('../pages/admin/products/AdminProductsPage'),
-	'AdminProductsPage'
+export const AdminInventoryPage = lazyNamed(
+	() => import('../pages/admin/inventario/AdminInventoryPage'),
+	'AdminInventoryPage'
 );
 export const AdminProductFormPage = lazyNamed(
 	() => import('../pages/admin/products/AdminProductFormPage'),
@@ -131,10 +131,6 @@ export const AdminCategoriesPage = lazyNamed(
 export const AdminCombosPage = lazyNamed(
 	() => import('../pages/admin/combos/AdminCombosPage'),
 	'AdminCombosPage'
-);
-export const AdminWarehousePage = lazyNamed(
-	() => import('../pages/admin/almacen/AdminWarehousePage'),
-	'AdminWarehousePage'
 );
 export const AdminPaymentAccountsPage = lazyNamed(
 	() => import('../pages/admin/payments/AdminPaymentAccountsPage'),

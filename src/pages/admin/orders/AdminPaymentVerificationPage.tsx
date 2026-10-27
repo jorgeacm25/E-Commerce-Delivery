@@ -1,11 +1,19 @@
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, Tabs } from '../../../components/ui';
 import { PaymentProofsQueue } from '../../../components/admin/orders/PaymentProofsQueue';
-import { usePendingPaymentProofs } from '../../../hooks';
+import { usePendingPaymentProofs, useAdminOrders, usePaymentAccounts } from '../../../hooks';
 
 export const AdminPaymentVerificationPage = () => {
 	const navigate = useNavigate();
 	const { data, isLoading } = usePendingPaymentProofs();
+	// Se trae todo el listado (pageSize alto) solo para armar el lookup de
+	// pedido/cuenta por id — mismo enfoque que adminOrders.service.ts, que
+	// ya pagina en el cliente sobre el listado completo.
+	const { orders, isLoading: isLoadingOrders } = useAdminOrders({ pageSize: 1000 });
+	const { accounts, isLoading: isLoadingAccounts } = usePaymentAccounts();
+
+	const ordersById = new Map(orders.map(order => [order.id, order]));
+	const accountsById = new Map(accounts.map(account => [account.id, account]));
 
 	return (
 		<div className='flex flex-col gap-4'>
@@ -29,7 +37,12 @@ export const AdminPaymentVerificationPage = () => {
 				}
 			/>
 
-			<PaymentProofsQueue proofs={data ?? []} isLoading={isLoading} />
+			<PaymentProofsQueue
+				proofs={data ?? []}
+				isLoading={isLoading || isLoadingOrders || isLoadingAccounts}
+				ordersById={ordersById}
+				accountsById={accountsById}
+			/>
 		</div>
 	);
 };

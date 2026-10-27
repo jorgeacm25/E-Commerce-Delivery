@@ -1,59 +1,38 @@
-import { supabase } from '../supabase/client';
+import { apiFetch } from '../api/client';
+import { SupportCaseResultDto } from '../api/types';
 import { SupportCase, SupportCaseInput } from '../interfaces';
 
-type SupportCaseRow = {
-	id: string;
-	profile_id: string;
-	category: string;
-	subject: string;
-	message: string;
-	order_reference: string | null;
-	status: string;
-	created_at: string;
-	updated_at: string;
-};
-
-const mapSupportCaseRow = (row: SupportCaseRow): SupportCase => ({
-	id: row.id,
-	profileId: row.profile_id,
-	category: row.category as SupportCase['category'],
-	subject: row.subject,
-	message: row.message,
-	orderReference: row.order_reference,
-	status: row.status as SupportCase['status'],
-	createdAt: row.created_at,
-	updatedAt: row.updated_at,
+// Casos de soporte reales, contra el backend .NET (api/supportCase) — antes
+// escribía a Supabase (`support_cases`, RLS `auth.uid() = profile_id`),
+// rota desde que el login es 100% .NET (ver docs/PROJECT_STATE.md). Crear
+// no devuelve el caso (Result<Unit>): el caller refresca el listado (ver
+// useCreateSupportCase.ts, ya invalida ['support-cases', customerId]).
+const mapSupportCase = (dto: SupportCaseResultDto): SupportCase => ({
+	id: dto.id ?? '',
+	customerId: dto.customerId ?? '',
+	category: (dto.category as SupportCase['category']) ?? 'otro',
+	subject: dto.subject ?? '',
+	message: dto.message ?? '',
+	orderReference: dto.orderReference,
+	status: (dto.status as SupportCase['status']) ?? 'abierto',
+	createdAt: dto.createdAt ?? '',
+	updatedAt: dto.updatedAt ?? '',
 });
 
-export const getSupportCases = async (profileId: string): Promise<SupportCase[]> => {
-	const { data, error } = await supabase
-		.from('support_cases')
-		.select('*')
-		.eq('profile_id', profileId)
-		.order('created_at', { ascending: false });
-
-	if (error) throw new Error('No pudimos cargar tus casos de soporte.');
-
-	return (data as SupportCaseRow[]).map(mapSupportCaseRow);
+export const getSupportCases = async (customerId: string): Promise<SupportCase[]> => {
+	const dtos = await apiFetch<SupportCaseResultDto[]>(`/api/supportCase/customer/${customerId}`);
+	return dtos.map(mapSupportCase).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 };
 
-export const createSupportCase = async (
-	profileId: string,
-	input: SupportCaseInput
-): Promise<SupportCase> => {
-	const { data, error } = await supabase
-		.from('support_cases')
-		.insert({
-			profile_id: profileId,
+export const createSupportCase = async (customerId: string, input: SupportCaseInput): Promise<void> => {
+	await apiFetch('/api/supportCase', {
+		method: 'POST',
+		body: {
+			customerId,
 			category: input.category,
 			subject: input.subject,
 			message: input.message,
-			order_reference: input.orderReference ?? null,
-		})
-		.select()
-		.single();
-
-	if (error) throw new Error('No pudimos crear el caso de soporte.');
-
-	return mapSupportCaseRow(data as SupportCaseRow);
+			orderReference: input.orderReference ?? null,
+		},
+	});
 };

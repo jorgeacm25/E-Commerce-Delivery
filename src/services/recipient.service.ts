@@ -1,101 +1,68 @@
-import { supabase } from '../supabase/client';
+import { apiFetch } from '../api/client';
+import { CustomerRecipientResultDto } from '../api/types';
 import { CustomerRecipient, CustomerRecipientInput } from '../interfaces';
 
-type RecipientRow = {
-	id: string;
-	profile_id: string;
-	full_name: string;
-	phone: string;
-	national_id: string | null;
-	province: string;
-	municipality: string;
-	address_line: string;
-	notes: string | null;
-	is_default: boolean;
-	created_at: string;
-	updated_at: string;
-};
-
-const mapRecipientRow = (row: RecipientRow): CustomerRecipient => ({
-	id: row.id,
-	profileId: row.profile_id,
-	fullName: row.full_name,
-	phone: row.phone,
-	nationalId: row.national_id,
-	province: row.province,
-	municipality: row.municipality,
-	addressLine: row.address_line,
-	notes: row.notes,
-	isDefault: row.is_default,
-	createdAt: row.created_at,
-	updatedAt: row.updated_at,
+// Destinatarios en Cuba, contra el backend .NET real (api/customerRecipient)
+// — antes escribía a Supabase (`customer_recipients`, RLS `auth.uid() =
+// profile_id`), rota desde que el login es 100% .NET (ver
+// docs/PROJECT_STATE.md). Create/Update/Delete no devuelven la fila
+// (Result<Unit>): el caller refresca el listado (ver useManageRecipients.ts).
+const mapRecipient = (dto: CustomerRecipientResultDto): CustomerRecipient => ({
+	id: dto.id ?? '',
+	customerId: dto.customerId ?? '',
+	fullName: dto.fullName ?? '',
+	phone: dto.phone ?? '',
+	nationalId: dto.nationalId,
+	province: dto.province ?? '',
+	municipality: dto.municipality ?? '',
+	addressLine: dto.addressLine ?? '',
+	notes: dto.notes,
+	isDefault: dto.isDefault ?? false,
+	createdAt: dto.createdAt ?? '',
+	updatedAt: dto.updatedAt ?? '',
 });
 
-export const getRecipients = async (profileId: string): Promise<CustomerRecipient[]> => {
-	const { data, error } = await supabase
-		.from('customer_recipients')
-		.select('*')
-		.eq('profile_id', profileId)
-		.order('is_default', { ascending: false })
-		.order('created_at', { ascending: false });
-
-	if (error) throw new Error('No pudimos cargar tus destinatarios.');
-
-	return (data as RecipientRow[]).map(mapRecipientRow);
+export const getRecipients = async (customerId: string): Promise<CustomerRecipient[]> => {
+	const dtos = await apiFetch<CustomerRecipientResultDto[]>(`/api/customerRecipient/customer/${customerId}`);
+	return dtos
+		.map(mapRecipient)
+		.sort((a, b) => Number(b.isDefault) - Number(a.isDefault) || b.createdAt.localeCompare(a.createdAt));
 };
 
-export const createRecipient = async (
-	profileId: string,
-	input: CustomerRecipientInput
-): Promise<CustomerRecipient> => {
-	const { data, error } = await supabase
-		.from('customer_recipients')
-		.insert({
-			profile_id: profileId,
-			full_name: input.fullName,
+export const createRecipient = async (customerId: string, input: CustomerRecipientInput): Promise<void> => {
+	await apiFetch('/api/customerRecipient', {
+		method: 'POST',
+		body: {
+			customerId,
+			fullName: input.fullName,
 			phone: input.phone,
-			national_id: input.nationalId ?? null,
+			nationalId: input.nationalId ?? null,
 			province: input.province,
 			municipality: input.municipality,
-			address_line: input.addressLine,
+			addressLine: input.addressLine,
 			notes: input.notes ?? null,
-			is_default: input.isDefault ?? false,
-		})
-		.select()
-		.single();
-
-	if (error) throw new Error('No pudimos guardar el destinatario.');
-
-	return mapRecipientRow(data as RecipientRow);
+			isDefault: input.isDefault ?? false,
+		},
+	});
 };
 
-export const updateRecipient = async (
-	id: string,
-	input: CustomerRecipientInput
-): Promise<CustomerRecipient> => {
-	const { data, error } = await supabase
-		.from('customer_recipients')
-		.update({
-			full_name: input.fullName,
+export const updateRecipient = async (id: string, input: CustomerRecipientInput): Promise<void> => {
+	await apiFetch('/api/customerRecipient', {
+		method: 'PUT',
+		body: {
+			id,
+			fullName: input.fullName,
 			phone: input.phone,
-			national_id: input.nationalId ?? null,
+			nationalId: input.nationalId ?? null,
 			province: input.province,
 			municipality: input.municipality,
-			address_line: input.addressLine,
+			addressLine: input.addressLine,
 			notes: input.notes ?? null,
-			is_default: input.isDefault ?? false,
-		})
-		.eq('id', id)
-		.select()
-		.single();
-
-	if (error) throw new Error('No pudimos actualizar el destinatario.');
-
-	return mapRecipientRow(data as RecipientRow);
+			isDefault: input.isDefault ?? false,
+		},
+	});
 };
 
 export const deleteRecipient = async (id: string): Promise<void> => {
-	const { error } = await supabase.from('customer_recipients').delete().eq('id', id);
-
-	if (error) throw new Error('No pudimos eliminar el destinatario.');
+	await apiFetch(`/api/customerRecipient/${id}`, { method: 'DELETE' });
 };

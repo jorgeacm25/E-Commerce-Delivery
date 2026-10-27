@@ -1,8 +1,6 @@
-// Cliente HTTP para el backend .NET (Almacen-Delivery-Home_Api_new), usado
-// por src/api/auth.ts y src/context/AuthContext.tsx. Los actions/services
-// del resto del dominio (productos, pedidos, direcciones, etc.) todavía
-// hablan con Supabase directamente — migrarlos es trabajo aparte, más
-// grande, fuera del alcance de la autenticación.
+// Cliente HTTP para el backend .NET (Almacen-Delivery-Home_Api_new) — toda
+// la app habla con este backend, ya no queda ningún service contra
+// Supabase (ver docs/PROJECT_STATE.md).
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
@@ -82,13 +80,17 @@ interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
 
 export const apiFetch = async <T>(path: string, options: ApiFetchOptions = {}): Promise<T> => {
 	const { body, auth = true, headers, ...rest } = options;
+	const isFormData = body instanceof FormData;
 
 	const finalHeaders: Record<string, string> = {
 		Accept: 'application/json',
 		...(headers as Record<string, string> | undefined),
 	};
 
-	if (body !== undefined) {
+	// FormData (subida de archivos, ver files.service.ts): el navegador
+	// arma su propio Content-Type con el boundary — si lo seteamos a mano
+	// acá, el multipart queda mal formado y el backend no puede parsearlo.
+	if (body !== undefined && !isFormData) {
 		finalHeaders['Content-Type'] = 'application/json';
 	}
 
@@ -99,7 +101,7 @@ export const apiFetch = async <T>(path: string, options: ApiFetchOptions = {}): 
 	const response = await fetch(`${API_BASE_URL ?? ''}${path}`, {
 		...rest,
 		headers: finalHeaders,
-		body: body !== undefined ? JSON.stringify(body) : undefined,
+		body: body === undefined ? undefined : isFormData ? (body as FormData) : JSON.stringify(body),
 	});
 
 	// 204 No Content u otras respuestas sin body.

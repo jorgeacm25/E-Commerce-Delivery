@@ -70,20 +70,21 @@ describe('AdminProductFormPage', () => {
 		});
 	});
 
-	it('en modo fijo muestra el campo de precio y oculta costo/margen', () => {
+	it('en modo fijo muestra el precio y el precio de compra (opcional) y oculta el margen', () => {
 		renderPage();
 
 		expect(screen.getByLabelText(/^precio \(usd\)\*?$/i)).toBeInTheDocument();
-		expect(screen.queryByLabelText(/costo \(cup\)/i)).not.toBeInTheDocument();
+		expect(screen.getByLabelText(/precio de compra \(cup\)/i)).toBeInTheDocument();
+		expect(screen.queryByLabelText(/margen \(usd\)/i)).not.toBeInTheDocument();
 	});
 
-	it('en modo automático calcula el precio a partir de costo CUP y margen USD', async () => {
+	it('en modo automático calcula el precio a partir del precio de compra y margen USD', async () => {
 		const user = userEvent.setup();
 		renderPage();
 
 		await user.click(screen.getByLabelText(/calcular automático/i));
 
-		await user.type(screen.getByLabelText(/costo \(cup\)/i), '400');
+		await user.type(screen.getByLabelText(/precio de compra \(cup\)/i), '400');
 		await user.type(screen.getByLabelText(/margen \(usd\)/i), '0.5');
 
 		// (400 / 400) + 0.5 = 1.50

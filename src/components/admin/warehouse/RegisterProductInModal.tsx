@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Input, Modal, Select } from '../../ui';
 import { useAdminProducts } from '../../../hooks';
 
@@ -7,9 +7,11 @@ interface Props {
 	onClose: () => void;
 	onSubmit: (input: { productId: string; quantity: number; provider: string; endDate?: string }) => void;
 	isSubmitting: boolean;
+	// Producto preseleccionado al abrir desde una fila del inventario.
+	initialProductId?: string;
 }
 
-export const RegisterProductInModal = ({ isOpen, onClose, onSubmit, isSubmitting }: Props) => {
+export const RegisterProductInModal = ({ isOpen, onClose, onSubmit, isSubmitting, initialProductId }: Props) => {
 	const { products } = useAdminProducts({ pageSize: 200 });
 
 	const [productId, setProductId] = useState('');
@@ -30,6 +32,15 @@ export const RegisterProductInModal = ({ isOpen, onClose, onSubmit, isSubmitting
 		reset();
 		onClose();
 	};
+
+	// Prefill al abrir desde una fila del inventario: producto ya
+	// seleccionado y proveedor copiado (mismo criterio del cambio manual).
+	useEffect(() => {
+		if (!isOpen || !initialProductId) return;
+		setProductId(initialProductId);
+		const product = products.find(item => item.id === initialProductId);
+		setProvider(product?.provider ?? '');
+	}, [isOpen, initialProductId, products]);
 
 	const handleProductChange = (value: string) => {
 		setProductId(value);

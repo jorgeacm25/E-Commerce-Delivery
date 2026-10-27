@@ -1,15 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { useDeliveryZones } from '../../../hooks';
+import { useAdminMunicipalities, useAdminProvinces } from '../../../hooks';
 import { CheckoutFormValues } from '../../../lib/checkoutValidators';
 import { SectionState } from '../../home/SectionState';
 import { Select, Skeleton } from '../../ui';
 
-// Provincia y municipio de entrega, sobre las zonas ya definidas para el
-// resto del sitio (useDeliveryZones, mismo servicio simulado que usa
-// HomePage/ProductDeliveryZones). Las provincias sin cobertura se muestran
-// pero deshabilitadas en vez de ocultarse, para que el cliente entienda por
-// qué no puede seleccionarlas.
+// Provincia y municipio de entrega, contra las zonas reales del backend
+// .NET (api/province, api/municipality — las mismas que administra
+// /admin/zonas-entrega). Geografía fija: hoy solo hay cobertura en Pinar
+// del Río, Artemisa y La Habana (ver DbSeeder del backend).
 export const LocationStep = () => {
 	const {
 		register,
@@ -18,7 +17,12 @@ export const LocationStep = () => {
 		formState: { errors },
 	} = useFormContext<CheckoutFormValues>();
 
-	const { zones, isLoading, isError, refetch } = useDeliveryZones();
+	const { provinces, isLoading: isLoadingProvinces, isError: isProvincesError } = useAdminProvinces();
+	const { municipalities, isLoading: isLoadingMunicipalities, isError: isMunicipalitiesError } =
+		useAdminMunicipalities();
+
+	const isLoading = isLoadingProvinces || isLoadingMunicipalities;
+	const isError = isProvincesError || isMunicipalitiesError;
 
 	const provinceId = useWatch({ control, name: 'location.provinceId' });
 	const isFirstRender = useRef(true);
@@ -31,7 +35,7 @@ export const LocationStep = () => {
 		setValue('location.municipality', '', { shouldValidate: false });
 	}, [provinceId, setValue]);
 
-	const selectedZone = zones.find(zone => zone.id === provinceId);
+	const municipalitiesInProvince = municipalities.filter(municipality => municipality.provinceId === provinceId);
 
 	return (
 		<div className='flex flex-col gap-4'>
@@ -40,8 +44,7 @@ export const LocationStep = () => {
 			<SectionState
 				isLoading={isLoading}
 				isError={isError}
-				isEmpty={!isLoading && !isError && zones.length === 0}
-				onRetry={refetch}
+				isEmpty={!isLoading && !isError && provinces.length === 0}
 				loadingFallback={
 					<div className='flex flex-col gap-4'>
 						<Skeleton className='h-16 rounded-lg' />
@@ -55,23 +58,21 @@ export const LocationStep = () => {
 					required
 					placeholder='Selecciona una provincia'
 					error={errors.location?.provinceId?.message}
-					options={zones.map(zone => ({
-						value: zone.id,
-						label: zone.available ? zone.province : `${zone.province} (próximamente)`,
-						disabled: !zone.available,
-					}))}
+					options={provinces.map(province => ({ value: province.id, label: province.name }))}
 					{...register('location.provinceId')}
 				/>
 
 				<Select
 					label='Municipio'
 					required
-					placeholder={selectedZone ? 'Selecciona un municipio' : 'Primero selecciona una provincia'}
-					disabled={!selectedZone}
+					placeholder={provinceId ? 'Selecciona un municipio' : 'Primero selecciona una provincia'}
+					disabled={!provinceId}
 					error={errors.location?.municipality?.message}
-					options={(selectedZone?.municipalities ?? []).map(municipality => ({
-						value: municipality,
-						label: municipality,
+					options={municipalitiesInProvince.map(municipality => ({
+						value: municipality.name,
+						label: municipality.deliveryFeeUsd
+							? `${municipality.name} — envío desde $${municipality.deliveryFeeUsd.toFixed(2)}`
+							: municipality.name,
 					}))}
 					{...register('location.municipality')}
 				/>

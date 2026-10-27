@@ -23,6 +23,7 @@ const productFixture: ProductResultDto = {
 	unity: 'unidad',
 	salePriceUsd: 6.5,
 	discountPriceUsd: null,
+	costCup: null,
 	endDate: '2027-01-01T00:00:00Z',
 	nameUserorAdmin: 'Staff Demo',
 	categoryId: 'cat-despensa',

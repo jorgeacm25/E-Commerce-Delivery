@@ -15,6 +15,9 @@ export interface AdminProduct {
 	unit: string;
 	priceUsd: number;
 	discountPriceUsd: number | null;
+	// Precio de compra en CUP (null = sin costo registrado — productos
+	// creados antes de existir el campo). Ver ProductEntity.CostCup.
+	costCup: number | null;
 	stock: number;
 	provider: string;
 	// Vencimiento más próximo entre los lotes registrados (el backend guarda
@@ -31,6 +34,10 @@ export interface AdminProductInput {
 	unit: string;
 	priceUsd: number;
 	discountPriceUsd: number | null;
+	// Opcional a propósito: si no llega, el backend conserva el costo ya
+	// registrado (ProductEntity.Update solo lo sobreescribe con valor).
+	// Los PUTs que no lo conocen (entradas de reabastecimiento) lo omiten.
+	costCup?: number | null;
 	stock: number;
 	provider: string;
 	endDate: string;

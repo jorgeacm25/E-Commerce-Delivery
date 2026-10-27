@@ -1,6 +1,11 @@
 import { apiFetch } from '../api/client';
-import { HistoryEntry, ProductResultDto } from '../api/types';
-import { RegisterProductInInput, RegisterProductOutInput, StockAlert } from '../interfaces';
+import { HistoryEntry, ProductOutResultDto, ProductResultDto } from '../api/types';
+import {
+	InventoryMetrics,
+	RegisterProductInInput,
+	RegisterProductOutInput,
+	StockAlert,
+} from '../interfaces';
 import { toUtcDateTime } from '../helpers';
 import { getAdminProductById } from './adminProducts.service';
 
@@ -94,6 +99,9 @@ export const registerProductIn = async (
 			quantity: newTotal,
 			salePriceUsd: current.priceUsd,
 			discountPriceUsd: current.discountPriceUsd,
+			// El backend solo cambia el costo si llega un valor — se
+			// reenvía el actual para que un PUT "a ciegas" no lo borre.
+			costCup: current.costCup,
 			endDate: nextEndDate ? toUtcDateTime(nextEndDate) : null,
 			adminId: actor.adminId,
 			userId: actor.userId,
@@ -103,4 +111,60 @@ export const registerProductIn = async (
 			images: current.images,
 		},
 	});
+};
+
+// Salidas de stock estructuradas (api/productOut): filas manuales del
+// almacén y ventas web, con ProductId y cantidad exacta — la fuente real
+// para la columna "Salidas" del inventario (el histórico de texto queda
+// solo para display). Requiere sesión (GET agregado en la sección Inventario).
+export const getProductOuts = async (): Promise<ProductOutResultDto[]> => {
+	const outs = await apiFetch<ProductOutResultDto[]>('/api/productOut');
+	return outs.slice().sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? ''));
+};
+
+// Escapa los caracteres con significado en regex para poder buscar nombres
+// de producto literales ("R$ 500 (2 und.)", "Pan + mantequilla"...).
+const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Métricas por producto para la tabla de Inventario:
+// - salidas: suma de unidades y nº de movimientos desde api/productOut.
+// - última entrada: parsea los mensajes `Entrada` de api/history (el
+//   backend no tiene entidad de entrada ni guarda ids en el histórico).
+//   Formatos reales (UpdateProductEntityCommandHandler): "...del producto:
+//   {nombre}" seguido de "\n" (rama admin) o " ," (rama user) — el
+//   lookahead cubre ambos y evita emparejar "Pan" con "Pan integral".
+//   Límite conocido: dos productos con el mismo nombre compartirían fecha.
+export const buildInventoryMetrics = (
+	products: { id: string; name: string }[],
+	history: HistoryEntry[],
+	productOuts: ProductOutResultDto[]
+): Map<string, InventoryMetrics> => {
+	const metrics = new Map<string, InventoryMetrics>();
+	const ensure = (id: string): InventoryMetrics => {
+		const existing = metrics.get(id);
+		if (existing) return existing;
+		const created: InventoryMetrics = { lastEntryAt: null, outsUnits: 0, outsMovements: 0 };
+		metrics.set(id, created);
+		return created;
+	};
+
+	for (const out of productOuts) {
+		const target = ensure(out.productId);
+		target.outsUnits += out.quantity;
+		target.outsMovements += 1;
+	}
+
+	for (const entry of history) {
+		if (entry.actionType !== 'Entrada') continue;
+		for (const product of products) {
+			const pattern = new RegExp(`producto:\\s*${escapeRegExp(product.name)}\\s*(?=\\n|,)`, 'i');
+			if (!pattern.test(entry.description)) continue;
+			const target = ensure(product.id);
+			if (!target.lastEntryAt || entry.createdAt > target.lastEntryAt) {
+				target.lastEntryAt = entry.createdAt;
+			}
+		}
+	}
+
+	return metrics;
 };

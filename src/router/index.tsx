@@ -4,11 +4,13 @@ import { PublicLayout } from '../layouts/PublicLayout';
 import { CustomerLayout } from '../layouts/CustomerLayout';
 import { AdminLayout } from '../layouts/AdminLayout';
 import { PageSkeleton } from '../components/layout';
+import { RequireAuth } from './RequireAuth';
 import {
 	AdminCategoriesPage,
 	AdminCombosPage,
 	AdminCustomersPage,
 	AdminDeliveryZonesPage,
+	AdminInventoryPage,
 	AdminLoginPage,
 	AdminOrderDetailPage,
 	AdminOrdersPage,
@@ -22,9 +24,7 @@ import {
 	AdminPerformancePage,
 	AdminPaymentVerificationPage,
 	AdminProductFormPage,
-	AdminProductsPage,
 	AdminSectionPlaceholderPage,
-	AdminWarehousePage,
 	CartPage,
 	CatalogPage,
 	CategoryPage,
@@ -72,7 +72,15 @@ export const router = createBrowserRouter([
 			{ path: 'producto/:slug', element: withSuspense(<ProductPage />) },
 			{ path: 'combos', element: withSuspense(<CombosPage />) },
 			{ path: 'carrito', element: withSuspense(<CartPage />) },
-			{ path: 'rastrear-pedido', element: withSuspense(<TrackOrderPage />) },
+			{
+				// GET /api/order/{id} exige sesión (backend .NET) — ya no hay
+				// forma de rastrear un pedido como invitado sin exponer pedidos
+				// ajenos, así que esta ruta también exige sesión de cliente.
+				path: 'rastrear-pedido',
+				element: (
+					<RequireAuth allowedRoles={['customer']}>{withSuspense(<TrackOrderPage />)}</RequireAuth>
+				),
+			},
 			{ path: 'iniciar-sesion', element: withSuspense(<LoginPage />) },
 			{ path: 'registrarse', element: withSuspense(<RegisterPage />) },
 			{ path: 'recuperar-contrasena', element: withSuspense(<ForgotPasswordPage />) },
@@ -108,7 +116,12 @@ export const router = createBrowserRouter([
 	},
 	{
 		path: '/checkout',
-		element: withSuspense(<CheckoutPage />),
+		// El backend .NET exige un CustomerId autenticado para crear el
+		// pedido (no hay checkout de invitado, ver OrderController.Create):
+		// se exige sesión de cliente antes de entrar al wizard.
+		element: (
+			<RequireAuth allowedRoles={['customer']}>{withSuspense(<CheckoutPage />)}</RequireAuth>
+		),
 	},
 	{
 		path: '/pedido-confirmado/:orderNumber',
@@ -127,12 +140,16 @@ export const router = createBrowserRouter([
 			{ path: 'pedidos/pagos', element: withSuspense(<AdminPaymentVerificationPage />) },
 			{ path: 'pedidos/cuentas', element: withSuspense(<AdminPaymentAccountsPage />) },
 			{ path: 'pedidos/:id', element: withSuspense(<AdminOrderDetailPage />) },
-			{ path: 'productos', element: withSuspense(<AdminProductsPage />) },
+			// Inventario = fusión de Productos + Almacén (sección única con
+			// pestañas). Las rutas viejas redirigen para no romper enlaces
+			// guardados; los formularios de producto conservan su path.
+			{ path: 'inventario', element: withSuspense(<AdminInventoryPage />) },
+			{ path: 'productos', element: <Navigate to='/admin/inventario' replace /> },
 			{ path: 'productos/nuevo', element: withSuspense(<AdminProductFormPage />) },
 			{ path: 'productos/:id/editar', element: withSuspense(<AdminProductFormPage />) },
 			{ path: 'categorias', element: withSuspense(<AdminCategoriesPage />) },
 			{ path: 'combos', element: withSuspense(<AdminCombosPage />) },
-			{ path: 'almacen', element: withSuspense(<AdminWarehousePage />) },
+			{ path: 'almacen', element: <Navigate to='/admin/inventario' replace /> },
 			{ path: 'clientes', element: withSuspense(<AdminCustomersPage />) },
 			{ path: 'vendedores', element: withSuspense(<AdminSellersPage />) },
 			{ path: 'trabajadores', element: withSuspense(<AdminWorkersPage />) },

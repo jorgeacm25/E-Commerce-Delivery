@@ -30,3 +30,13 @@ export interface RegisterProductInInput {
 	provider: string;
 	endDate?: string;
 }
+
+// Métricas derivadas por producto para la tabla de Inventario. La última
+// entrada se parsea de los mensajes del histórico (api/history no guarda
+// ids de producto) y las salidas suman las filas estructuradas de
+// api/productOut. Ver buildInventoryMetrics en src/services/almacen.service.ts.
+export interface InventoryMetrics {
+	lastEntryAt: string | null;
+	outsUnits: number;
+	outsMovements: number;
+}

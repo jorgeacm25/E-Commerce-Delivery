@@ -4,10 +4,11 @@ import { PAYMENT_METHOD_OPTIONS } from '../../../constants/checkout';
 import { CheckoutFormValues } from '../../../lib/checkoutValidators';
 import { Alert, RadioGroup } from '../../ui';
 
-// Pago simulado: no se integra ningún procesador de pago real todavía (ver
-// CLAUDE.md) ni se captura número de tarjeta en ningún método, incluso el
-// de "tarjeta" resuelve con verificación manual, igual que el resto del
-// flujo de pagos manual ya existente en el proyecto.
+// No se integra ningún procesador de pago real todavía (ver CLAUDE.md) ni
+// se captura número de tarjeta en ningún método: el pedido se crea real en
+// el backend al confirmar, pero el pago se verifica a mano (subiendo un
+// comprobante después, ver OrderConfirmedPage) — incluso el método
+// "tarjeta" resuelve así.
 export const PaymentStep = () => {
 	const {
 		control,
@@ -39,8 +40,8 @@ export const PaymentStep = () => {
 			<Alert variant='info'>
 				<span className='inline-flex items-center gap-1.5'>
 					<FiShieldOff aria-hidden='true' />
-					Este checkout es una simulación: no se procesan pagos reales ni se solicita el
-					número de tu tarjeta.
+					Nunca te pedimos el número de tu tarjeta. Si el método elegido requiere
+					comprobante, podrás subirlo después de confirmar el pedido.
 				</span>
 			</Alert>
 		</div>

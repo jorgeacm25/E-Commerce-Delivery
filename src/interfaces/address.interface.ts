@@ -1,10 +1,9 @@
-// Dirección guardada por el cliente (tabla `customer_addresses`, ver
-// supabase/migrations/005_customer_account.sql). Independiente de la tabla
-// legacy `addresses` del dominio "celulares" (ligada a `customers`, no a
-// `profiles`).
+// Dirección guardada por el cliente, contra el backend .NET real
+// (api/customerAddress). Independiente de la tabla legacy `addresses` del
+// dominio "celulares" (Supabase, ligada a `customers`).
 export interface CustomerAddress {
 	id: string;
-	profileId: string;
+	customerId: string;
 	label: string | null;
 	province: string;
 	municipality: string;
