@@ -1,5 +1,42 @@
 # Estado del proyecto
 
+> Última actualización: 2026-10-27. Nuevo hero de la portada, a pedido
+> explícito del usuario (commit `4921f8d`, no forma parte de una fase del
+> roadmap):
+> - **Estructura**: `HeroSection` pasa a componer módulos de
+>   `src/components/home/hero/` — `HeroBackdrop` (degradado naranja +
+>   manchas difusas esmeriladas), `HeroNavbar` (barra clara con 5 opciones
+>   estáticas "Opción 1-5", sin submenús, scroll horizontal en móvil),
+>   `FloatingLogo` (logo oficial con animación de globo de helio) y
+>   `HeroCarousel`. Textos, opciones del menú y diapositivas viven en
+>   `heroContent.ts`, no inline en los componentes.
+> - **Estética**: efecto `glass3d` en `src/index.css` (capa `components`)
+>   con variantes `glass3d-orange` (fondo, carrusel) y `glass3d-light`
+>   (navbar, leyendas). El ruido de textura es un SVG inline en vez de la
+>   textura remota de transparenttextures.com (sin dependencia de
+>   terceros). Clases `fade-edges` / `fade-edges-soft` para fundir los
+>   bordes de las fotos con el fondo. Animaciones `float` y `float-shadow`
+>   en `tailwind.config.js`; ambas se desactivan con
+>   `prefers-reduced-motion`.
+> - **CTA**: "Ver todos los productos" → `/catalogo` (reemplaza "Comprar
+>   ahora") + enlace secundario "Rastrear pedido".
+> - **Carrusel**: 6 diapositivas que alternan foto/texto (persona comprando
+>   desde el celular, "Somos tu mejor opción", caja del combo, "Llena su
+>   despensa hoy", surtido de productos, "De tu pantalla a su mesa").
+>   Autoplay cada 5 s con pausa al pasar el mouse, botón pausa/reproducir
+>   (WCAG 2.2.2), anterior/siguiente y puntos; sin autoplay si el usuario
+>   pide movimiento reducido. Las fotos de combos usan `fit: 'contain'`
+>   (imagen completa con el logotipo visible, sobre una copia desenfocada
+>   de sí misma). Prueba nueva en
+>   `src/components/home/hero/__tests__/HeroCarousel.test.tsx`.
+> - **Assets**: `public/img/hero/` (logo + 3 fotos, JPEG de 220-750 KB).
+>   Pendiente: convertir a WebP/comprimir.
+> - **Pendiente de decisión del usuario**: la barra de 5 opciones convive
+>   con el `Header` global fijo (quedan dos barras arriba en la portada);
+>   no es `position: fixed` para no superponerse a él.
+> - `npm run lint`, `npx vitest run` y `npm run build` en verde. Sin
+>   verificación visual en navegador por parte del agente.
+>
 > Última actualización: 2026-09-24. Cierre de la Fase C (Almacén), a
 > pedido explícito del usuario ("vamos a terminar la parte del almacén"):
 > - **Registrar entrada**: `/admin/almacen` gana el botón "Registrar
@@ -682,8 +719,11 @@
 
 ### Página de inicio (`src/pages/public/HomePage.tsx`)
 
-- Contenido completo (no placeholder): hero con propuesta de valor y CTAs
-  ("Comprar ahora" → `/catalogo`, "Rastrear pedido" → `/rastrear-pedido`),
+- Contenido completo (no placeholder): hero con fondo naranja glass3d,
+  barra de 5 opciones estáticas, logo flotante, propuesta de valor, CTAs
+  ("Ver todos los productos" → `/catalogo`, "Rastrear pedido" →
+  `/rastrear-pedido`) y carrusel de fotos/textos (ver
+  `src/components/home/hero/` y la entrada del 2026-10-27 arriba),
   categorías destacadas, combos familiares, productos populares, "Cómo
   funciona", zonas de entrega, beneficios, garantías, testimonios simulados,
   preguntas frecuentes, llamada a la acción final y contacto/soporte.
