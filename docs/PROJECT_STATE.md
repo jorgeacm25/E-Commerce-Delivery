@@ -1,5 +1,29 @@
 # Estado del proyecto
 
+> Última actualización: 2026-10-27 (2). Nueva paleta y fondo animado del
+> hero, a pedido explícito del usuario (no forma parte de una fase del
+> roadmap):
+> - **Paleta** (`tailwind.config.js`), tomada de la referencia "Modern
+>   Design": `primary` = naranja brillante (500 = `#FF6F26`; 600/700 se
+>   oscurecen a `#C9470B`/`#A8390D` para que el texto blanco de los botones
+>   cumpla AA), `secondary` = verde menta (200 = `#B9E6CD`, 400 = `#65BC9A`,
+>   600 = `#2B8055`), `neutral` = grises fríos (50 = `#FBFBFB`, 100 =
+>   `#F8F8F8`, 900 = carbón `#333338`). Sombras `card`/`popover` al mismo
+>   carbón. Los nombres de los tokens no cambian, así que todo el sitio
+>   adopta la paleta sin tocar componentes.
+> - **Hero**: fondo verde oscuro. `HeroBackdrop` ahora usa
+>   `PointerGlowCanvas` (WebGL puro, sin dependencias): flujo de ruido fbm
+>   en verdes con una luz que sigue al puntero (suavizada), ilumina las
+>   crestas y desplaza el flujo. Sin puntero (móvil/teclado) la luz deriva
+>   sola. Se pausa fuera de pantalla y con la pestaña oculta; con
+>   `prefers-reduced-motion` se pinta un único cuadro fijo; sin WebGL queda
+>   el degradado CSS de respaldo. `glass3d-orange` se reemplaza por
+>   `glass3d-green` (marco del carrusel); `glass3d-light` pasa a blanco
+>   neutro. CTA principal: naranja `primary-500` con texto carbón
+>   (contraste 5.7:1; blanco sobre `#FF6F26` sería 2.8:1).
+> - `npm run lint`, `npx vitest run` (241 pruebas) y `npm run build` en
+>   verde. Verificación visual con Chrome headless (escritorio y móvil).
+>
 > Última actualización: 2026-10-27. Nuevo hero de la portada, a pedido
 > explícito del usuario (commit `4921f8d`, no forma parte de una fase del
 > roadmap):
@@ -23,7 +47,7 @@
 > - **Carrusel**: 6 diapositivas que alternan foto/texto (persona comprando
 >   desde el celular, "Somos tu mejor opción", caja del combo, "Llena su
 >   despensa hoy", surtido de productos, "De tu pantalla a su mesa").
->   Autoplay cada 5 s con pausa al pasar el mouse, botón pausa/reproducir
+>   Autoplay cada 4 s con pausa al pasar el mouse, botón pausa/reproducir
 >   (WCAG 2.2.2), anterior/siguiente y puntos; sin autoplay si el usuario
 >   pide movimiento reducido. Las fotos de combos usan `fit: 'contain'`
 >   (imagen completa con el logotipo visible, sobre una copia desenfocada

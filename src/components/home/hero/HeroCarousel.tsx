@@ -3,7 +3,7 @@ import { FiChevronLeft, FiChevronRight, FiPause, FiPlay } from 'react-icons/fi';
 import { cn } from '../../../helpers';
 import { HeroSlide, heroSlides } from './heroContent';
 
-const AUTOPLAY_MS = 5000;
+const AUTOPLAY_MS = 4000;
 
 const prefersReducedMotion = () =>
 	typeof window !== 'undefined' &&
@@ -74,7 +74,7 @@ const SlideContent = ({ slide, isActive }: { slide: HeroSlide; isActive: boolean
 	);
 };
 
-// Carrusel accesible con fundido cruzado: avanza solo cada 5 s, se pausa
+// Carrusel accesible con fundido cruzado: avanza solo cada 4 s, se pausa
 // al pasar el mouse o enfocar un control, y no arranca solo si el usuario
 // pidió movimiento reducido. Tiene botón de pausa (WCAG 2.2.2).
 export const HeroCarousel = ({ className }: { className?: string }) => {
@@ -102,7 +102,7 @@ export const HeroCarousel = ({ className }: { className?: string }) => {
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
-			<div className='glass3d glass3d-orange rounded-[2rem] p-2'>
+			<div className='glass3d glass3d-green rounded-[2rem] p-2'>
 				<div
 					aria-live={isPlaying ? 'off' : 'polite'}
 					className='relative aspect-[4/5] overflow-hidden rounded-[1.6rem]'

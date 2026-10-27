@@ -5,9 +5,9 @@ import { HeroBackdrop } from './hero/HeroBackdrop';
 import { HeroCarousel } from './hero/HeroCarousel';
 import { HeroNavbar } from './hero/HeroNavbar';
 
-// Hero de la portada: barra clara arriba, logo flotante + mensaje + CTA a
-// la izquierda y carrusel en la esquina inferior derecha (en móvil todo se
-// apila en una sola columna).
+// Hero de la portada sobre fondo verde con luz que sigue al puntero: barra
+// clara arriba, logo flotante + mensaje + CTA a la izquierda y carrusel en
+// la esquina inferior derecha (en móvil todo se apila en una sola columna).
 export const HeroSection = () => {
 	return (
 		<section className='relative isolate overflow-hidden'>
@@ -23,7 +23,7 @@ export const HeroSection = () => {
 						</div>
 
 						<div className='flex flex-col items-center gap-5 lg:items-start'>
-							<span className='inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white'>
+							<span className='inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-secondary-100 ring-1 ring-secondary-300/40'>
 								<FiTruck aria-hidden='true' />
 								Entregas a domicilio en toda Cuba
 							</span>
@@ -41,7 +41,7 @@ export const HeroSection = () => {
 						<div className='flex flex-wrap items-center justify-center gap-3 lg:justify-start'>
 							<Link
 								to='/catalogo'
-								className='focus-ring group inline-flex items-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-base font-bold text-primary-700 shadow-popover transition-all hover:-translate-y-0.5 hover:bg-primary-50'
+								className='focus-ring group inline-flex items-center gap-2 rounded-2xl bg-primary-500 px-6 py-3.5 text-base font-bold text-neutral-950 shadow-popover transition-all hover:-translate-y-0.5 hover:bg-primary-400'
 							>
 								Ver todos los productos
 								<FiArrowRight

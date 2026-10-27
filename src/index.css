@@ -83,18 +83,17 @@
 		z-index: 6;
 	}
 
-	/* Variante naranja: conserva la paleta de la marca en vez del tinte
-	   verde-azulado original. El brillo 0.85 oscurece un poco el fondo y
-	   garantiza contraste suficiente para el texto blanco encima. */
-	.glass3d-orange {
-		--filter-glass3d: blur(40px) brightness(0.85) saturate(1.8);
-		--color-glass3d: hsl(18 90% 45% / 0.18);
+	/* Variante verde para el marco del carrusel sobre el fondo del hero.
+	   El brillo 0.8 oscurece el fondo y asegura contraste para el texto blanco. */
+	.glass3d-green {
+		--filter-glass3d: blur(40px) brightness(0.8) saturate(1.6);
+		--color-glass3d: hsl(150 50% 20% / 0.25);
 	}
 
-	/* Variante clara para la barra de navegación y tarjetas sobre el naranja */
+	/* Variante clara para la barra de navegación y tarjetas sobre el verde */
 	.glass3d-light {
 		--filter-glass3d: blur(24px) brightness(1.1) saturate(1.4);
-		--color-glass3d: hsl(30 60% 98% / 0.72);
+		--color-glass3d: hsl(0 0% 100% / 0.78);
 	}
 
 	/* Funde los bordes de una imagen con el fondo (sin marco marcado) */
