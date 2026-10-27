@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { footerLinks, mainNavLinks } from '../../constants/navigation';
+import { footerLinks, footerQuickLinks, mainNavLinks } from '../../constants/navigation';
 import { socialLinks } from '../../constants/links';
 import { Logo } from './Logo';
 
@@ -59,6 +59,17 @@ export const Footer = () => {
 					<Link to='/contacto' className='text-sm text-neutral-600 hover:text-primary-700'>
 						Escríbenos
 					</Link>
+
+					<p className='mt-4 text-sm font-semibold text-neutral-900'>Accesos rápidos</p>
+					{footerQuickLinks.map(link => (
+						<Link
+							key={link.href}
+							to={link.href}
+							className='text-sm text-neutral-600 hover:text-primary-700'
+						>
+							{link.label}
+						</Link>
+					))}
 				</div>
 			</div>
 

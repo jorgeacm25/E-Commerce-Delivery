@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { FiMenu } from 'react-icons/fi';
 import { mainNavLinks } from '../../constants/navigation';
-import { IconButton, SearchInput } from '../ui';
+import { IconButton } from '../ui';
 import { Logo } from './Logo';
 import { CategoryNav } from './CategoryNav';
 import { CartLink } from './CartLink';
@@ -11,15 +11,6 @@ import { MobileMenu } from './MobileMenu';
 
 export const Header = () => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const [search, setSearch] = useState('');
-	const navigate = useNavigate();
-
-	const handleSearchSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (search.trim()) {
-			navigate(`/catalogo?buscar=${encodeURIComponent(search.trim())}`);
-		}
-	};
 
 	return (
 		<header className='sticky top-0 z-20 border-b border-neutral-200 bg-white/95 backdrop-blur'>
@@ -50,16 +41,7 @@ export const Header = () => {
 					<CategoryNav />
 				</nav>
 
-				<form onSubmit={handleSearchSubmit} className='ml-auto hidden max-w-xs flex-1 md:block'>
-					<SearchInput
-						value={search}
-						onChange={e => setSearch(e.target.value)}
-						onClear={() => setSearch('')}
-						placeholder='Buscar productos...'
-					/>
-				</form>
-
-				<div className='ml-auto flex items-center gap-2 md:ml-0'>
+				<div className='ml-auto flex items-center gap-2'>
 					<AccountLink />
 					<CartLink />
 				</div>

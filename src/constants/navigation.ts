@@ -34,3 +34,6 @@ export const footerLinks: NavLinkItem[] = [
 	{ label: 'Política de entrega', href: '/politicas/entrega' },
 	{ label: 'Política de reembolsos', href: '/politicas/reembolsos' },
 ];
+
+// Accesos rápidos del footer
+export const footerQuickLinks: NavLinkItem[] = [{ label: 'Dashboard', href: '/admin' }];
