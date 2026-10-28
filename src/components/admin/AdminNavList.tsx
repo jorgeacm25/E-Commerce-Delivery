@@ -5,11 +5,15 @@ import { adminNavigation } from '../../constants/adminNavigation';
 
 interface Props {
 	collapsed?: boolean;
+	/** `light`: texto claro para el sidebar sobre el verde de la marca. */
+	tone?: 'dark' | 'light';
 	onNavigate?: () => void;
 	className?: string;
 }
 
-export const AdminNavList = ({ collapsed = false, onNavigate, className }: Props) => {
+export const AdminNavList = ({ collapsed = false, tone = 'dark', onNavigate, className }: Props) => {
+	const isLight = tone === 'light';
+
 	return (
 		<nav className={cn('flex flex-col gap-1', className)}>
 			{adminNavigation.map(item => {
@@ -19,7 +23,10 @@ export const AdminNavList = ({ collapsed = false, onNavigate, className }: Props
 					return (
 						<div
 							key={item.href}
-							className='flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-neutral-400'
+							className={cn(
+								'flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium',
+								isLight ? 'text-white/45' : 'text-neutral-400'
+							)}
 							title={`${item.label} — próximamente (Fase ${item.phase})`}
 						>
 							<Icon aria-hidden='true' className='shrink-0 text-lg' />
@@ -45,9 +52,13 @@ export const AdminNavList = ({ collapsed = false, onNavigate, className }: Props
 						className={({ isActive }) =>
 							cn(
 								'focus-ring flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-								isActive
-									? 'bg-primary-50 text-primary-700'
-									: 'text-neutral-700 hover:bg-neutral-100'
+								isLight
+									? isActive
+										? 'bg-white text-secondary-800 shadow-sm'
+										: 'text-white/85 hover:bg-white/15 hover:text-white'
+									: isActive
+										? 'bg-primary-50 text-primary-700'
+										: 'text-neutral-700 hover:bg-neutral-100'
 							)
 						}
 					>

@@ -12,21 +12,21 @@ export const AdminSidebar = () => {
 	return (
 		<aside
 			className={cn(
-				'hidden shrink-0 flex-col gap-4 border-r border-neutral-200 bg-white p-4 transition-all duration-200 lg:flex',
+				'hidden shrink-0 flex-col gap-4 p-4 transition-all duration-200 lg:flex',
 				sidebarCollapsed ? 'w-20' : 'w-64'
 			)}
 		>
 			<div className='flex items-center justify-between gap-2'>
-				{!sidebarCollapsed && <Logo />}
+				{!sidebarCollapsed && <Logo tone='light' />}
 				<IconButton
 					icon={sidebarCollapsed ? <FiChevronsRight /> : <FiChevronsLeft />}
 					label={sidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'}
 					onClick={toggleSidebar}
-					className={sidebarCollapsed ? 'mx-auto' : undefined}
+					className={cn('!text-white hover:!bg-white/15', sidebarCollapsed && 'mx-auto')}
 				/>
 			</div>
 
-			<AdminNavList collapsed={sidebarCollapsed} />
+			<AdminNavList collapsed={sidebarCollapsed} tone='light' />
 		</aside>
 	);
 };

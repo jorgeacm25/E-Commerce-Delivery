@@ -39,13 +39,13 @@ export const AdminHeader = () => {
 		.toUpperCase();
 
 	return (
-		<header className='flex flex-col gap-3 border-b border-neutral-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6'>
+		<header className='flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6'>
 			<div className='flex items-center gap-3'>
 				<IconButton
 					icon={<FiMenu />}
 					label='Abrir menú'
 					onClick={openMobileNav}
-					className='lg:hidden'
+					className='!text-white hover:!bg-white/15 lg:hidden'
 				/>
 
 				<form onSubmit={handleSearchSubmit} className='w-56 sm:w-72'>
@@ -65,7 +65,7 @@ export const AdminHeader = () => {
 					trigger={
 						<span
 							aria-label='Notificaciones'
-							className='flex h-9 w-9 items-center justify-center rounded-full text-neutral-600 hover:bg-neutral-100'
+							className='flex h-9 w-9 items-center justify-center rounded-full text-white hover:bg-white/15'
 						>
 							<FiBell aria-hidden='true' />
 						</span>
@@ -77,7 +77,7 @@ export const AdminHeader = () => {
 
 				<Dropdown
 					trigger={
-						<span className='flex h-9 w-9 items-center justify-center rounded-full bg-primary-100 text-sm font-semibold text-primary-700'>
+						<span className='flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-semibold text-secondary-800 shadow-sm'>
 							{initials}
 						</span>
 					}
