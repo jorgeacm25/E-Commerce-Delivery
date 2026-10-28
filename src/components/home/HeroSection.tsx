@@ -3,6 +3,7 @@ import { FiArrowRight, FiSearch, FiTruck } from 'react-icons/fi';
 import { FloatingLogo } from './hero/FloatingLogo';
 import { HeroBackdrop } from './hero/HeroBackdrop';
 import { HeroCarousel } from './hero/HeroCarousel';
+import { RollingText } from '../ui/RollingText';
 
 // Hero de la portada sobre fondo verde con luz que sigue al puntero. La
 // navbar se superpone a él (`data-header-overlay`, ver Header): de ahí el
@@ -42,7 +43,7 @@ export const HeroSection = () => {
 								to='/catalogo'
 								className='focus-ring group inline-flex items-center gap-2 rounded-2xl bg-primary-500 px-6 py-3.5 text-base font-bold text-neutral-950 shadow-lg shadow-primary-900/30 transition-all hover:-translate-y-0.5 hover:bg-primary-400'
 							>
-								Ver todos los productos
+								<RollingText text='Ver todos los productos' />
 								<FiArrowRight
 									aria-hidden='true'
 									className='transition-transform group-hover:translate-x-1'
