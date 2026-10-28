@@ -19,7 +19,7 @@ export const ExchangeRateWidget = () => {
 	};
 
 	return (
-		<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
+		<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card'>
 			<h3 className='mb-2 text-sm font-semibold text-neutral-900'>Tasa de cambio (CUP por USD)</h3>
 
 			<div className='mb-3 text-sm text-neutral-600'>

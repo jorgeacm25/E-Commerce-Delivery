@@ -47,7 +47,7 @@ export const AdminSettingsPage = () => {
 		<div className='flex flex-col gap-6'>
 			<PageHeader title='Configuración' description='Tasa de cambio y datos de contacto de la agencia.' />
 
-			<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
+			<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card'>
 				<h2 className='mb-1 text-sm font-semibold text-neutral-900'>Tasa de cambio USD/CUP</h2>
 				<div className='mb-4 text-sm text-neutral-500'>
 					{isLoading
@@ -73,7 +73,7 @@ export const AdminSettingsPage = () => {
 				</div>
 			</div>
 
-			<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
+			<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card'>
 				<h2 className='mb-1 text-sm font-semibold text-neutral-900'>Datos de contacto</h2>
 				<div className='mb-4 text-sm text-neutral-500'>
 					{isLoadingContact
@@ -98,7 +98,7 @@ export const AdminSettingsPage = () => {
 			</div>
 
 			{isRootAdmin && (
-				<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
+				<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card'>
 					<div className='mb-4 flex items-center justify-between gap-3'>
 						<div>
 							<h2 className='text-sm font-semibold text-neutral-900'>Administradores y staff</h2>

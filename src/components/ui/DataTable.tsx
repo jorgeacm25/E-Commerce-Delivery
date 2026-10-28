@@ -31,9 +31,9 @@ export const DataTable = <T,>({
 	className,
 }: Props<T>) => {
 	return (
-		<div className={cn('overflow-x-auto rounded-xl border border-neutral-200', className)}>
+		<div className={cn('overflow-x-auto rounded-xl border border-neutral-300 bg-white shadow-card', className)}>
 			<table className='w-full text-left text-sm'>
-				<thead className='bg-neutral-50 text-xs font-semibold uppercase text-neutral-500'>
+				<thead className='border-b border-secondary-200 bg-secondary-50 text-xs font-semibold uppercase text-secondary-800'>
 					<tr>
 						{columns.map(column => (
 							<th key={column.key} scope='col' className='px-4 py-3'>
@@ -62,7 +62,7 @@ export const DataTable = <T,>({
 								onClick={onRowClick ? () => onRowClick(row) : undefined}
 								className={cn(
 									'text-neutral-700',
-									onRowClick && 'cursor-pointer hover:bg-neutral-50'
+									onRowClick && 'cursor-pointer hover:bg-secondary-50/60'
 								)}
 							>
 								{columns.map(column => (
