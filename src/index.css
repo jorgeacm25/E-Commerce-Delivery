@@ -24,6 +24,23 @@
 	.card-hover {
 		@apply transition-[box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-card-hover motion-reduce:transition-shadow motion-reduce:hover:translate-y-0;
 	}
+
+	/* Zoom del texto de encabezado de tabla al pasar el ratón por la celda.
+	   Va en un span inline-block (no en el <th>) para no mover el layout de
+	   la tabla; origin-left porque los encabezados están alineados a la izquierda. */
+	.th-zoom {
+		@apply inline-block origin-left transition-transform duration-200 ease-out;
+	}
+
+	th:hover > .th-zoom {
+		@apply scale-110 text-secondary-950;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		th:hover > .th-zoom {
+			@apply scale-100;
+		}
+	}
 }
 
 /* CLASES PERSONALIZADAS */

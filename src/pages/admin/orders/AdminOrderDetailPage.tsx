@@ -73,11 +73,17 @@ export const AdminOrderDetailPage = () => {
 
 			<div className='overflow-x-auto rounded-xl border border-neutral-300 bg-white shadow-card transition-shadow duration-200 hover:shadow-card-hover'>
 				<table className='w-full text-left text-sm'>
-					<thead className='bg-neutral-50 text-xs font-semibold uppercase text-neutral-500'>
+					<thead className='border-b border-secondary-200 bg-secondary-50 text-xs font-semibold uppercase text-secondary-800'>
 						<tr>
-							<th className='px-4 py-3'>Producto</th>
-							<th className='px-4 py-3'>Cantidad</th>
-							<th className='px-4 py-3'>Total</th>
+							<th className='px-4 py-3'>
+								<span className='th-zoom'>Producto</span>
+							</th>
+							<th className='px-4 py-3'>
+								<span className='th-zoom'>Cantidad</span>
+							</th>
+							<th className='px-4 py-3'>
+								<span className='th-zoom'>Total</span>
+							</th>
 						</tr>
 					</thead>
 					<tbody className='divide-y divide-neutral-100'>

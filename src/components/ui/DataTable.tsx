@@ -37,7 +37,7 @@ export const DataTable = <T,>({
 					<tr>
 						{columns.map(column => (
 							<th key={column.key} scope='col' className='px-4 py-3'>
-								{column.header}
+								<span className='th-zoom'>{column.header}</span>
 							</th>
 						))}
 					</tr>
