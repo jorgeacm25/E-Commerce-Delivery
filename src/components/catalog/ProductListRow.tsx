@@ -5,6 +5,7 @@ import { CatalogProduct } from '../../interfaces';
 import { useCartStore } from '../../store/cart.store';
 import { Badge } from '../ui/Badge';
 import { CurrencyDisplay } from '../ui/CurrencyDisplay';
+import { celebrateAddToCart } from '../ui/Toast';
 
 interface Props {
 	products: CatalogProduct[];
@@ -55,7 +56,11 @@ export const ProductListRow = ({ products, className }: Props) => {
 							<button
 								type='button'
 								disabled={!inStock}
-								onClick={() => addItem(buildCartItem(product))}
+								onClick={event => {
+									const item = buildCartItem(product);
+									addItem(item);
+									celebrateAddToCart(item, event.currentTarget.closest('li')?.querySelector('img') ?? null);
+								}}
 								aria-label={`Añadir ${product.name} al carrito`}
 								className='focus-ring flex h-9 w-9 items-center justify-center rounded-full bg-primary-600 text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-neutral-300'
 							>

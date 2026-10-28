@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { FiShoppingCart } from 'react-icons/fi';
 import { Link, useParams } from 'react-router-dom';
@@ -11,6 +11,7 @@ import { VariantSelector } from '../../components/product/VariantSelector';
 import {
 	Badge,
 	Button,
+	celebrateAddToCart,
 	CurrencyDisplay,
 	EmptyState,
 	PageHeader,
@@ -40,6 +41,7 @@ export const ProductPage = () => {
 
 	const [selectedVariantId, setSelectedVariantId] = useState('');
 	const [quantity, setQuantity] = useState(1);
+	const galleryRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		if (product && product.variants.length > 0) {
@@ -104,7 +106,8 @@ export const ProductPage = () => {
 	const inStock = product.availability !== 'out_of_stock' && displayStock > 0;
 
 	const handleAddToCart = () => {
-		const result = addItem(buildCartItem(product, quantity, selectedVariant), displayStock);
+		const item = buildCartItem(product, quantity, selectedVariant);
+		const result = addItem(item, displayStock);
 
 		if (!result.ok) {
 			toast.error(
@@ -116,7 +119,7 @@ export const ProductPage = () => {
 			return;
 		}
 
-		toast.success('Producto añadido al carrito', { position: 'bottom-right' });
+		celebrateAddToCart(item, galleryRef.current?.querySelector('img') ?? null);
 	};
 
 	return (
@@ -133,7 +136,9 @@ export const ProductPage = () => {
 			/>
 
 			<div className='grid gap-8 lg:grid-cols-2'>
-				<ProductGallery images={product.images} alt={product.name} />
+				<div ref={galleryRef}>
+					<ProductGallery images={product.images} alt={product.name} />
+				</div>
 
 				<div className='flex flex-col gap-5'>
 					<div>
