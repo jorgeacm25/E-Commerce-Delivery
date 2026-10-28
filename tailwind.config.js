@@ -8,38 +8,45 @@ export default {
 				padding: '1rem',
 			},
 
+			// Onest (texto) + Fraunces (titulares): una sans geométrica cálida y
+			// una serif "suave" con carácter, lejos de las Inter/Poppins/Montserrat
+			// de siempre. Se empaquetan con @fontsource (ver src/main.tsx).
 			fontFamily: {
-				montserrat: ['Montserrat', 'sans-serif'],
+				sans: ['Onest Variable', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+				display: ['Fraunces Variable', 'ui-serif', 'Georgia', 'serif'],
 			},
 
 			colors: {
-				// Paleta cálida inspirada en alimentos (tomate/mango) para acciones primarias
+				// Paleta "Modern Design": naranja vibrante (#F26C24) para acciones.
+				// 500 es el tono elegido por el usuario; 600+ se oscurecen para que el
+				// texto blanco encima cumpla contraste AA (≥ 4.5:1).
 				primary: {
-					50: '#fef6ee',
-					100: '#fdead7',
-					200: '#fad2ae',
-					300: '#f7b47b',
-					400: '#f38b46',
-					500: '#f06a22',
-					600: '#e14f18',
-					700: '#bb3a16',
-					800: '#95301a',
-					900: '#792a18',
-					950: '#41120a',
+					50: '#fff4ee',
+					100: '#ffe6d6',
+					200: '#ffcbad',
+					300: '#ffa875',
+					400: '#ff8a4a',
+					500: '#f26c24',
+					600: '#c9470b',
+					700: '#a8390d',
+					800: '#862f10',
+					900: '#6c2911',
+					950: '#3b1206',
 				},
-				// Verde cálido (hogar/familia) para acciones secundarias y estados positivos
+				// Verde menta: 200 = fondo de sección (#B9E6CD), 400 = íconos
+				// (#65BC9A), 600 = texto secundario (#2B8055).
 				secondary: {
-					50: '#f2f8ee',
-					100: '#e1efd7',
-					200: '#c5e0b3',
-					300: '#a0cc85',
-					400: '#7cb35e',
-					500: '#5c9640',
-					600: '#457730',
-					700: '#365d27',
-					800: '#2e4b22',
-					900: '#28401f',
-					950: '#12220d',
+					50: '#f0faf5',
+					100: '#dcf3e6',
+					200: '#b9e6cd',
+					300: '#8fd4b1',
+					400: '#65bc9a',
+					500: '#3f9f72',
+					600: '#2b8055',
+					700: '#21613f',
+					800: '#1c4e35',
+					900: '#17402c',
+					950: '#0b2418',
 				},
 				success: {
 					50: '#f0faf1',
@@ -59,19 +66,20 @@ export default {
 					600: '#c22333',
 					700: '#9c1c29',
 				},
-				// Gris cálido para fondos y texto neutro
+				// Grises neutros: 50 = fondo de tarjeta (#FBFBFB), 100 = gris claro
+				// (#F8F8F8), 900 = texto carbón (#333338).
 				neutral: {
-					50: '#faf9f7',
-					100: '#f2efeb',
-					200: '#e6e1da',
-					300: '#d3ccc0',
-					400: '#aea497',
-					500: '#8a7f72',
-					600: '#6b6053',
-					700: '#524940',
-					800: '#3a332c',
-					900: '#241f1a',
-					950: '#14110d',
+					50: '#fbfbfb',
+					100: '#f8f8f8',
+					200: '#e8e8ea',
+					300: '#d4d4d8',
+					400: '#a1a1a8',
+					500: '#6b6b73',
+					600: '#55555c',
+					700: '#44444a',
+					800: '#3a3a40',
+					900: '#333338',
+					950: '#1e1e22',
 				},
 			},
 
@@ -81,8 +89,8 @@ export default {
 			},
 
 			boxShadow: {
-				card: '0 1px 3px 0 rgb(36 31 26 / 0.08), 0 1px 2px -1px rgb(36 31 26 / 0.08)',
-				popover: '0 10px 30px -5px rgb(36 31 26 / 0.18)',
+				card: '0 1px 3px 0 rgb(51 51 56 / 0.08), 0 1px 2px -1px rgb(51 51 56 / 0.08)',
+				popover: '0 10px 30px -5px rgb(51 51 56 / 0.18)',
 			},
 
 			keyframes: {
@@ -123,6 +131,11 @@ export default {
 					'0%': { opacity: '0', transform: 'translateY(1.5rem)' },
 					'100%': { opacity: '1', transform: 'translateY(0)' },
 				},
+				// Igual que `reveal`, pero entrando desde arriba (al hacer scroll hacia arriba)
+				'reveal-down': {
+					'0%': { opacity: '0', transform: 'translateY(-1.5rem)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
 				// Logo del hero: sube y baja como un globo de helio
 				float: {
 					'0%, 100%': { transform: 'translateY(0) rotate(-1deg)' },
@@ -145,6 +158,7 @@ export default {
 				pop: 'pop 0.4s ease-out',
 				'page-in': 'page-in 0.25s ease-out',
 				reveal: 'reveal 0.6s ease-out both',
+				'reveal-down': 'reveal-down 0.6s ease-out both',
 				float: 'float 4s ease-in-out infinite',
 				'float-shadow': 'float-shadow 4s ease-in-out infinite',
 			},

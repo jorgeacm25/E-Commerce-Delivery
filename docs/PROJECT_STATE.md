@@ -1,5 +1,84 @@
 # Estado del proyecto
 
+> Última actualización: 2026-10-27 (2). Nueva paleta y fondo animado del
+> hero, a pedido explícito del usuario (no forma parte de una fase del
+> roadmap):
+> - **Paleta** (`tailwind.config.js`), tomada de la referencia "Modern
+>   Design": `primary` = naranja brillante (500 = `#FF6F26`; 600/700 se
+>   oscurecen a `#C9470B`/`#A8390D` para que el texto blanco de los botones
+>   cumpla AA), `secondary` = verde menta (200 = `#B9E6CD`, 400 = `#65BC9A`,
+>   600 = `#2B8055`), `neutral` = grises fríos (50 = `#FBFBFB`, 100 =
+>   `#F8F8F8`, 900 = carbón `#333338`). Sombras `card`/`popover` al mismo
+>   carbón. Los nombres de los tokens no cambian, así que todo el sitio
+>   adopta la paleta sin tocar componentes.
+> - **Hero**: fondo verde oscuro. `HeroBackdrop` ahora usa
+>   `PointerGlowCanvas` (WebGL puro, sin dependencias): flujo de ruido fbm
+>   en verdes con una luz que sigue al puntero (suavizada), ilumina las
+>   crestas y desplaza el flujo. Sin puntero (móvil/teclado) la luz deriva
+>   sola. Se pausa fuera de pantalla y con la pestaña oculta; con
+>   `prefers-reduced-motion` se pinta un único cuadro fijo; sin WebGL queda
+>   el degradado CSS de respaldo. `glass3d-orange` se reemplaza por
+>   `glass3d-green` (marco del carrusel); `glass3d-light` pasa a blanco
+>   neutro. CTA principal: naranja `primary-500` con texto carbón
+>   (contraste 5.7:1; blanco sobre `#FF6F26` sería 2.8:1).
+> - `npm run lint`, `npx vitest run` (241 pruebas) y `npm run build` en
+>   verde. Verificación visual con Chrome headless (escritorio y móvil).
+> - Después, a pedido del usuario: se elimina `HeroNavbar` (la barra de
+>   "Opción 1-5") y `heroNavItems`; queda resuelto el pendiente de las dos
+>   barras superiores en la portada.
+> - Segunda ronda de ajustes visuales (a pedido del usuario):
+>   - **Tipografía**: Montserrat → Onest (texto, `font-sans`) + Fraunces con
+>     eje SOFT (titulares h1-h3, `font-display`). Autoalojadas con
+>     `@fontsource-variable/*` (importadas en `src/main.tsx`); ya no se
+>     carga nada desde Google Fonts.
+>   - **Color**: `primary-500` pasa a `#F26C24` (CTA "Ver todos los
+>     productos", con texto carbón: 5.5:1). "Rastrear pedido" pasa a botón
+>     de vidrio con borde blanco. Hero más claro (shader en
+>     secondary-800/600/300) con luz del puntero más intensa; velo oscuro
+>     solo detrás del texto para mantener el contraste.
+>   - **Fondo**: clase `.page-gradient` (degradado menta) en todo
+>     `PublicLayout`.
+>   - **Scroll**: nuevo `ScrollZoom` (`src/components/ui/ScrollZoom.tsx`):
+>     el hero hace zoom-out y la primera sección zoom-in, ligados a la
+>     posición del scroll y en ambas direcciones, más un fundido inferior del
+>     hero al color de la página. `Reveal` ahora repite la animación cada vez
+>     que la sección entra (desde abajo o desde arriba, con `reveal-down`).
+>     Ambos respetan `prefers-reduced-motion`.
+> - Navbar integrada con el hero (a pedido del usuario; si no convence se
+>   prueba otra variante): `Header` pasa a ser verde con texto claro en todo
+>   el sitio. En la portada se superpone al hero (`-mb-16`, el hero marca
+>   `data-header-overlay` y reserva el alto en su padding) con 3 modos:
+>   `overlay` (transparente arriba del todo: barra y hero son un solo bloque
+>   con el mismo shader), `glass` (vidrio verde esmerilado mientras el hero
+>   sigue visible) y `solid` (shader propio de la barra cuando el hero ya
+>   salió; en las demás páginas siempre es `solid`). `PointerGlowCanvas` se
+>   mueve a `src/components/ui/` y gana `scaleTo='viewport'` para que el
+>   patrón tenga el mismo tamaño en un canvas bajo. `Logo` gana `tone`;
+>   `MobileMenu` se renderiza fuera del `<header>` (el `backdrop-filter`
+>   del modo glass rompería su `position: fixed`).
+> - Tercera ronda (a pedido del usuario, con Espiral S.R.L. como referencia):
+>   - **Zoom hero → categorías**: `ScrollZoom` se sustituye por
+>     `ScrollZoomStage` (`src/components/ui/ScrollZoomStage.tsx`). El hero
+>     queda fijo (sticky) sobre 140svh de scroll extra: se acerca a la
+>     pantalla (escala ×2.5, desenfoque, fundido) y desde el centro se abre
+>     "Categorías destacadas" en iris (`clip-path`) con zoom inverso (llega
+>     ampliada y desenfocada y se asienta a escala 1). En móvil, donde el
+>     hero es más alto que la pantalla, primero se recorre entero y se fija
+>     por su borde inferior. Si el foco de teclado entra en una capa oculta,
+>     se desplaza el scroll hasta mostrarla. Con `prefers-reduced-motion` las
+>     dos secciones se muestran una tras otra, sin escenario.
+>   - **Fondo más oscuro**: `.page-gradient` pasa de menta claro a verde
+>     salvia, mezclando el verde del hero con luces blancas y grises
+>     verdosos, fijo al viewport para que el panel del zoom empalme sin
+>     costura. Su tono más oscuro (#c6d6cc) mantiene `neutral-600` ≥ 4.5:1.
+>   - **Footer verde**: mismo fondo que el hero y la navbar (degradado de
+>     respaldo + `PointerGlowCanvas` con `scaleTo='viewport'` + velo
+>     `secondary-950/25`), textos en blanco y un fundido superior hecho con
+>     la propia `.page-gradient` enmascarada, para empalmar sin línea.
+>   - Limitación conocida: el panel del zoom mide una pantalla; si las
+>     categorías destacadas crecieran mucho (más de ~8 en móvil), la última
+>     fila quedaría recortada durante la apertura.
+>
 > Última actualización: 2026-10-27. Nuevo hero de la portada, a pedido
 > explícito del usuario (commit `4921f8d`, no forma parte de una fase del
 > roadmap):
@@ -23,7 +102,7 @@
 > - **Carrusel**: 6 diapositivas que alternan foto/texto (persona comprando
 >   desde el celular, "Somos tu mejor opción", caja del combo, "Llena su
 >   despensa hoy", surtido de productos, "De tu pantalla a su mesa").
->   Autoplay cada 5 s con pausa al pasar el mouse, botón pausa/reproducir
+>   Autoplay cada 4 s con pausa al pasar el mouse, botón pausa/reproducir
 >   (WCAG 2.2.2), anterior/siguiente y puntos; sin autoplay si el usuario
 >   pide movimiento reducido. Las fotos de combos usan `fit: 'contain'`
 >   (imagen completa con el logotipo visible, sobre una copia desenfocada

@@ -8,7 +8,7 @@ export const PublicLayout = () => {
 	const location = useLocation();
 
 	return (
-		<div className='flex min-h-screen flex-col font-montserrat'>
+		<div className='page-gradient flex min-h-screen flex-col font-sans'>
 			<Header />
 
 			<main className='flex-1'>

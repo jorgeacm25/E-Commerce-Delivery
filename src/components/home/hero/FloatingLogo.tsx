@@ -1,10 +1,11 @@
 // Logo oficial flotando como un globo de helio. La imagen trae fondo
 // marfil, así que va dentro de un disco del mismo tono con
-// `mix-blend-multiply` para que no se note el recorte.
+// `mix-blend-multiply` para que no se note el recorte. El tono marfil va
+// fijo (no sale de la paleta) porque depende de la imagen, no del tema.
 export const FloatingLogo = () => {
 	return (
 		<div className='flex flex-col items-center'>
-			<div className='animate-float rounded-[2.5rem] bg-neutral-100 p-3 shadow-popover ring-4 ring-white/30 motion-reduce:animate-none'>
+			<div className='animate-float rounded-[2.5rem] bg-[#f2efeb] p-3 shadow-popover ring-4 ring-white/30 motion-reduce:animate-none'>
 				<img
 					src='/img/hero/logo-delivery-home.jpeg'
 					alt='Delivery’s Home — Entregando hogar. Entregando cuidado.'
@@ -15,7 +16,7 @@ export const FloatingLogo = () => {
 			</div>
 			<div
 				aria-hidden='true'
-				className='mt-4 h-3 w-28 animate-float-shadow rounded-full bg-primary-950 blur-md motion-reduce:animate-none sm:w-36'
+				className='mt-4 h-3 w-28 animate-float-shadow rounded-full bg-secondary-950 blur-md motion-reduce:animate-none sm:w-36'
 			/>
 		</div>
 	);

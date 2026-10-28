@@ -1,8 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Titulares en Fraunces con el eje SOFT alto (terminales redondeados,
+   más cálida) y sin las letras "wonky". El resto del texto usa Onest. */
+@layer base {
+	h1,
+	h2,
+	h3 {
+		@apply font-display tracking-tight;
+		font-variation-settings: 'SOFT' 80, 'WONK' 0;
+	}
+}
 
 /* Anillo de foco visible y consistente para todos los elementos interactivos del sistema de diseño */
 .focus-ring {
@@ -83,18 +92,79 @@
 		z-index: 6;
 	}
 
-	/* Variante naranja: conserva la paleta de la marca en vez del tinte
-	   verde-azulado original. El brillo 0.85 oscurece un poco el fondo y
-	   garantiza contraste suficiente para el texto blanco encima. */
-	.glass3d-orange {
-		--filter-glass3d: blur(40px) brightness(0.85) saturate(1.8);
-		--color-glass3d: hsl(18 90% 45% / 0.18);
+	/* Variante verde para el marco del carrusel sobre el fondo del hero.
+	   El brillo 0.8 oscurece el fondo y asegura contraste para el texto blanco. */
+	.glass3d-green {
+		--filter-glass3d: blur(40px) brightness(0.8) saturate(1.6);
+		--color-glass3d: hsl(150 50% 20% / 0.25);
 	}
 
-	/* Variante clara para la barra de navegación y tarjetas sobre el naranja */
+	/* Variante clara para la barra de navegación y tarjetas sobre el verde */
 	.glass3d-light {
 		--filter-glass3d: blur(24px) brightness(1.1) saturate(1.4);
-		--color-glass3d: hsl(30 60% 98% / 0.72);
+		--color-glass3d: hsl(0 0% 100% / 0.78);
+	}
+
+	/* Fondo de la tienda: verde salvia más profundo que el menta anterior,
+	   mezclando el verde del hero (secondary-700/600) con luces blancas y
+	   grises verdosos. Fijo al viewport (`background-attachment: fixed`) para
+	   que el panel del zoom (ver .scroll-stage-next), que usa la misma clase,
+	   empalme sin costura con el resto de la página. El tono más oscuro
+	   (#c6d6cc) mantiene neutral-600 por encima de 4.5:1. */
+	.page-gradient {
+		background-color: #d3e0d8;
+		background-image:
+			radial-gradient(60rem 42rem at 0% 0%, rgb(33 97 63 / 0.3), transparent 70%),
+			radial-gradient(46rem 34rem at 100% 18%, rgb(255 255 255 / 0.6), transparent 70%),
+			radial-gradient(52rem 40rem at 88% 82%, rgb(43 128 85 / 0.24), transparent 70%),
+			radial-gradient(44rem 34rem at 8% 88%, rgb(120 138 130 / 0.3), transparent 70%),
+			radial-gradient(36rem 28rem at 45% 55%, rgb(255 255 255 / 0.35), transparent 70%),
+			linear-gradient(160deg, #dce8e1 0%, #c6d6cc 45%, #d9e1dc 72%, #c9d9cf 100%);
+		background-attachment: fixed;
+	}
+
+	/* Transición hero → sección siguiente (componente <ScrollZoomStage/>).
+	   JS escribe `--zoom` y `--reveal` (0 → 1) según el scroll:
+	   - el hero se acerca a la pantalla (escala, desenfoque) y se desvanece;
+	   - la siguiente sección se abre desde el centro en iris (`clip-path`)
+	     mientras su contenido hace el zoom inverso: llega ampliado y
+	     desenfocado y se asienta a escala 1. */
+	.scroll-stage {
+		--zoom: 0;
+		--reveal: 0;
+	}
+
+	.scroll-stage-hero {
+		transform: scale(calc(1 + var(--zoom) * 1.5));
+		transform-origin: 50% var(--hero-origin, 50%);
+		filter: blur(calc(var(--zoom) * 10px));
+		/* Opaco hasta el 60 % del zoom y transparente al terminar */
+		opacity: calc((1 - var(--zoom)) * 2.5);
+		will-change: transform, filter, opacity;
+	}
+
+	.scroll-stage-next {
+		--closed: calc(1 - var(--reveal));
+		clip-path: inset(
+			calc(var(--closed) * 42%) calc(var(--closed) * 34%) round calc(var(--closed) * 2.5rem)
+		);
+		opacity: calc(var(--reveal) * 8);
+		pointer-events: none;
+		will-change: clip-path;
+	}
+
+	.scroll-stage-next-content {
+		transform: scale(calc(1 + var(--closed) * 0.35));
+		filter: blur(calc(var(--closed) * 10px));
+	}
+
+	/* Solo la capa visible recibe el puntero */
+	.scroll-stage[data-stage='next'] .scroll-stage-next {
+		pointer-events: auto;
+	}
+
+	.scroll-stage[data-stage='next'] .scroll-stage-hero {
+		pointer-events: none;
 	}
 
 	/* Funde los bordes de una imagen con el fondo (sin marco marcado) */

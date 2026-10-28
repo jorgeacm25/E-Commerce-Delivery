@@ -1,5 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+// Fuentes autoalojadas (sin depender de Google Fonts). Fraunces "full"
+// incluye los ejes SOFT y WONK que usan los titulares.
+import '@fontsource-variable/fraunces/full.css';
+import '@fontsource-variable/onest';
 import './index.css';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';

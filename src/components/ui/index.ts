@@ -25,6 +25,7 @@ export * from './ConfirmDialog';
 export * from './PageHeader';
 export * from './StatCard';
 export * from './Reveal';
+export * from './ScrollZoomStage';
 export * from './AnimatedNumber';
 export * from './CurrencyDisplay';
 export * from './QuantitySelector';

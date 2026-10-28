@@ -1,19 +1,5 @@
 // Contenido estático del hero. Se separa de los componentes para poder
-// cambiar textos, opciones del menú o diapositivas sin tocar el layout.
-
-export interface HeroNavItem {
-	label: string;
-	href: string;
-}
-
-// Opciones provisionales: se reemplazarán por las secciones definitivas.
-export const heroNavItems: HeroNavItem[] = [
-	{ label: 'Opción 1', href: '/' },
-	{ label: 'Opción 2', href: '/' },
-	{ label: 'Opción 3', href: '/' },
-	{ label: 'Opción 4', href: '/' },
-	{ label: 'Opción 5', href: '/' },
-];
+// cambiar textos o diapositivas sin tocar el layout.
 
 interface HeroImageSlide {
 	kind: 'image';
