@@ -1,5 +1,48 @@
 # Estado del proyecto
 
+> Última actualización: 2026-10-28. Efecto *skeleton shimmer* en todo el
+> sitio, a pedido explícito del usuario (no forma parte de una fase del
+> roadmap):
+> - `Skeleton` (`src/components/ui/Skeleton.tsx`) pasa de `animate-pulse` a
+>   un barrido de luz (`before:` con degradado + keyframe `shimmer` en
+>   `tailwind.config.js`). Con `prefers-reduced-motion` vuelve al pulso.
+>   Como todos los estados de carga ya usaban `Skeleton` (tablas,
+>   `StatCard`, secciones de la portada, catálogo, ficha de producto,
+>   checkout, área de cliente, panel admin, `PageSkeleton` del router),
+>   el efecto llega a todo el sitio desde un solo punto.
+> - Huecos cubiertos: textos "Cargando..." de `AdminSettingsPage` y
+>   `ExchangeRateWidget`, spinner de `AccountLink` en el header, bloque de
+>   cuentas de cobro en `OrderConfirmedPage` (antes no mostraba nada) y
+>   `ProductGridSkeleton`.
+> - Los botones (`Button`, `IconButton`) mantienen su spinner: indican una
+>   acción en curso, no contenido por cargar.
+>
+> También 2026-10-28, a pedido del usuario:
+> - CTA "Ver todos los productos" del hero con texto rodante escalonado
+>   (`src/components/ui/RollingText.tsx`).
+> - Efecto "add to basket" (referencia: motion.dev, `react-add-to-basket`)
+>   al añadir al carrito desde `ProductGrid`, `ProductListRow` y
+>   `ProductPage`: la imagen vuela en arco hasta el carrito del header
+>   (`data-cart-target` en `CartLink`), el carrito rebota y emite un anillo.
+>   Hecho con Web Animations API en `src/helpers/flyToCart.ts`, sin añadir
+>   la librería `motion`. Al aterrizar se muestra la notificación
+>   `AddedToCartToast` (miniatura, nombre, cantidad) vía
+>   `celebrateAddToCart` en `src/components/ui/Toast.tsx`. Con "reducir
+>   movimiento" no hay vuelo y la notificación sale al instante.
+>
+> También 2026-10-28, panel admin (`src/layouts/AdminLayout.tsx`):
+> - Sidebar y header sobre el degradado verde del hero (sin el shader),
+>   con partículas lentas y suaves (`src/components/ui/ParticlesCanvas.tsx`,
+>   canvas 2D). El contenido va en un panel gris claro (`#eef2ef`) para que
+>   tarjetas y formularios blancos contrasten. `AdminNavList` y `Logo`
+>   usan `tone='light'` en el sidebar; el drawer móvil sigue en blanco.
+> - Transición "curtains: blinds" (referencia: motion.dev, código de pago,
+>   recreado con Web Animations API) al cambiar de sección:
+>   `src/components/admin/AdminRouteTransition.tsx`. 7 persianas verdes se
+>   cierran sobre el panel, se cambia la página (la anterior queda
+>   congelada con `useOutlet`) y se abren. Subrutas y cambios de query no
+>   la disparan. Con "reducir movimiento" el cambio es instantáneo.
+
 > Última actualización: 2026-10-27 (2). Nueva paleta y fondo animado del
 > hero, a pedido explícito del usuario (no forma parte de una fase del
 > roadmap):
