@@ -1,14 +1,15 @@
 import { Link } from 'react-router-dom';
-import { FiLoader, FiUser } from 'react-icons/fi';
+import { FiUser } from 'react-icons/fi';
 import { useAuth } from '../../hooks';
+import { Skeleton } from '../ui/Skeleton';
 
 export const AccountLink = () => {
 	const { session, isInitializing } = useAuth();
 
 	if (isInitializing) {
 		return (
-			<span className='inline-flex h-10 w-10 items-center justify-center text-white/70'>
-				<FiLoader className='animate-spin-slow' aria-hidden='true' />
+			<span className='inline-flex h-10 w-10 items-center justify-center'>
+				<Skeleton variant='circle' className='h-7 w-7 !bg-white/20' />
 			</span>
 		);
 	}

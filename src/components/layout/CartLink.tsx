@@ -8,6 +8,8 @@ export const CartLink = () => {
 	return (
 		<Link
 			to='/carrito'
+			// Destino del vuelo "add to basket" (helpers/flyToCart)
+			data-cart-target
 			aria-label={`Carrito de compras, ${totalItemsInCart} artículos`}
 			className='focus-ring relative inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15'
 		>

@@ -94,6 +94,10 @@ export const OrderConfirmedPage = () => {
 					</div>
 				)}
 
+				{order && needsProof && isLoadingAccounts && (
+					<Skeleton className='h-48 w-full max-w-lg rounded-2xl' />
+				)}
+
 				{order && needsProof && !isLoadingAccounts && (
 					<div className='w-full max-w-lg rounded-2xl border border-neutral-200 p-5'>
 						{isSuccess ? (

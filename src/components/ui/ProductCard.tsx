@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { FiPlus } from 'react-icons/fi';
 import { cn } from '../../helpers';
 import { Badge } from './Badge';
@@ -9,7 +10,8 @@ interface Props {
 	price: number;
 	discountPriceUsd?: number;
 	inStock?: boolean;
-	onAdd?: () => void;
+	// Recibe la imagen de la tarjeta para animar su vuelo hasta el carrito
+	onAdd?: (source: HTMLElement | null) => void;
 	className?: string;
 }
 
@@ -22,6 +24,7 @@ export const ProductCard = ({
 	onAdd,
 	className,
 }: Props) => {
+	const imageRef = useRef<HTMLImageElement>(null);
 	const hasDiscount = discountPriceUsd !== undefined && discountPriceUsd < price;
 
 	return (
@@ -44,7 +47,7 @@ export const ProductCard = ({
 			)}
 
 			<div className='flex h-40 items-center justify-center bg-neutral-50 p-4'>
-				<img src={image} alt={name} className='h-full w-full object-contain' />
+				<img ref={imageRef} src={image} alt={name} className='h-full w-full object-contain' />
 			</div>
 
 			<div className='flex flex-1 flex-col gap-2 p-4'>
@@ -60,7 +63,7 @@ export const ProductCard = ({
 								// Evita que el click navegue cuando la tarjeta está dentro de un <Link>.
 								event.preventDefault();
 								event.stopPropagation();
-								onAdd();
+								onAdd(imageRef.current);
 							}}
 							disabled={!inStock}
 							aria-label={`Añadir ${name} al carrito`}

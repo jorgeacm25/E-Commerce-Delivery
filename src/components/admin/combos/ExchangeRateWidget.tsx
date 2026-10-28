@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Input } from '../../ui';
+import { Button, Input, Skeleton } from '../../ui';
 import { useActiveExchangeRate, useUpdateExchangeRate } from '../../../hooks';
 import { formatCup, formatDateLong } from '../../../helpers';
 
@@ -22,13 +22,13 @@ export const ExchangeRateWidget = () => {
 		<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
 			<h3 className='mb-2 text-sm font-semibold text-neutral-900'>Tasa de cambio (CUP por USD)</h3>
 
-			<p className='mb-3 text-sm text-neutral-600'>
+			<div className='mb-3 text-sm text-neutral-600'>
 				{isLoading
-					? 'Cargando...'
+					? <Skeleton variant='text' className='w-64 max-w-full' />
 					: rate
 					? `Vigente: ${formatCup(rate.valor_cup_por_usd)} por 1 USD, desde ${formatDateLong(rate.vigente_desde)}`
 					: 'Aún no hay una tasa configurada.'}
-			</p>
+			</div>
 
 			<form onSubmit={handleSubmit} className='flex items-end gap-2'>
 				<Input

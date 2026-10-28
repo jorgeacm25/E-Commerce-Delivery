@@ -4,6 +4,7 @@ import { buildCartItem } from '../../helpers/catalog';
 import { CatalogProduct } from '../../interfaces';
 import { useCartStore } from '../../store/cart.store';
 import { ProductCard } from '../ui/ProductCard';
+import { celebrateAddToCart } from '../ui/Toast';
 
 interface Props {
 	products: CatalogProduct[];
@@ -23,7 +24,11 @@ export const ProductGrid = ({ products, className }: Props) => {
 						price={product.priceUsd}
 						discountPriceUsd={product.discountPriceUsd}
 						inStock={product.availability !== 'out_of_stock'}
-						onAdd={() => addItem(buildCartItem(product))}
+						onAdd={source => {
+							const item = buildCartItem(product);
+							addItem(item);
+							celebrateAddToCart(item, source);
+						}}
 					/>
 				</Link>
 			))}

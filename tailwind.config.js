@@ -146,6 +146,10 @@ export default {
 					'0%, 100%': { transform: 'scaleX(1)', opacity: '0.45' },
 					'50%': { transform: 'scaleX(0.75)', opacity: '0.25' },
 				},
+				// Barrido de luz de los skeletons mientras carga el contenido
+				shimmer: {
+					'100%': { transform: 'translateX(100%)' },
+				},
 			},
 
 			animation: {
@@ -161,6 +165,7 @@ export default {
 				'reveal-down': 'reveal-down 0.6s ease-out both',
 				float: 'float 4s ease-in-out infinite',
 				'float-shadow': 'float-shadow 4s ease-in-out infinite',
+				shimmer: 'shimmer 1.6s ease-in-out infinite',
 			},
 		},
 	},
