@@ -38,7 +38,7 @@ export const FaqSection = () => {
 				<div className='flex flex-col divide-y divide-neutral-200 rounded-2xl border border-neutral-200 bg-white'>
 					{faqs.map(faq => (
 						<details key={faq.id} className='group p-5'>
-							<summary className='cursor-pointer list-none text-sm font-semibold text-neutral-900 marker:content-none'>
+							<summary className='cursor-pointer list-none text-sm font-semibold text-neutral-900 transition-colors marker:content-none hover:text-secondary-700 focus-visible:text-secondary-700'>
 								{faq.question}
 							</summary>
 							<p className='mt-2 text-sm text-neutral-600'>{faq.answer}</p>
