@@ -7,7 +7,7 @@ export const AccountLink = () => {
 
 	if (isInitializing) {
 		return (
-			<span className='inline-flex h-10 w-10 items-center justify-center text-neutral-400'>
+			<span className='inline-flex h-10 w-10 items-center justify-center text-white/70'>
 				<FiLoader className='animate-spin-slow' aria-hidden='true' />
 			</span>
 		);
@@ -17,7 +17,7 @@ export const AccountLink = () => {
 		<Link
 			to={session ? '/mi-cuenta/pedidos' : '/iniciar-sesion'}
 			aria-label={session ? 'Mi cuenta' : 'Iniciar sesión'}
-			className='focus-ring inline-flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100'
+			className='focus-ring inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15'
 		>
 			<FiUser className='text-xl' aria-hidden='true' />
 		</Link>

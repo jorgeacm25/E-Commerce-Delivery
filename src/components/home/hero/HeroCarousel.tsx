@@ -66,7 +66,7 @@ const SlideContent = ({ slide, isActive }: { slide: HeroSlide; isActive: boolean
 			<span className='rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider'>
 				{slide.eyebrow}
 			</span>
-			<p className='text-3xl font-extrabold leading-tight drop-shadow-sm sm:text-4xl'>
+			<p className='font-display text-3xl font-semibold leading-tight drop-shadow-sm sm:text-4xl'>
 				{slide.title}
 			</p>
 			<p className='text-base font-medium text-white/90'>{slide.description}</p>

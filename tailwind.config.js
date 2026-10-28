@@ -8,13 +8,17 @@ export default {
 				padding: '1rem',
 			},
 
+			// Onest (texto) + Fraunces (titulares): una sans geométrica cálida y
+			// una serif "suave" con carácter, lejos de las Inter/Poppins/Montserrat
+			// de siempre. Se empaquetan con @fontsource (ver src/main.tsx).
 			fontFamily: {
-				montserrat: ['Montserrat', 'sans-serif'],
+				sans: ['Onest Variable', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+				display: ['Fraunces Variable', 'ui-serif', 'Georgia', 'serif'],
 			},
 
 			colors: {
-				// Paleta "Modern Design": naranja brillante (#FF6F26) para acciones.
-				// 500 es el tono exacto de la referencia; 600+ se oscurecen para que el
+				// Paleta "Modern Design": naranja vibrante (#F26C24) para acciones.
+				// 500 es el tono elegido por el usuario; 600+ se oscurecen para que el
 				// texto blanco encima cumpla contraste AA (≥ 4.5:1).
 				primary: {
 					50: '#fff4ee',
@@ -22,7 +26,7 @@ export default {
 					200: '#ffcbad',
 					300: '#ffa875',
 					400: '#ff8a4a',
-					500: '#ff6f26',
+					500: '#f26c24',
 					600: '#c9470b',
 					700: '#a8390d',
 					800: '#862f10',
@@ -127,6 +131,11 @@ export default {
 					'0%': { opacity: '0', transform: 'translateY(1.5rem)' },
 					'100%': { opacity: '1', transform: 'translateY(0)' },
 				},
+				// Igual que `reveal`, pero entrando desde arriba (al hacer scroll hacia arriba)
+				'reveal-down': {
+					'0%': { opacity: '0', transform: 'translateY(-1.5rem)' },
+					'100%': { opacity: '1', transform: 'translateY(0)' },
+				},
 				// Logo del hero: sube y baja como un globo de helio
 				float: {
 					'0%, 100%': { transform: 'translateY(0) rotate(-1deg)' },
@@ -149,6 +158,7 @@ export default {
 				pop: 'pop 0.4s ease-out',
 				'page-in': 'page-in 0.25s ease-out',
 				reveal: 'reveal 0.6s ease-out both',
+				'reveal-down': 'reveal-down 0.6s ease-out both',
 				float: 'float 4s ease-in-out infinite',
 				'float-shadow': 'float-shadow 4s ease-in-out infinite',
 			},

@@ -12,17 +12,20 @@ import {
 	PopularProductsSection,
 	TestimonialsSection,
 } from '../../components/home';
-import { Reveal } from '../../components/ui';
+import { Reveal, ScrollZoomStage } from '../../components/ui';
 
-// Reveal envuelve cada sección para que aparezca al hacer scroll
-// (IntersectionObserver). El Hero se queda fuera: ya está visible al cargar.
+// Reveal envuelve cada sección para que aparezca cada vez que entra al
+// hacer scroll (hacia abajo o hacia arriba). El hero y las categorías van en
+// ScrollZoomStage: el hero se acerca a la pantalla y las categorías se abren
+// desde el centro con el zoom inverso (ya tienen su propia animación).
 export const HomePage = () => {
 	return (
 		<div className='flex flex-col gap-14 pb-8'>
-			<HeroSection />
-			<Reveal>
-				<FeaturedCategoriesSection />
-			</Reveal>
+			<ScrollZoomStage
+				className='-mb-14'
+				hero={<HeroSection />}
+				next={<FeaturedCategoriesSection />}
+			/>
 			<Reveal>
 				<FamilyCombosSection />
 			</Reveal>

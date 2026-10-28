@@ -10,7 +10,7 @@ import { AdminHeader } from '../components/admin/AdminHeader';
 // muestra datos protegidos.
 export const AdminLayout = () => {
 	return (
-		<div className='flex min-h-screen bg-neutral-50 font-montserrat'>
+		<div className='flex min-h-screen bg-neutral-50 font-sans'>
 			<AdminSidebar />
 			<AdminMobileDrawer />
 

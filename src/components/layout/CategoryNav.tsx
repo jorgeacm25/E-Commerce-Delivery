@@ -9,7 +9,7 @@ export const CategoryNav = () => {
 	return (
 		<Dropdown
 			trigger={
-				<span className='inline-flex items-center gap-1 text-sm font-medium text-neutral-700 hover:text-primary-700'>
+				<span className='inline-flex items-center gap-1 text-sm font-medium text-white/85 transition-colors hover:text-white'>
 					Categorías
 					<FiChevronDown aria-hidden='true' />
 				</span>

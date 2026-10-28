@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { cn } from '../../../helpers';
+import { cn } from '../../helpers';
 
-// Colores de la paleta (secondary-950, secondary-700, secondary-400 y
+// Colores de la paleta (secondary-800, secondary-600, secondary-300 y
 // primary-500) en RGB normalizado para el shader.
 const hexToRgb = (hex: string): [number, number, number] => {
 	const value = parseInt(hex.slice(1), 16);
@@ -9,10 +9,10 @@ const hexToRgb = (hex: string): [number, number, number] => {
 };
 
 const SHADER_COLORS = {
-	uDeep: hexToRgb('#0b2418'),
-	uBase: hexToRgb('#21613f'),
-	uMint: hexToRgb('#65bc9a'),
-	uAccent: hexToRgb('#ff6f26'),
+	uDeep: hexToRgb('#1c4e35'),
+	uBase: hexToRgb('#2b8055'),
+	uMint: hexToRgb('#8fd4b1'),
+	uAccent: hexToRgb('#f26c24'),
 } as const;
 
 const MAX_PIXEL_RATIO = 1.5;
@@ -32,6 +32,9 @@ const FRAGMENT_SHADER = `
 precision mediump float;
 
 uniform vec2 uResolution;
+// Píxeles por unidad de ruido: fija el tamaño del patrón sin importar la
+// altura del canvas (así la navbar, que es baja, no se ve más "apretada").
+uniform float uUnit;
 uniform float uTime;
 uniform vec2 uPointer;
 uniform float uPointerStrength;
@@ -71,9 +74,8 @@ float fbm(vec2 p) {
 
 void main() {
 	vec2 uv = gl_FragCoord.xy / uResolution;
-	float aspect = uResolution.x / uResolution.y;
-	vec2 p = vec2(uv.x * aspect, uv.y);
-	vec2 pointer = vec2(uPointer.x * aspect, uPointer.y);
+	vec2 p = gl_FragCoord.xy / uUnit;
+	vec2 pointer = uPointer * uResolution / uUnit;
 
 	vec2 toPointer = p - pointer;
 	float dist = length(toPointer);
@@ -90,12 +92,12 @@ void main() {
 
 	float glow = exp(-dist * dist * 12.0);
 	float core = exp(-dist * dist * 140.0);
-	color += uMint * glow * 0.35 * uPointerStrength;
-	color += uMint * pow(f, 2.5) * glow * 0.9 * uPointerStrength;
-	color += uAccent * exp(-dist * dist * 3.5) * 0.08 * uPointerStrength;
-	color += vec3(1.0) * core * 0.22 * uPointerStrength;
+	color += uMint * glow * 0.5 * uPointerStrength;
+	color += uMint * pow(f, 2.5) * glow * 1.4 * uPointerStrength;
+	color += uAccent * exp(-dist * dist * 3.5) * 0.1 * uPointerStrength;
+	color += vec3(1.0) * core * 0.45 * uPointerStrength;
 
-	color *= 1.0 - 0.45 * length(uv - vec2(0.45, 0.5));
+	color *= 1.0 - 0.25 * length(uv - vec2(0.45, 0.5));
 	color += (hash(gl_FragCoord.xy + fract(uTime)) - 0.5) * 0.03;
 
 	gl_FragColor = vec4(color, 1.0);
@@ -141,7 +143,17 @@ const createProgram = (gl: WebGLRenderingContext) => {
 // queda el degradado CSS de abajo. Con movimiento reducido se pinta un solo
 // cuadro fijo, y la animación se pausa fuera de pantalla o con la pestaña
 // oculta para no gastar batería.
-export const PointerGlowCanvas = ({ className }: { className?: string }) => {
+interface Props {
+	className?: string;
+	/**
+	 * `canvas`: el patrón se escala a la altura del propio canvas (hero).
+	 * `viewport`: se escala a la altura de la ventana (navbar), para que
+	 * tenga el mismo tamaño que en el hero aunque el canvas sea bajo.
+	 */
+	scaleTo?: 'canvas' | 'viewport';
+}
+
+export const PointerGlowCanvas = ({ className, scaleTo = 'canvas' }: Props) => {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	useEffect(() => {
@@ -164,6 +176,7 @@ export const PointerGlowCanvas = ({ className }: { className?: string }) => {
 
 		const uniform = (name: string) => gl.getUniformLocation(program, name);
 		const uResolution = uniform('uResolution');
+		const uUnit = uniform('uUnit');
 		const uTime = uniform('uTime');
 		const uPointer = uniform('uPointer');
 		const uPointerStrength = uniform('uPointerStrength');
@@ -192,6 +205,7 @@ export const PointerGlowCanvas = ({ className }: { className?: string }) => {
 			}
 			gl.viewport(0, 0, width, height);
 			gl.uniform2f(uResolution, width, height);
+			gl.uniform1f(uUnit, scaleTo === 'viewport' ? window.innerHeight * ratio : height);
 		};
 
 		const draw = (now: number) => {
@@ -277,7 +291,7 @@ export const PointerGlowCanvas = ({ className }: { className?: string }) => {
 			gl.deleteBuffer(buffer);
 			gl.deleteProgram(program);
 		};
-	}, []);
+	}, [scaleTo]);
 
 	return <canvas ref={canvasRef} aria-hidden='true' className={cn('block h-full w-full', className)} />;
 };
