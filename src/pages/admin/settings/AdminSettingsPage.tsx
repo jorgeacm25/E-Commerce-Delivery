@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { FiEdit2, FiPlus, FiTrash2 } from 'react-icons/fi';
-import { Badge, Button, ConfirmDialog, DataTable, Input, PageHeader } from '../../../components/ui';
+import { Badge, Button, ConfirmDialog, DataTable, Input, PageHeader, Skeleton } from '../../../components/ui';
 import {
 	useActiveAgencyContact,
 	useActiveExchangeRate,
@@ -49,13 +49,13 @@ export const AdminSettingsPage = () => {
 
 			<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
 				<h2 className='mb-1 text-sm font-semibold text-neutral-900'>Tasa de cambio USD/CUP</h2>
-				<p className='mb-4 text-sm text-neutral-500'>
+				<div className='mb-4 text-sm text-neutral-500'>
 					{isLoading
-						? 'Cargando...'
+						? <Skeleton variant='text' className='w-64 max-w-full' />
 						: exchangeRate
 							? `Vigente: ${exchangeRate.valor_cup_por_usd} CUP por USD (desde ${formatDateLong(exchangeRate.vigente_desde)})`
 							: 'No hay una tasa de cambio configurada todavía.'}
-				</p>
+				</div>
 
 				<div className='flex flex-col gap-3 sm:flex-row sm:items-end'>
 					<Input
@@ -75,13 +75,13 @@ export const AdminSettingsPage = () => {
 
 			<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
 				<h2 className='mb-1 text-sm font-semibold text-neutral-900'>Datos de contacto</h2>
-				<p className='mb-4 text-sm text-neutral-500'>
+				<div className='mb-4 text-sm text-neutral-500'>
 					{isLoadingContact
-						? 'Cargando...'
+						? <Skeleton variant='text' className='w-64 max-w-full' />
 						: contact
 							? `Vigente: ${contact.whatsappPhone} (desde ${formatDateLong(contact.vigenteDesde)})`
 							: 'No hay datos de contacto configurados todavía.'}
-				</p>
+				</div>
 
 				<div className='flex flex-col gap-3 sm:flex-row sm:items-end'>
 					<Input
