@@ -130,6 +130,37 @@
 		--color-glass3d: hsl(0 0% 100% / 0.78);
 	}
 
+	/* Tarjetas de la landing en glassmorphism sobre .page-gradient.
+	   El blanco al 62 % deja pasar el verde del fondo pero garantiza
+	   contraste: el peor caso (#e1ebe5 aprox.) da ≥ 6:1 con neutral-600
+	   y ≥ 10:1 con neutral-900. Por eso el texto secundario de las cards usa
+	   neutral-600 como mínimo (neutral-500 se queda al límite de AA).
+	   Sin soporte de backdrop-filter se sube la opacidad para no perder
+	   legibilidad. */
+	.glass-card {
+		background-color: rgb(255 255 255 / 0.62);
+		border: 1px solid rgb(255 255 255 / 0.75);
+		-webkit-backdrop-filter: blur(18px) saturate(1.6);
+		backdrop-filter: blur(18px) saturate(1.6);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.9),
+			0 1px 2px 0 rgb(23 64 44 / 0.06),
+			0 8px 24px -8px rgb(23 64 44 / 0.18);
+	}
+
+	.glass-card:hover {
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.9),
+			0 6px 12px -4px rgb(23 64 44 / 0.1),
+			0 18px 36px -10px rgb(23 64 44 / 0.26);
+	}
+
+	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.glass-card {
+			background-color: rgb(255 255 255 / 0.9);
+		}
+	}
+
 	/* Fondo de la tienda: verde salvia más profundo que el menta anterior,
 	   mezclando el verde del hero (secondary-700/600) con luces blancas y
 	   grises verdosos. Fijo al viewport (`background-attachment: fixed`) para

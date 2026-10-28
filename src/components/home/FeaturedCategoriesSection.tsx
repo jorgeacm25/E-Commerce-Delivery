@@ -36,7 +36,7 @@ export const FeaturedCategoriesSection = () => {
 						<Link
 							key={category.id}
 							to={`/categoria/${category.slug}`}
-							className='focus-ring flex flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-4 text-center shadow-card card-hover'
+							className='focus-ring flex flex-col items-center gap-2 rounded-2xl glass-card p-4 text-center card-hover'
 						>
 							<img
 								src={category.imageUrl}
@@ -47,7 +47,7 @@ export const FeaturedCategoriesSection = () => {
 							<span className='text-sm font-medium text-neutral-700'>
 								{category.label}
 							</span>
-							<span className='text-xs text-neutral-500'>
+							<span className='text-xs text-neutral-600'>
 								{category.productCount} productos
 							</span>
 						</Link>

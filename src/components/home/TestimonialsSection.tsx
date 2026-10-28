@@ -34,7 +34,7 @@ export const TestimonialsSection = () => {
 					{testimonials.map(testimonial => (
 						<figure
 							key={testimonial.id}
-							className='flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-5 shadow-card card-hover'
+							className='flex flex-col gap-3 rounded-2xl glass-card p-5 card-hover'
 						>
 							<div className='flex gap-0.5 text-warning-500'>
 								{Array.from({ length: testimonial.rating }).map((_, index) => (
@@ -44,7 +44,7 @@ export const TestimonialsSection = () => {
 							<blockquote className='text-sm italic text-neutral-700'>
 								“{testimonial.quote}”
 							</blockquote>
-							<figcaption className='text-xs font-medium text-neutral-500'>
+							<figcaption className='text-xs font-medium text-neutral-600'>
 								{testimonial.buyerName}, compró desde {testimonial.buyerCountry} para
 								su familia en {testimonial.recipientCity}
 							</figcaption>

@@ -34,7 +34,7 @@ export const DeliveryZonesSection = () => {
 					{zones.map(zone => (
 						<div
 							key={zone.id}
-							className='flex flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-4 shadow-card card-hover'
+							className='flex flex-col gap-2 rounded-2xl glass-card p-4 card-hover'
 						>
 							<div className='flex items-center justify-between gap-2'>
 								<p className='font-semibold text-neutral-900'>{zone.province}</p>
@@ -45,7 +45,7 @@ export const DeliveryZonesSection = () => {
 							<p className='text-sm text-neutral-600'>
 								{zone.municipalities.join(', ')}
 							</p>
-							<p className='text-xs text-neutral-500'>
+							<p className='text-xs text-neutral-600'>
 								Entrega estimada: {zone.estimatedDeliveryDays}
 							</p>
 						</div>
