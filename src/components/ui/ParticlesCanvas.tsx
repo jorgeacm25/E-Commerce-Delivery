@@ -16,9 +16,9 @@ interface Particle {
 }
 
 const MAX_PIXEL_RATIO = 1.5;
-// Una partícula cada ~22.000 px² de pantalla, con tope para pantallas grandes
-const AREA_PER_PARTICLE = 22000;
-const MAX_PARTICLES = 70;
+// Una partícula cada ~12.000 px² de pantalla, con tope para pantallas grandes
+const AREA_PER_PARTICLE = 12000;
+const MAX_PARTICLES = 120;
 // Velocidad en px por segundo: muy lenta a propósito
 const MIN_SPEED = 3;
 const MAX_SPEED = 9;
@@ -31,10 +31,10 @@ const createParticle = (width: number, height: number): Particle => {
 	return {
 		x: random(0, width),
 		y: random(0, height),
-		radius: random(0.6, 2),
+		radius: random(1.2, 3),
 		velocityX: Math.cos(angle) * speed,
 		velocityY: Math.sin(angle) * speed,
-		alpha: random(0.15, 0.45),
+		alpha: random(0.45, 0.85),
 		phase: random(0, Math.PI * 2),
 	};
 };
@@ -75,13 +75,13 @@ export const ParticlesCanvas = ({ className }: Props) => {
 		const draw = (time: number) => {
 			context.clearRect(0, 0, width, height);
 			for (const particle of particles) {
-				const twinkle = 0.65 + 0.35 * Math.sin(time / 1600 + particle.phase);
+				const twinkle = 0.75 + 0.25 * Math.sin(time / 1600 + particle.phase);
 				const alpha = particle.alpha * twinkle;
 
 				// Halo suave + núcleo
 				context.beginPath();
-				context.arc(particle.x, particle.y, particle.radius * 3, 0, Math.PI * 2);
-				context.fillStyle = `rgba(220, 243, 230, ${alpha * 0.18})`;
+				context.arc(particle.x, particle.y, particle.radius * 4, 0, Math.PI * 2);
+				context.fillStyle = `rgba(220, 243, 230, ${alpha * 0.3})`;
 				context.fill();
 
 				context.beginPath();
@@ -100,7 +100,7 @@ export const ParticlesCanvas = ({ className }: Props) => {
 				particle.x += particle.velocityX * delta;
 				particle.y += particle.velocityY * delta;
 
-				const margin = particle.radius * 3;
+				const margin = particle.radius * 4;
 				if (particle.y < -margin) particle.y = height + margin;
 				if (particle.x < -margin) particle.x = width + margin;
 				if (particle.x > width + margin) particle.x = -margin;
