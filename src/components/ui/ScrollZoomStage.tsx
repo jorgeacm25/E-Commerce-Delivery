@@ -125,8 +125,9 @@ export const ScrollZoomStage = ({ hero, next, className }: Props) => {
 		);
 	}
 
-	// `data-header-overlay`: la navbar sigue superpuesta (vidrio) mientras dure
-	// el escenario; el hero escalado no sirve de referencia (ver Header).
+	// `data-header-overlay`: la navbar sigue superpuesta (vidrio) mientras se vea
+	// el hero y pasa a sólida con `data-stage='next'`; el hero escalado no
+	// sirve de referencia (ver Header).
 	return (
 		<div ref={stageRef} data-header-overlay className={cn('scroll-stage relative', className)}>
 			<div ref={pinRef} className='sticky top-0 min-h-[100svh] overflow-hidden'>
