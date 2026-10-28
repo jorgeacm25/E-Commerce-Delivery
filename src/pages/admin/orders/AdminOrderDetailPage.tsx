@@ -71,7 +71,7 @@ export const AdminOrderDetailPage = () => {
 				}
 			/>
 
-			<div className='overflow-x-auto rounded-xl border border-neutral-300 bg-white shadow-card'>
+			<div className='overflow-x-auto rounded-xl border border-neutral-300 bg-white shadow-card transition-shadow duration-200 hover:shadow-card-hover'>
 				<table className='w-full text-left text-sm'>
 					<thead className='bg-neutral-50 text-xs font-semibold uppercase text-neutral-500'>
 						<tr>
@@ -101,13 +101,13 @@ export const AdminOrderDetailPage = () => {
 			</div>
 
 			<div className='grid gap-4 sm:grid-cols-2'>
-				<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card'>
+				<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card card-hover'>
 					<h2 className='mb-2 text-sm font-semibold text-neutral-900'>Cliente</h2>
 					<p className='text-sm text-neutral-700'>{order.customerName}</p>
 					<p className='text-sm text-neutral-500'>{order.customerEmail}</p>
 				</div>
 
-				<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card'>
+				<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card card-hover'>
 					<h2 className='mb-2 text-sm font-semibold text-neutral-900'>Dirección de envío</h2>
 					<p className='text-sm text-neutral-700'>{order.addressLine1}</p>
 					{order.addressLine2 && <p className='text-sm text-neutral-700'>{order.addressLine2}</p>}

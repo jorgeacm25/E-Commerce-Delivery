@@ -34,7 +34,7 @@ export const TestimonialsSection = () => {
 					{testimonials.map(testimonial => (
 						<figure
 							key={testimonial.id}
-							className='flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'
+							className='flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-5 shadow-card card-hover'
 						>
 							<div className='flex gap-0.5 text-warning-500'>
 								{Array.from({ length: testimonial.rating }).map((_, index) => (

@@ -24,7 +24,7 @@ export const ProductListRow = ({ products, className }: Props) => {
 				return (
 					<li
 						key={product.id}
-						className='flex items-center gap-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-card'
+						className='flex items-center gap-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-card card-hover'
 					>
 						<Link to={`/producto/${product.slug}`} className='shrink-0'>
 							<img

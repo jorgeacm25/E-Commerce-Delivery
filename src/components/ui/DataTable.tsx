@@ -31,7 +31,7 @@ export const DataTable = <T,>({
 	className,
 }: Props<T>) => {
 	return (
-		<div className={cn('overflow-x-auto rounded-xl border border-neutral-300 bg-white shadow-card', className)}>
+		<div className={cn('overflow-x-auto rounded-xl border border-neutral-300 bg-white shadow-card transition-shadow duration-200 hover:shadow-card-hover', className)}>
 			<table className='w-full text-left text-sm'>
 				<thead className='border-b border-secondary-200 bg-secondary-50 text-xs font-semibold uppercase text-secondary-800'>
 					<tr>

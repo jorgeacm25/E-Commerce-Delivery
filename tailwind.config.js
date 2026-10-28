@@ -89,7 +89,10 @@ export default {
 			},
 
 			boxShadow: {
-				card: '0 1px 3px 0 rgb(51 51 56 / 0.08), 0 1px 2px -1px rgb(51 51 56 / 0.08)',
+				// `card` en reposo: sombra corta + difusa para que la tarjeta se despegue
+				// del fondo; `card-hover` la eleva al pasar el ratón (clase .card-hover).
+				card: '0 1px 2px 0 rgb(51 51 56 / 0.06), 0 4px 14px -4px rgb(51 51 56 / 0.14)',
+				'card-hover': '0 6px 12px -4px rgb(51 51 56 / 0.10), 0 18px 36px -10px rgb(51 51 56 / 0.24)',
 				popover: '0 10px 30px -5px rgb(51 51 56 / 0.18)',
 			},
 

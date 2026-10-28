@@ -25,7 +25,7 @@ export const PaymentProofCard = ({ proof, order, account }: Props) => {
 	};
 
 	return (
-		<div className='flex flex-col gap-3 rounded-2xl border border-neutral-300 bg-white p-4 shadow-card md:flex-row'>
+		<div className='flex flex-col gap-3 rounded-2xl border border-neutral-300 bg-white p-4 shadow-card card-hover md:flex-row'>
 			<div className='w-full shrink-0 md:w-56'>
 				<a href={proof.imagenUrl} target='_blank' rel='noreferrer'>
 					<img

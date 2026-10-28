@@ -32,7 +32,7 @@ export const StatCard = ({
 	return (
 		<div
 			className={cn(
-				'flex flex-col gap-2 rounded-2xl border border-neutral-300 bg-white p-5 shadow-card',
+				'flex flex-col gap-2 rounded-2xl border border-neutral-300 bg-white p-5 shadow-card card-hover',
 				className
 			)}
 		>

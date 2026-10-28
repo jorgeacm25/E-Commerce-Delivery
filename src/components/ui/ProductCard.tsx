@@ -30,7 +30,7 @@ export const ProductCard = ({
 	return (
 		<div
 			className={cn(
-				'group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-card transition-shadow hover:shadow-popover',
+				'group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-card card-hover',
 				className
 			)}
 		>

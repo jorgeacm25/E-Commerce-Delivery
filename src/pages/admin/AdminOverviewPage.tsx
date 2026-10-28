@@ -122,7 +122,7 @@ export const AdminOverviewPage = () => {
 				</div>
 			</div>
 
-			<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card'>
+			<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card card-hover'>
 				<h2 className='mb-3 text-lg font-semibold text-neutral-900'>Actividad reciente</h2>
 				<RecentActivityList items={activity} isLoading={isLoadingActivity} />
 			</div>
