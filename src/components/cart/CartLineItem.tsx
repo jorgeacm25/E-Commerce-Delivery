@@ -8,7 +8,7 @@ interface Props {
 	onStockError?: (result: Extract<AddItemResult, { ok: false }>) => void;
 }
 
-// Línea individual del carrito en /carrito. A diferencia del componente
+// Línea individual del carrito (CartDrawer). A diferencia del componente
 // legacy src/components/shared/CartItem.tsx (no enlazado desde el router
 // nuevo), este usa el sistema de diseño (`src/components/ui`) para quedar
 // consistente con el resto del catálogo/ficha de producto ya migrados.
@@ -27,7 +27,7 @@ export const CartLineItem = ({ item, onStockError }: Props) => {
 	const lineTotal = item.price * item.quantity;
 
 	return (
-		<li className='flex gap-4 rounded-xl border border-neutral-200 p-4'>
+		<li className='flex gap-4 rounded-xl border border-white/60 bg-white/95 p-4 text-neutral-900 shadow-card'>
 			<img
 				src={item.image}
 				alt={item.name}

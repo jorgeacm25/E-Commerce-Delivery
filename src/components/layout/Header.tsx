@@ -9,6 +9,7 @@ import { CategoryNav } from './CategoryNav';
 import { CartLink } from './CartLink';
 import { AccountLink } from './AccountLink';
 import { MobileMenu } from './MobileMenu';
+import { CartDrawer } from '../cart/CartDrawer';
 
 /** Alto fijo de la barra (h-16): el hero lo descuenta en su padding superior. */
 const HEADER_HEIGHT = 64;
@@ -79,7 +80,7 @@ export const Header = () => {
 	const hasHero = pathname === '/';
 	const mode = useHeaderMode(hasHero);
 
-	// El menú móvil va fuera del <header>: su `backdrop-filter` (modo glass)
+	// El menú móvil y el carrito van fuera del <header>: su `backdrop-filter` (modo glass)
 	// convertiría a la barra en el contenedor de los elementos `fixed`.
 	return (
 		<>
@@ -144,6 +145,7 @@ export const Header = () => {
 			</header>
 
 			<MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+			<CartDrawer />
 		</>
 	);
 };

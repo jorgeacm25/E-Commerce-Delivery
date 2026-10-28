@@ -1,15 +1,19 @@
-import { Link } from 'react-router-dom';
 import { FiShoppingBag } from 'react-icons/fi';
 import { useCartStore } from '../../store/cart.store';
+import { useGlobalStore } from '../../store/global.store';
 
+// Abre el carrito en panel lateral (ver components/cart/CartDrawer)
 export const CartLink = () => {
 	const totalItemsInCart = useCartStore(state => state.totalItemsInCart);
+	const openSheet = useGlobalStore(state => state.openSheet);
 
 	return (
-		<Link
-			to='/carrito'
+		<button
+			type='button'
+			onClick={() => openSheet('cart')}
 			// Destino del vuelo "add to basket" (helpers/flyToCart)
 			data-cart-target
+			aria-haspopup='dialog'
 			aria-label={`Carrito de compras, ${totalItemsInCart} artículos`}
 			className='focus-ring relative inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/15'
 		>
@@ -24,6 +28,6 @@ export const CartLink = () => {
 					{totalItemsInCart}
 				</span>
 			)}
-		</Link>
+		</button>
 	);
 };

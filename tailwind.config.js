@@ -109,6 +109,19 @@ export default {
 					'0%': { transform: 'translateX(-100%)' },
 					'100%': { transform: 'translateX(0)' },
 				},
+				// Salidas de los paneles laterales (Drawer) al cerrarse
+				'fade-out': {
+					'0%': { opacity: '1' },
+					'100%': { opacity: '0' },
+				},
+				'slide-out': {
+					'0%': { transform: 'translateX(0)' },
+					'100%': { transform: 'translateX(100%)' },
+				},
+				'slide-out-left': {
+					'0%': { transform: 'translateX(0)' },
+					'100%': { transform: 'translateX(-100%)' },
+				},
 				'slide-up': {
 					'0%': { transform: 'translateY(0.5rem)', opacity: '0' },
 					'100%': { transform: 'translateY(0)', opacity: '1' },
@@ -159,6 +172,10 @@ export default {
 				'fade-in': 'fade-in 0.3s ease-out',
 				'slide-in': 'slide-in 0.3s ease-out',
 				'slide-in-left': 'slide-in-left 0.3s ease-out',
+				// `forwards`: el panel se queda fuera hasta que el Drawer lo desmonta
+				'fade-out': 'fade-out 0.25s ease-in forwards',
+				'slide-out': 'slide-out 0.25s ease-in forwards',
+				'slide-out-left': 'slide-out-left 0.25s ease-in forwards',
 				'slide-up': 'slide-up 0.2s ease-out',
 				'scale-in': 'scale-in 0.15s ease-out',
 				'spin-slow': 'spin 2s linear infinite',

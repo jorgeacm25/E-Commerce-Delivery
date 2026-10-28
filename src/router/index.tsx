@@ -5,6 +5,7 @@ import { CustomerLayout } from '../layouts/CustomerLayout';
 import { AdminLayout } from '../layouts/AdminLayout';
 import { PageSkeleton } from '../components/layout';
 import { RequireAuth } from './RequireAuth';
+import { CartRedirect } from './CartRedirect';
 import {
 	AdminCategoriesPage,
 	AdminCombosPage,
@@ -25,7 +26,6 @@ import {
 	AdminPaymentVerificationPage,
 	AdminProductFormPage,
 	AdminSectionPlaceholderPage,
-	CartPage,
 	CatalogPage,
 	CategoryPage,
 	CheckoutPage,
@@ -71,7 +71,7 @@ export const router = createBrowserRouter([
 			{ path: 'categoria/:slug', element: withSuspense(<CategoryPage />) },
 			{ path: 'producto/:slug', element: withSuspense(<ProductPage />) },
 			{ path: 'combos', element: withSuspense(<CombosPage />) },
-			{ path: 'carrito', element: withSuspense(<CartPage />) },
+			{ path: 'carrito', element: <CartRedirect /> },
 			{
 				// GET /api/order/{id} exige sesión (backend .NET) — ya no hay
 				// forma de rastrear un pedido como invitado sin exponer pedidos

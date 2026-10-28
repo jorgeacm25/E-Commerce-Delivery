@@ -1,3 +1,3 @@
 export * from './CartLineItem';
 export * from './CouponForm';
-export * from './CartSummary';
+export * from './CartDrawer';
