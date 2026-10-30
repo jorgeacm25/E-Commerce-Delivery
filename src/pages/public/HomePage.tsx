@@ -18,11 +18,17 @@ import { Reveal, ScrollZoomStage } from '../../components/ui';
 // hacer scroll (hacia abajo o hacia arriba). El hero y las categorías van en
 // ScrollZoomStage: el hero se acerca a la pantalla y las categorías se abren
 // desde el centro con el zoom inverso (ya tienen su propia animación).
+//
+// Las categorías van centradas en una capa del alto de la pantalla, así que
+// debajo queda un hueco que crece con la altura del viewport. El margen
+// negativo lo compensa (en lg proporcional a 50svh) para que "Cómo funciona"
+// quede a una distancia parecida en cualquier pantalla. En móvil la sección
+// ya ocupa casi toda la capa y no lleva margen para no solaparse.
 export const HomePage = () => {
 	return (
 		<div className='flex flex-col gap-14 pb-8'>
 			<ScrollZoomStage
-				className='-mb-14'
+				className='md:-mb-24 lg:mb-[min(-6rem,17rem-50svh)]'
 				hero={<HeroSection />}
 				next={<FeaturedCategoriesSection />}
 			/>

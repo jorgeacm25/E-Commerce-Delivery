@@ -5,9 +5,9 @@ import { SectionHeading } from './SectionHeading';
 import { SectionState } from './SectionState';
 
 const CategoriesSkeleton = () => (
-	<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+	<div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4'>
 		{Array.from({ length: 4 }).map((_, index) => (
-			<Skeleton key={index} className='h-64 rounded-2xl' />
+			<Skeleton key={index} className='h-32 rounded-2xl sm:h-40' />
 		))}
 	</div>
 );
@@ -31,14 +31,14 @@ export const FeaturedCategoriesSection = () => {
 				emptyTitle='Aún no hay categorías disponibles'
 				emptyDescription='Vuelve a intentarlo en unos minutos.'
 			>
-				<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+				<div className='grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4'>
 					{categories.map(category => (
 						<Link
 							key={category.id}
 							to={`/categoria/${category.slug}`}
-							className='focus-ring flex min-h-64 flex-col overflow-hidden rounded-2xl glass-card card-hover'
+							className='focus-ring flex flex-col overflow-hidden rounded-2xl glass-card card-hover'
 						>
-							<div className='flex h-32 items-center justify-center bg-white/40 p-4'>
+							<div className='flex h-14 items-center justify-center bg-white/40 p-2 sm:h-20 sm:p-3'>
 								<img
 									src={category.imageUrl}
 									alt=''
@@ -47,9 +47,11 @@ export const FeaturedCategoriesSection = () => {
 								/>
 							</div>
 
-							<div className='flex flex-1 flex-col gap-2 p-4'>
-								<p className='font-semibold text-neutral-900'>{category.label}</p>
-								<p className='mt-auto text-sm text-neutral-600'>
+							<div className='flex flex-1 flex-col gap-1 p-3'>
+								<p className='text-sm font-semibold text-neutral-900 sm:text-base'>
+									{category.label}
+								</p>
+								<p className='mt-auto text-xs text-neutral-600 sm:text-sm'>
 									{category.productCount} productos
 								</p>
 							</div>

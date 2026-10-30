@@ -135,9 +135,11 @@ export const ScrollZoomStage = ({ hero, next, className }: Props) => {
 					{hero}
 				</div>
 
+				{/* `safe center`: si la sección no cabe en la pantalla se alinea arriba
+				    en vez de recortar el encabezado */}
 				<div
 					ref={nextRef}
-					className='scroll-stage-next page-gradient absolute inset-x-0 bottom-0 flex h-[100svh] items-center overflow-hidden pb-6 pt-20'
+					className='scroll-stage-next page-gradient absolute inset-x-0 bottom-0 flex h-[100svh] overflow-hidden pb-6 pt-20 [align-items:safe_center]'
 				>
 					<div className='scroll-stage-next-content w-full'>{next}</div>
 				</div>
