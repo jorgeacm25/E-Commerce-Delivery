@@ -27,13 +27,13 @@ export const HomePage = () => {
 				next={<FeaturedCategoriesSection />}
 			/>
 			<Reveal>
+				<HowItWorksSection />
+			</Reveal>
+			<Reveal>
 				<FamilyCombosSection />
 			</Reveal>
 			<Reveal>
 				<PopularProductsSection />
-			</Reveal>
-			<Reveal>
-				<HowItWorksSection />
 			</Reveal>
 			<Reveal>
 				<DeliveryZonesSection />
