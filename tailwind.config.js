@@ -89,7 +89,10 @@ export default {
 			},
 
 			boxShadow: {
-				card: '0 1px 3px 0 rgb(51 51 56 / 0.08), 0 1px 2px -1px rgb(51 51 56 / 0.08)',
+				// `card` en reposo: sombra corta + difusa para que la tarjeta se despegue
+				// del fondo; `card-hover` la eleva al pasar el ratón (clase .card-hover).
+				card: '0 1px 2px 0 rgb(51 51 56 / 0.06), 0 4px 14px -4px rgb(51 51 56 / 0.14)',
+				'card-hover': '0 6px 12px -4px rgb(51 51 56 / 0.10), 0 18px 36px -10px rgb(51 51 56 / 0.24)',
 				popover: '0 10px 30px -5px rgb(51 51 56 / 0.18)',
 			},
 
@@ -105,6 +108,19 @@ export default {
 				'slide-in-left': {
 					'0%': { transform: 'translateX(-100%)' },
 					'100%': { transform: 'translateX(0)' },
+				},
+				// Salidas de los paneles laterales (Drawer) al cerrarse
+				'fade-out': {
+					'0%': { opacity: '1' },
+					'100%': { opacity: '0' },
+				},
+				'slide-out': {
+					'0%': { transform: 'translateX(0)' },
+					'100%': { transform: 'translateX(100%)' },
+				},
+				'slide-out-left': {
+					'0%': { transform: 'translateX(0)' },
+					'100%': { transform: 'translateX(-100%)' },
 				},
 				'slide-up': {
 					'0%': { transform: 'translateY(0.5rem)', opacity: '0' },
@@ -156,6 +172,10 @@ export default {
 				'fade-in': 'fade-in 0.3s ease-out',
 				'slide-in': 'slide-in 0.3s ease-out',
 				'slide-in-left': 'slide-in-left 0.3s ease-out',
+				// `forwards`: el panel se queda fuera hasta que el Drawer lo desmonta
+				'fade-out': 'fade-out 0.25s ease-in forwards',
+				'slide-out': 'slide-out 0.25s ease-in forwards',
+				'slide-out-left': 'slide-out-left 0.25s ease-in forwards',
 				'slide-up': 'slide-up 0.2s ease-out',
 				'scale-in': 'scale-in 0.15s ease-out',
 				'spin-slow': 'spin 2s linear infinite',

@@ -71,13 +71,19 @@ export const AdminOrderDetailPage = () => {
 				}
 			/>
 
-			<div className='overflow-x-auto rounded-xl border border-neutral-200'>
+			<div className='overflow-x-auto rounded-xl border border-neutral-300 bg-white shadow-card transition-shadow duration-200 hover:shadow-card-hover'>
 				<table className='w-full text-left text-sm'>
-					<thead className='bg-neutral-50 text-xs font-semibold uppercase text-neutral-500'>
+					<thead className='border-b border-secondary-200 bg-secondary-50 text-xs font-semibold uppercase text-secondary-800'>
 						<tr>
-							<th className='px-4 py-3'>Producto</th>
-							<th className='px-4 py-3'>Cantidad</th>
-							<th className='px-4 py-3'>Total</th>
+							<th className='px-4 py-3'>
+								<span className='th-zoom'>Producto</span>
+							</th>
+							<th className='px-4 py-3'>
+								<span className='th-zoom'>Cantidad</span>
+							</th>
+							<th className='px-4 py-3'>
+								<span className='th-zoom'>Total</span>
+							</th>
 						</tr>
 					</thead>
 					<tbody className='divide-y divide-neutral-100'>
@@ -101,13 +107,13 @@ export const AdminOrderDetailPage = () => {
 			</div>
 
 			<div className='grid gap-4 sm:grid-cols-2'>
-				<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
+				<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card card-hover'>
 					<h2 className='mb-2 text-sm font-semibold text-neutral-900'>Cliente</h2>
 					<p className='text-sm text-neutral-700'>{order.customerName}</p>
 					<p className='text-sm text-neutral-500'>{order.customerEmail}</p>
 				</div>
 
-				<div className='rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'>
+				<div className='rounded-2xl border border-neutral-300 bg-white p-5 shadow-card card-hover'>
 					<h2 className='mb-2 text-sm font-semibold text-neutral-900'>Dirección de envío</h2>
 					<p className='text-sm text-neutral-700'>{order.addressLine1}</p>
 					{order.addressLine2 && <p className='text-sm text-neutral-700'>{order.addressLine2}</p>}

@@ -33,7 +33,7 @@
 > También 2026-10-28, panel admin (`src/layouts/AdminLayout.tsx`):
 > - Sidebar y header sobre el degradado verde del hero (sin el shader),
 >   con partículas lentas y suaves (`src/components/ui/ParticlesCanvas.tsx`,
->   canvas 2D). El contenido va en un panel gris claro (`#eef2ef`) para que
+>   canvas 2D). El contenido va en un panel gris claro (`#dfe8e2`) para que
 >   tarjetas y formularios blancos contrasten. `AdminNavList` y `Logo`
 >   usan `tone='light'` en el sidebar; el drawer móvil sigue en blanco.
 > - Transición "curtains: blinds" (referencia: motion.dev, código de pago,

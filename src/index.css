@@ -18,6 +18,31 @@
 	@apply outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white;
 }
 
+/* Hover común de tarjetas: se eleva un poco y gana sombra. Sin
+   desplazamiento si el usuario prefiere menos movimiento. */
+@layer components {
+	.card-hover {
+		@apply transition-[box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-card-hover motion-reduce:transition-shadow motion-reduce:hover:translate-y-0;
+	}
+
+	/* Zoom del texto de encabezado de tabla al pasar el ratón por la celda.
+	   Va en un span inline-block (no en el <th>) para no mover el layout de
+	   la tabla; origin-left porque los encabezados están alineados a la izquierda. */
+	.th-zoom {
+		@apply inline-block origin-left transition-transform duration-200 ease-out;
+	}
+
+	th:hover > .th-zoom {
+		@apply scale-110 text-secondary-950;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		th:hover > .th-zoom {
+			@apply scale-100;
+		}
+	}
+}
+
 /* CLASES PERSONALIZADAS */
 .btn-paginated {
 	@apply border border-slate-700 rounded-md font-semibold text-xs py-1 px-3 hover:bg-slate-700 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:border-slate-800 disabled:text-slate-800 disabled:hover:bg-white disabled:hover:text-slate-700;
@@ -103,6 +128,37 @@
 	.glass3d-light {
 		--filter-glass3d: blur(24px) brightness(1.1) saturate(1.4);
 		--color-glass3d: hsl(0 0% 100% / 0.78);
+	}
+
+	/* Tarjetas de la landing en glassmorphism sobre .page-gradient.
+	   El blanco al 62 % deja pasar el verde del fondo pero garantiza
+	   contraste: el peor caso (#e1ebe5 aprox.) da ≥ 6:1 con neutral-600
+	   y ≥ 10:1 con neutral-900. Por eso el texto secundario de las cards usa
+	   neutral-600 como mínimo (neutral-500 se queda al límite de AA).
+	   Sin soporte de backdrop-filter se sube la opacidad para no perder
+	   legibilidad. */
+	.glass-card {
+		background-color: rgb(255 255 255 / 0.62);
+		border: 1px solid rgb(255 255 255 / 0.75);
+		-webkit-backdrop-filter: blur(18px) saturate(1.6);
+		backdrop-filter: blur(18px) saturate(1.6);
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.9),
+			0 1px 2px 0 rgb(23 64 44 / 0.06),
+			0 8px 24px -8px rgb(23 64 44 / 0.18);
+	}
+
+	.glass-card:hover {
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.9),
+			0 6px 12px -4px rgb(23 64 44 / 0.1),
+			0 18px 36px -10px rgb(23 64 44 / 0.26);
+	}
+
+	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+		.glass-card {
+			background-color: rgb(255 255 255 / 0.9);
+		}
 	}
 
 	/* Fondo de la tienda: verde salvia más profundo que el menta anterior,

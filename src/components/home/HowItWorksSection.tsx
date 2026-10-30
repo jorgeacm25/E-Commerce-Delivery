@@ -36,7 +36,7 @@ export const HowItWorksSection = () => {
 						.map(step => (
 							<li
 								key={step.id}
-								className='flex flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'
+								className='flex flex-col gap-2 rounded-2xl glass-card p-5 card-hover'
 							>
 								<span className='flex h-8 w-8 items-center justify-center rounded-full bg-primary-600 text-sm font-bold text-white'>
 									{step.order}

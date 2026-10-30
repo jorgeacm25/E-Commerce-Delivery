@@ -29,7 +29,7 @@ export const GuaranteesSection = () => {
 			>
 				<div className='grid grid-cols-1 gap-4 sm:grid-cols-3'>
 					{guarantees.map(guarantee => (
-						<div key={guarantee.id} className='flex flex-col gap-2 rounded-2xl bg-white p-5 shadow-card'>
+						<div key={guarantee.id} className='flex flex-col gap-2 rounded-2xl glass-card p-5 card-hover'>
 							<span className='flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-lg text-primary-700'>
 								{homeIconMap[guarantee.icon]}
 							</span>

@@ -2,7 +2,7 @@ import { formatPrice } from '../../helpers';
 import { useCartStore } from '../../store/cart.store';
 
 // Resumen lateral del pedido, visible en todos los pasos del checkout. A
-// diferencia de CartSummary (/carrito) es de solo lectura: aquí no se edita
+// diferencia de CartDrawer (panel del carrito) es de solo lectura: aquí no se edita
 // el carrito, solo se confirma lo que ya se decidió antes de llegar al
 // checkout.
 export const CheckoutOrderSummary = () => {

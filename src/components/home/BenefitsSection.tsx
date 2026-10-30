@@ -31,7 +31,7 @@ export const BenefitsSection = () => {
 					{benefits.map(benefit => (
 						<div
 							key={benefit.id}
-							className='flex flex-col gap-2 rounded-2xl border border-neutral-200 bg-white p-5 shadow-card'
+							className='flex flex-col gap-2 rounded-2xl glass-card p-5 card-hover'
 						>
 							<span className='flex h-10 w-10 items-center justify-center rounded-full bg-secondary-100 text-lg text-secondary-700'>
 								{homeIconMap[benefit.icon]}

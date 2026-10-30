@@ -53,7 +53,7 @@ export const PricingModeFields = ({ register, watch, setValue, errors }: Props) 
 	}, [pricingMode, costCup, marginUsd, rate, setValue]);
 
 	return (
-		<div className='flex flex-col gap-4 rounded-xl border border-neutral-200 p-4'>
+		<div className='flex flex-col gap-4 rounded-xl border border-neutral-300 bg-white p-4'>
 			<RadioGroup
 				label='Modo de precio'
 				name='pricingMode'

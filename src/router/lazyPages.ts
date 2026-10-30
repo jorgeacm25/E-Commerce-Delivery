@@ -8,7 +8,6 @@ export const CategoryPage = lazyNamed(
 );
 export const ProductPage = lazyNamed(() => import('../pages/public/ProductPage'), 'ProductPage');
 export const CombosPage = lazyNamed(() => import('../pages/public/CombosPage'), 'CombosPage');
-export const CartPage = lazyNamed(() => import('../pages/public/CartPage'), 'CartPage');
 export const CheckoutPage = lazyNamed(
 	() => import('../pages/public/CheckoutPage'),
 	'CheckoutPage'

@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast';
 import { FiCheck, FiPackage, FiShoppingCart } from 'react-icons/fi';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Badge, Button, CurrencyDisplay, EmptyState, PageHeader, Skeleton } from '../../components/ui';
 import { cn } from '../../helpers';
 import { useAuth, useCustomerOrder } from '../../hooks';
@@ -8,6 +8,7 @@ import { buildCartItem } from '../../helpers/catalog';
 import { getCatalogProductBySlug } from '../../services/catalog.service';
 import { CustomerOrder } from '../../interfaces';
 import { useCartStore } from '../../store/cart.store';
+import { useGlobalStore } from '../../store/global.store';
 
 const STATUS_ORDER: CustomerOrder['status'][] = ['Pending', 'Paid', 'Shipped', 'Delivered'];
 const STATUS_LABELS: Record<CustomerOrder['status'], string> = {
@@ -20,7 +21,7 @@ const STATUS_LABELS: Record<CustomerOrder['status'], string> = {
 
 export const CustomerOrderDetailPage = () => {
 	const { orderNumber: orderId } = useParams<{ orderNumber: string }>();
-	const navigate = useNavigate();
+	const openSheet = useGlobalStore(state => state.openSheet);
 	const { user } = useAuth();
 	const addItem = useCartStore(state => state.addItem);
 
@@ -80,7 +81,7 @@ export const CustomerOrderDetailPage = () => {
 			toast.success('Pedido agregado al carrito', { position: 'bottom-right' });
 		}
 
-		navigate('/carrito');
+		openSheet('cart');
 	};
 
 	return (

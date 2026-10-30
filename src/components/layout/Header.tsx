@@ -9,6 +9,7 @@ import { CategoryNav } from './CategoryNav';
 import { CartLink } from './CartLink';
 import { AccountLink } from './AccountLink';
 import { MobileMenu } from './MobileMenu';
+import { CartDrawer } from '../cart/CartDrawer';
 
 /** Alto fijo de la barra (h-16): el hero lo descuenta en su padding superior. */
 const HEADER_HEIGHT = 64;
@@ -40,18 +41,28 @@ const useHeaderMode = (hasHero: boolean): HeaderMode => {
 			frameId = 0;
 			// La portada se carga en diferido: si el hero aún no está en el DOM
 			// se asume que sí estará (arriba del todo), en vez de pasar a sólido.
-			const hero = document.querySelector(HERO_SELECTOR);
-			if (hero && hero.getBoundingClientRect().bottom <= HEADER_HEIGHT) setMode('solid');
+			// En el escenario de zoom (ScrollZoomStage) el hero deja de verse en
+			// cuanto se abre la sección siguiente (`data-stage='next'`), aunque el
+			// escenario siga ocupando la pantalla: a partir de ahí la barra es sólida.
+			const hero = document.querySelector<HTMLElement>(HERO_SELECTOR);
+			if (hero && (hero.dataset.stage === 'next' || hero.getBoundingClientRect().bottom <= HEADER_HEIGHT))
+				setMode('solid');
 			else setMode(window.scrollY > 8 ? 'glass' : 'overlay');
 		};
 		const requestUpdate = () => {
 			if (!frameId) frameId = requestAnimationFrame(update);
 		};
 
+		// El escenario escribe `data-stage` en su propio frame, que puede llegar
+		// después del de la barra: se escucha el cambio para no quedar desfasados.
+		const stageObserver = new MutationObserver(requestUpdate);
+		stageObserver.observe(document.body, { subtree: true, attributeFilter: ['data-stage'] });
+
 		update();
 		window.addEventListener('scroll', requestUpdate, { passive: true });
 		window.addEventListener('resize', requestUpdate);
 		return () => {
+			stageObserver.disconnect();
 			cancelAnimationFrame(frameId);
 			window.removeEventListener('scroll', requestUpdate);
 			window.removeEventListener('resize', requestUpdate);
@@ -69,7 +80,7 @@ export const Header = () => {
 	const hasHero = pathname === '/';
 	const mode = useHeaderMode(hasHero);
 
-	// El menú móvil va fuera del <header>: su `backdrop-filter` (modo glass)
+	// El menú móvil y el carrito van fuera del <header>: su `backdrop-filter` (modo glass)
 	// convertiría a la barra en el contenedor de los elementos `fixed`.
 	return (
 		<>
@@ -134,6 +145,7 @@ export const Header = () => {
 			</header>
 
 			<MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+			<CartDrawer />
 		</>
 	);
 };

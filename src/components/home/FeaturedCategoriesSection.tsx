@@ -5,9 +5,9 @@ import { SectionHeading } from './SectionHeading';
 import { SectionState } from './SectionState';
 
 const CategoriesSkeleton = () => (
-	<div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6'>
-		{Array.from({ length: 6 }).map((_, index) => (
-			<Skeleton key={index} className='h-28 rounded-2xl' />
+	<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+		{Array.from({ length: 4 }).map((_, index) => (
+			<Skeleton key={index} className='h-64 rounded-2xl' />
 		))}
 	</div>
 );
@@ -31,25 +31,28 @@ export const FeaturedCategoriesSection = () => {
 				emptyTitle='Aún no hay categorías disponibles'
 				emptyDescription='Vuelve a intentarlo en unos minutos.'
 			>
-				<div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6'>
+				<div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
 					{categories.map(category => (
 						<Link
 							key={category.id}
 							to={`/categoria/${category.slug}`}
-							className='focus-ring flex flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-4 text-center shadow-card transition-shadow hover:shadow-popover'
+							className='focus-ring flex min-h-64 flex-col overflow-hidden rounded-2xl glass-card card-hover'
 						>
-							<img
-								src={category.imageUrl}
-								alt=''
-								aria-hidden='true'
-								className='h-10 w-10 object-contain'
-							/>
-							<span className='text-sm font-medium text-neutral-700'>
-								{category.label}
-							</span>
-							<span className='text-xs text-neutral-500'>
-								{category.productCount} productos
-							</span>
+							<div className='flex h-32 items-center justify-center bg-white/40 p-4'>
+								<img
+									src={category.imageUrl}
+									alt=''
+									aria-hidden='true'
+									className='h-full w-full object-contain'
+								/>
+							</div>
+
+							<div className='flex flex-1 flex-col gap-2 p-4'>
+								<p className='font-semibold text-neutral-900'>{category.label}</p>
+								<p className='mt-auto text-sm text-neutral-600'>
+									{category.productCount} productos
+								</p>
+							</div>
 						</Link>
 					))}
 				</div>

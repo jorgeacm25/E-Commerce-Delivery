@@ -38,7 +38,7 @@ export const AdminLoginPage = () => {
 
 	return (
 		<div className='container flex justify-center py-12'>
-			<div className='w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 shadow-card'>
+			<div className='w-full max-w-sm rounded-2xl border border-neutral-300 bg-white p-6 shadow-card'>
 				<h1 className='text-xl font-bold text-neutral-900'>Acceso administrativo</h1>
 				<p className='mt-1 text-sm text-neutral-500'>Panel de gestión de Delivery Home.</p>
 

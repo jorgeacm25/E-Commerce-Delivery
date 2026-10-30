@@ -65,7 +65,7 @@ export const Select = forwardRef<HTMLSelectElement, Props>(
 							'disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-400',
 							error
 								? 'border-danger-500 focus-visible:ring-danger-500'
-								: 'border-neutral-300 hover:border-neutral-400',
+								: 'border-neutral-400 hover:border-neutral-500',
 							className
 						)}
 						{...rest}

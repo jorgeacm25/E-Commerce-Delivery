@@ -24,7 +24,7 @@ export const AdminLayout = () => {
 			<div className='flex min-w-0 flex-1 flex-col'>
 				<AdminHeader />
 
-				<main className='flex-1 rounded-t-3xl bg-[#eef2ef] p-4 shadow-[0_-8px_30px_-12px_rgb(11_36_24/0.35)] sm:p-6 lg:rounded-tr-none'>
+				<main className='flex-1 rounded-t-3xl bg-[#dfe8e2] p-4 shadow-[0_-8px_30px_-12px_rgb(11_36_24/0.35)] sm:p-6 lg:rounded-tr-none'>
 					<AdminRouteTransition />
 				</main>
 			</div>

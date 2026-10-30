@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { FiHome } from 'react-icons/fi';
 import { cn } from '../../helpers';
 import { Badge } from '../ui';
 import { adminNavigation } from '../../constants/adminNavigation';
@@ -67,6 +68,23 @@ export const AdminNavList = ({ collapsed = false, tone = 'dark', onNavigate, cla
 					</NavLink>
 				);
 			})}
+
+			{/* Salida a la tienda pública, separada de las secciones del panel */}
+			<div className={cn('my-2 border-t', isLight ? 'border-white/20' : 'border-neutral-200')} />
+			<Link
+				to='/'
+				onClick={onNavigate}
+				title={collapsed ? 'Volver a la tienda' : undefined}
+				className={cn(
+					'focus-ring flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+					isLight
+						? 'text-white/85 hover:bg-white/15 hover:text-white'
+						: 'text-neutral-700 hover:bg-neutral-100'
+				)}
+			>
+				<FiHome aria-hidden='true' className='shrink-0 text-lg' />
+				{!collapsed && <span className='truncate'>Volver a la tienda</span>}
+			</Link>
 		</nav>
 	);
 };
