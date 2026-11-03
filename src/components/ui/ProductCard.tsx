@@ -10,6 +10,13 @@ interface Props {
 	price: number;
 	discountPriceUsd?: number;
 	inStock?: boolean;
+	/** Etiqueta pequeña sobre el nombre (p. ej. la categoría). */
+	category?: string;
+	/**
+	 * `contain` (por defecto): la imagen entera con margen, para fotos de
+	 * producto recortado. `cover`: la foto llena la cabecera de la tarjeta.
+	 */
+	imageFit?: 'contain' | 'cover';
 	// Recibe la imagen de la tarjeta para animar su vuelo hasta el carrito
 	onAdd?: (source: HTMLElement | null) => void;
 	className?: string;
@@ -21,6 +28,8 @@ export const ProductCard = ({
 	price,
 	discountPriceUsd,
 	inStock = true,
+	category,
+	imageFit = 'contain',
 	onAdd,
 	className,
 }: Props) => {
@@ -46,11 +55,33 @@ export const ProductCard = ({
 				)
 			)}
 
-			<div className='flex h-40 items-center justify-center bg-neutral-50 p-4'>
-				<img ref={imageRef} src={image} alt={name} className='h-full w-full object-contain' />
+			<div
+				className={cn(
+					'flex h-40 items-center justify-center overflow-hidden bg-neutral-50',
+					imageFit === 'contain' && 'p-4'
+				)}
+			>
+				<img
+					ref={imageRef}
+					src={image}
+					alt={name}
+					loading='lazy'
+					decoding='async'
+					className={cn(
+						'h-full w-full',
+						imageFit === 'cover'
+							? 'object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none'
+							: 'object-contain'
+					)}
+				/>
 			</div>
 
 			<div className='flex flex-1 flex-col gap-2 p-4'>
+				{category && (
+					<p className='text-xs font-semibold uppercase tracking-wide text-secondary-600'>
+						{category}
+					</p>
+				)}
 				<p className='line-clamp-2 text-sm font-medium text-neutral-800'>{name}</p>
 
 				<div className='mt-auto flex items-end justify-between gap-2'>

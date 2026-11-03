@@ -857,7 +857,7 @@
   los componentes.
 - Cada sección se consume con un hook dedicado de TanStack Query en
   `src/hooks/home/*` (`useFeaturedCategories`, `useFamilyCombos`,
-  `usePopularProductsHome`, `useHowItWorksSteps`, `useDeliveryZones`,
+  `useFeaturedProducts`, `useHowItWorksSteps`, `useDeliveryZones`,
   `useHomeBenefits`, `useHomeGuarantees`, `useTestimonials`, `useHomeFaqs`) y
   maneja explícitamente loading (skeletons), error (con reintento) y estado
   vacío mediante el componente compartido `src/components/home/SectionState.tsx`.

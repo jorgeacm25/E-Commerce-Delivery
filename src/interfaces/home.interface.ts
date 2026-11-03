@@ -29,6 +29,12 @@ export interface HomeProduct {
 	inStock: boolean;
 }
 
+/** Producto destacado de la portada: un producto más la categoría a la que pertenece. */
+export interface HomeFeaturedProduct extends HomeProduct {
+	categorySlug: string;
+	categoryLabel: string;
+}
+
 export interface HowItWorksStep {
 	id: string;
 	order: number;

@@ -6,10 +6,10 @@ import {
 	FaqSection,
 	FamilyCombosSection,
 	FeaturedCategoriesSection,
+	FeaturedProductsSection,
 	GuaranteesSection,
 	HeroSection,
 	HowItWorksSection,
-	PopularProductsSection,
 	TestimonialsSection,
 } from '../../components/home';
 import { Reveal, ScrollZoomStage } from '../../components/ui';
@@ -39,7 +39,7 @@ export const HomePage = () => {
 				<FamilyCombosSection />
 			</Reveal>
 			<Reveal>
-				<PopularProductsSection />
+				<FeaturedProductsSection />
 			</Reveal>
 			<Reveal>
 				<DeliveryZonesSection />
