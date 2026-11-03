@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { FiX } from 'react-icons/fi';
 import { cn } from '../../helpers';
 import { IconButton } from './IconButton';
+import { ModalBackdrop } from './ModalBackdrop';
 import { PointerGlowCanvas } from './PointerGlowCanvas';
 
 export type DrawerSide = 'left' | 'right';
@@ -27,7 +28,7 @@ interface Props {
 }
 
 // Duración de la animación de salida (ver `drawer-out`/`overlay-out` en tailwind.config.js)
-const EXIT_DURATION_MS = 300;
+const EXIT_DURATION_MS = 320;
 
 const sizeClasses: Record<DrawerSize, string> = {
 	sm: 'max-w-sm',
@@ -94,13 +95,10 @@ export const Drawer = ({
 				isClosing && 'pointer-events-none'
 			)}
 		>
-			<div
-				className={cn(
-					'absolute inset-0 bg-secondary-950/40 backdrop-blur-md',
-					isClosing ? 'animate-overlay-out' : 'animate-overlay-in'
-				)}
+			<ModalBackdrop
+				isClosing={isClosing}
 				onClick={onClose}
-				aria-hidden='true'
+				colorClassName='bg-secondary-950/40'
 			/>
 
 			<div

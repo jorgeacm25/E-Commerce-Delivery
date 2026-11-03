@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { FiX } from 'react-icons/fi';
 import { cn } from '../../helpers';
 import { IconButton } from './IconButton';
+import { ModalBackdrop } from './ModalBackdrop';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -24,7 +25,7 @@ const sizeClasses: Record<ModalSize, string> = {
 };
 
 // Duración de la animación de salida (ver `dialog-out`/`overlay-out` en tailwind.config.js)
-const EXIT_DURATION_MS = 300;
+const EXIT_DURATION_MS = 320;
 
 interface ModalContent {
 	title?: string;
@@ -102,14 +103,7 @@ export const Modal = ({
 				isClosing && 'pointer-events-none'
 			)}
 		>
-			<div
-				className={cn(
-					'absolute inset-0 bg-neutral-900/40 backdrop-blur-md',
-					isClosing ? 'animate-overlay-out' : 'animate-overlay-in'
-				)}
-				onClick={onClose}
-				aria-hidden='true'
-			/>
+			<ModalBackdrop isClosing={isClosing} onClick={onClose} />
 
 			<div
 				ref={panelRef}

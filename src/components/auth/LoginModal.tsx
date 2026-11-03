@@ -10,10 +10,11 @@ import { useAuth } from '../../hooks';
 import { LoginFormValues, loginSchema } from '../../lib/authValidators';
 import { useGlobalStore } from '../../store/global.store';
 import { Alert, Input, PasswordInput, ShineBorder } from '../ui';
+import { ModalBackdrop } from '../ui/ModalBackdrop';
 import { PointerGlowCanvas } from '../ui/PointerGlowCanvas';
 
 // Duración de la animación de salida (ver `dialog-out`/`overlay-out` en tailwind.config.js)
-const EXIT_DURATION_MS = 300;
+const EXIT_DURATION_MS = 320;
 
 interface LoginFormProps {
 	onSuccess: () => void;
@@ -168,13 +169,10 @@ export const LoginModal = () => {
 				isClosing && 'pointer-events-none'
 			)}
 		>
-			<div
-				className={cn(
-					'absolute inset-0 bg-secondary-950/40 backdrop-blur-md',
-					isClosing ? 'animate-overlay-out' : 'animate-overlay-in'
-				)}
+			<ModalBackdrop
+				isClosing={isClosing}
 				onClick={closeLoginModal}
-				aria-hidden='true'
+				colorClassName='bg-secondary-950/40'
 			/>
 
 			<div

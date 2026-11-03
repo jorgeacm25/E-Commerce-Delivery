@@ -5,6 +5,13 @@
 /* Titulares en Fraunces con el eje SOFT alto (terminales redondeados,
    más cálida) y sin las letras "wonky". El resto del texto usa Onest. */
 @layer base {
+	/* Reserva el hueco de la barra de scroll: al abrir un modal o panel se
+	   bloquea el scroll del body y, sin esto, la página (y la navbar fija)
+	   saltaba de lado al desaparecer la barra. */
+	html {
+		scrollbar-gutter: stable;
+	}
+
 	h1,
 	h2,
 	h3 {

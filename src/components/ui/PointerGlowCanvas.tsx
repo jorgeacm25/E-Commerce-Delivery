@@ -256,9 +256,11 @@ export const PointerGlowCanvas = ({ className, scaleTo = 'canvas' }: Props) => {
 
 		const handleVisibilityChange = () => (document.hidden ? stop() : start());
 
+		// Cambiar el tamaño del canvas lo borra: se redibuja en el acto para
+		// que no se pinte un cuadro vacío (negro) antes del siguiente frame.
 		const resizeObserver = new ResizeObserver(() => {
 			resize();
-			if (reducedMotion) draw(startTime);
+			draw(reducedMotion ? startTime : performance.now());
 		});
 		resizeObserver.observe(canvas);
 
@@ -271,6 +273,9 @@ export const PointerGlowCanvas = ({ className, scaleTo = 'canvas' }: Props) => {
 
 		resize();
 		draw(startTime);
+		// Hasta el primer dibujo el canvas WebGL es opaco negro: se mantiene
+		// invisible (se ve el degradado de respaldo) y aparece con fundido.
+		canvas.style.opacity = '1';
 		start();
 
 		if (!reducedMotion) {
@@ -293,5 +298,11 @@ export const PointerGlowCanvas = ({ className, scaleTo = 'canvas' }: Props) => {
 		};
 	}, [scaleTo]);
 
-	return <canvas ref={canvasRef} aria-hidden='true' className={cn('block h-full w-full', className)} />;
+	return (
+		<canvas
+			ref={canvasRef}
+			aria-hidden='true'
+			className={cn('block h-full w-full opacity-0 transition-opacity duration-300', className)}
+		/>
+	);
 };
