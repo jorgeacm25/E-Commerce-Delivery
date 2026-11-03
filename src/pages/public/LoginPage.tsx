@@ -1,82 +1,26 @@
-import { useState } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Button, Input, PasswordInput } from '../../components/ui';
+import { useEffect } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks';
-import { LoginFormValues, loginSchema } from '../../lib/authValidators';
-import { getAuthErrorMessage } from '../../helpers/authError';
+import { useGlobalStore } from '../../store/global.store';
 
 interface LocationState {
 	from?: { pathname: string };
 }
 
+// El login de clientes es un modal (components/auth/LoginModal). La ruta
+// /iniciar-sesion se conserva para los enlaces directos y para las
+// redirecciones de RequireAuth: abre el modal sobre la portada y, tras
+// iniciar sesión, vuelve a la página de origen si la había.
 export const LoginPage = () => {
-	const { signIn } = useAuth();
-	const navigate = useNavigate();
+	const { session } = useAuth();
 	const location = useLocation();
-	const [submitError, setSubmitError] = useState<string | null>(null);
+	const openLoginModal = useGlobalStore(state => state.openLoginModal);
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors, isSubmitting },
-	} = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
+	const redirectTo = (location.state as LocationState | null)?.from?.pathname;
 
-	const redirectTo = (location.state as LocationState | null)?.from?.pathname ?? '/';
+	useEffect(() => {
+		if (!session) openLoginModal(redirectTo);
+	}, [session, openLoginModal, redirectTo]);
 
-	const onSubmit = async (values: LoginFormValues) => {
-		setSubmitError(null);
-
-		try {
-			await signIn(values);
-			navigate(redirectTo, { replace: true });
-		} catch (error) {
-			setSubmitError(getAuthErrorMessage(error));
-		}
-	};
-
-	return (
-		<div className='container flex justify-center py-12'>
-			<div className='w-full max-w-sm rounded-2xl border border-neutral-200 bg-white p-6 shadow-card'>
-				<h1 className='text-xl font-bold text-neutral-900'>Iniciar sesión</h1>
-				<p className='mt-1 text-sm text-neutral-500'>Accede a tu cuenta de Delivery Home.</p>
-
-				<form onSubmit={handleSubmit(onSubmit)} noValidate className='mt-6 flex flex-col gap-4'>
-					{submitError && <Alert variant='danger'>{submitError}</Alert>}
-
-					<Input
-						label='Correo electrónico'
-						type='email'
-						required
-						autoComplete='username'
-						error={errors.email?.message}
-						{...register('email')}
-					/>
-					<PasswordInput
-						label='Contraseña'
-						required
-						autoComplete='current-password'
-						error={errors.password?.message}
-						{...register('password')}
-					/>
-
-					<Link to='/recuperar-contrasena' className='text-right text-xs font-medium text-primary-600 hover:underline'>
-						¿Olvidaste tu contraseña?
-					</Link>
-
-					<Button type='submit' fullWidth isLoading={isSubmitting}>
-						Iniciar sesión
-					</Button>
-				</form>
-
-				<p className='mt-6 text-center text-sm text-neutral-500'>
-					¿No tienes cuenta?{' '}
-					<Link to='/registrarse' className='font-medium text-primary-600 hover:underline'>
-						Regístrate
-					</Link>
-				</p>
-			</div>
-		</div>
-	);
+	return <Navigate to={session ? (redirectTo ?? '/') : '/'} replace />;
 };

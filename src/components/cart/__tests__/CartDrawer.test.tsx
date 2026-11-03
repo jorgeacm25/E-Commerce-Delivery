@@ -174,7 +174,7 @@ describe('CartDrawer', () => {
 
 		await user.click(within(dialog).getByRole('button', { name: 'Cerrar' }));
 
-		expect(dialog.className).toContain('animate-slide-out');
+		expect(dialog.className).toContain('animate-drawer-out');
 		await waitForElementToBeRemoved(() => screen.queryByRole('dialog'));
 	});
 

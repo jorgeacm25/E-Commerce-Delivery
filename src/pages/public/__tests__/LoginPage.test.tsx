@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LoginPage } from '../LoginPage';
 import { useAuth } from '../../../hooks';
+import { useGlobalStore } from '../../../store/global.store';
 
 vi.mock('../../../hooks', () => ({
 	useAuth: vi.fn(),
@@ -11,9 +11,11 @@ vi.mock('../../../hooks', () => ({
 
 const useAuthMock = vi.mocked(useAuth);
 
-const renderLoginPage = (initialEntries: string[] = ['/iniciar-sesion']) =>
+const renderLoginRoute = (from?: string) =>
 	render(
-		<MemoryRouter initialEntries={initialEntries}>
+		<MemoryRouter
+			initialEntries={[{ pathname: '/iniciar-sesion', state: from ? { from: { pathname: from } } : null }]}
+		>
 			<Routes>
 				<Route path='/iniciar-sesion' element={<LoginPage />} />
 				<Route path='/' element={<p>Inicio</p>} />
@@ -22,53 +24,31 @@ const renderLoginPage = (initialEntries: string[] = ['/iniciar-sesion']) =>
 		</MemoryRouter>
 	);
 
+// /iniciar-sesion ya no es una página: abre el modal de login (LoginModal)
 describe('LoginPage', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		useGlobalStore.setState({ isLoginModalOpen: false, loginRedirectTo: null });
 	});
 
-	it('muestra errores de validación y no llama a signIn si los campos están vacíos', async () => {
-		const signIn = vi.fn();
+	it('abre el modal de login sobre la portada recordando la página de origen', async () => {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		useAuthMock.mockReturnValue({ signIn } as any);
-		const user = userEvent.setup();
+		useAuthMock.mockReturnValue({ session: null } as any);
 
-		renderLoginPage();
-		await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+		renderLoginRoute('/mi-cuenta/pedidos');
 
-		expect(await screen.findByText('El correo o usuario es requerido')).toBeInTheDocument();
-		expect(screen.getByText('La contraseña es requerida')).toBeInTheDocument();
-		expect(signIn).not.toHaveBeenCalled();
-	});
-
-	it('inicia sesión y redirige a la página de origen tras un login exitoso', async () => {
-		const signIn = vi.fn().mockResolvedValue({});
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		useAuthMock.mockReturnValue({ signIn } as any);
-		const user = userEvent.setup();
-
-		renderLoginPage(['/iniciar-sesion']);
-		await user.type(screen.getByLabelText(/correo electrónico/i), 'ana@example.com');
-		await user.type(screen.getByLabelText(/^contraseña/i), 'secreto123');
-		await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
-
-		expect(signIn).toHaveBeenCalledWith({ email: 'ana@example.com', password: 'secreto123' });
 		expect(await screen.findByText('Inicio')).toBeInTheDocument();
+		expect(useGlobalStore.getState().isLoginModalOpen).toBe(true);
+		expect(useGlobalStore.getState().loginRedirectTo).toBe('/mi-cuenta/pedidos');
 	});
 
-	it('muestra el mensaje de error del backend cuando las credenciales son inválidas', async () => {
-		// El backend .NET ya devuelve el mensaje en español (ver
-		// CustomerPasswordMatchError) — se muestra tal cual.
-		const signIn = vi.fn().mockRejectedValue(new Error('La contraseña no es correcta'));
+	it('con sesión iniciada lleva a la página de origen sin abrir el modal', async () => {
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		useAuthMock.mockReturnValue({ signIn } as any);
-		const user = userEvent.setup();
+		useAuthMock.mockReturnValue({ session: { user: { id: '1' } } } as any);
 
-		renderLoginPage();
-		await user.type(screen.getByLabelText(/correo electrónico/i), 'ana@example.com');
-		await user.type(screen.getByLabelText(/^contraseña/i), 'incorrecta');
-		await user.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+		renderLoginRoute('/mi-cuenta/pedidos');
 
-		expect(await screen.findByText('La contraseña no es correcta')).toBeInTheDocument();
+		expect(await screen.findByText('Mis pedidos')).toBeInTheDocument();
+		expect(useGlobalStore.getState().isLoginModalOpen).toBe(false);
 	});
 });

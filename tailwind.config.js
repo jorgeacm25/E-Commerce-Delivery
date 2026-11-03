@@ -166,6 +166,47 @@ export default {
 				shimmer: {
 					'100%': { transform: 'translateX(100%)' },
 				},
+				// Apertura/cierre suave de modales y paneles (login, carrito):
+				// el fondo se desvanece, el diálogo crece y sube un poco, y el
+				// panel lateral se desliza con una curva que frena al final.
+				'overlay-in': {
+					'0%': { opacity: '0' },
+					'100%': { opacity: '1' },
+				},
+				'overlay-out': {
+					'0%': { opacity: '1' },
+					'100%': { opacity: '0' },
+				},
+				'dialog-in': {
+					'0%': { opacity: '0', transform: 'translateY(12px) scale(0.96)' },
+					'100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+				},
+				'dialog-out': {
+					'0%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+					'100%': { opacity: '0', transform: 'translateY(8px) scale(0.97)' },
+				},
+				'drawer-in': {
+					'0%': { opacity: '0.6', transform: 'translateX(100%)' },
+					'100%': { opacity: '1', transform: 'translateX(0)' },
+				},
+				'drawer-out': {
+					'0%': { opacity: '1', transform: 'translateX(0)' },
+					'100%': { opacity: '0.6', transform: 'translateX(100%)' },
+				},
+				'drawer-in-left': {
+					'0%': { opacity: '0.6', transform: 'translateX(-100%)' },
+					'100%': { opacity: '1', transform: 'translateX(0)' },
+				},
+				'drawer-out-left': {
+					'0%': { opacity: '1', transform: 'translateX(0)' },
+					'100%': { opacity: '0.6', transform: 'translateX(-100%)' },
+				},
+				// Brillo que recorre el borde (componente <ShineBorder/>, de Magic UI)
+				shine: {
+					'0%': { backgroundPosition: '0% 0%' },
+					'50%': { backgroundPosition: '100% 100%' },
+					'100%': { backgroundPosition: '0% 0%' },
+				},
 			},
 
 			animation: {
@@ -186,6 +227,19 @@ export default {
 				float: 'float 4s ease-in-out infinite',
 				'float-shadow': 'float-shadow 4s ease-in-out infinite',
 				shimmer: 'shimmer 1.6s ease-in-out infinite',
+				// Entradas con "ease-out-quint" y salidas más cortas; las salidas
+				// duran 300ms (EXIT_DURATION_MS en Drawer, Modal y LoginModal) y usan
+				// `forwards` para quedarse ocultas hasta el desmontaje.
+				'overlay-in': 'overlay-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both',
+				'overlay-out': 'overlay-out 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+				'dialog-in': 'dialog-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both',
+				'dialog-out': 'dialog-out 0.3s cubic-bezier(0.4, 0, 1, 1) forwards',
+				'drawer-in': 'drawer-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both',
+				'drawer-out': 'drawer-out 0.3s cubic-bezier(0.4, 0, 1, 1) forwards',
+				'drawer-in-left': 'drawer-in-left 0.5s cubic-bezier(0.22, 1, 0.36, 1) both',
+				'drawer-out-left': 'drawer-out-left 0.3s cubic-bezier(0.4, 0, 1, 1) forwards',
+				// La duración la fija cada <ShineBorder/> con `--duration`
+				shine: 'shine var(--duration) infinite linear',
 			},
 		},
 	},

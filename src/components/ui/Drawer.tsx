@@ -26,8 +26,8 @@ interface Props {
 	children: React.ReactNode;
 }
 
-// Duración de la animación de salida (ver `slide-out`/`fade-out` en tailwind.config.js)
-const EXIT_DURATION_MS = 250;
+// Duración de la animación de salida (ver `drawer-out`/`overlay-out` en tailwind.config.js)
+const EXIT_DURATION_MS = 300;
 
 const sizeClasses: Record<DrawerSize, string> = {
 	sm: 'max-w-sm',
@@ -79,11 +79,11 @@ export const Drawer = ({
 	const slideAnimation =
 		side === 'right'
 			? isClosing
-				? 'animate-slide-out'
-				: 'animate-slide-in'
+				? 'animate-drawer-out'
+				: 'animate-drawer-in'
 			: isClosing
-				? 'animate-slide-out-left'
-				: 'animate-slide-in-left';
+				? 'animate-drawer-out-left'
+				: 'animate-drawer-in-left';
 
 	return createPortal(
 		<div
@@ -97,7 +97,7 @@ export const Drawer = ({
 			<div
 				className={cn(
 					'absolute inset-0 bg-secondary-950/40 backdrop-blur-md',
-					isClosing ? 'animate-fade-out' : 'animate-fade-in'
+					isClosing ? 'animate-overlay-out' : 'animate-overlay-in'
 				)}
 				onClick={onClose}
 				aria-hidden='true'
