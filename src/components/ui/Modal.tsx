@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { FiX } from 'react-icons/fi';
 import { cn } from '../../helpers';
@@ -22,6 +22,16 @@ const sizeClasses: Record<ModalSize, string> = {
 	lg: 'max-w-lg',
 	xl: 'max-w-2xl',
 };
+
+// Duración de la animación de salida (ver `dialog-out`/`overlay-out` en tailwind.config.js)
+const EXIT_DURATION_MS = 300;
+
+interface ModalContent {
+	title?: string;
+	description?: string;
+	children: React.ReactNode;
+	footer?: React.ReactNode;
+}
 
 export const Modal = ({
 	isOpen,
@@ -62,12 +72,41 @@ export const Modal = ({
 		};
 	}, [isOpen]);
 
-	if (!isOpen) return null;
+	// Al cerrar, el modal sigue montado mientras hace la animación de salida
+	// y se desmonta al terminar.
+	const [isMounted, setIsMounted] = useState(isOpen);
+	if (isOpen && !isMounted) setIsMounted(true);
+	const isClosing = isMounted && !isOpen;
+
+	useEffect(() => {
+		if (!isClosing) return;
+		const timeoutId = window.setTimeout(() => setIsMounted(false), EXIT_DURATION_MS);
+		return () => window.clearTimeout(timeoutId);
+	}, [isClosing]);
+
+	// Durante la salida se muestra el último contenido abierto: muchos padres
+	// derivan título/contenido de un estado que se limpia al cerrar (p. ej.
+	// `deletingId = null`), y sin esto el modal se vaciaría a mitad de la
+	// animación o renderizaría hijos con datos nulos.
+	const lastContentRef = useRef<ModalContent>({ title, description, children, footer });
+	if (isOpen) lastContentRef.current = { title, description, children, footer };
+	const content = isOpen ? { title, description, children, footer } : lastContentRef.current;
+
+	if (!isMounted) return null;
 
 	return createPortal(
-		<div className='fixed inset-0 z-50 flex items-center justify-center p-4'>
+		<div
+			// Durante la salida ya no recibe clics
+			className={cn(
+				'fixed inset-0 z-50 flex items-center justify-center p-4',
+				isClosing && 'pointer-events-none'
+			)}
+		>
 			<div
-				className='absolute inset-0 bg-neutral-900/50 animate-fade-in'
+				className={cn(
+					'absolute inset-0 bg-neutral-900/40 backdrop-blur-md',
+					isClosing ? 'animate-overlay-out' : 'animate-overlay-in'
+				)}
 				onClick={onClose}
 				aria-hidden='true'
 			/>
@@ -76,23 +115,24 @@ export const Modal = ({
 				ref={panelRef}
 				role='dialog'
 				aria-modal='true'
-				aria-labelledby={title ? 'modal-title' : undefined}
-				aria-describedby={description ? 'modal-description' : undefined}
+				aria-labelledby={content.title ? 'modal-title' : undefined}
+				aria-describedby={content.description ? 'modal-description' : undefined}
 				tabIndex={-1}
 				className={cn(
-					'focus-ring relative flex w-full max-h-[90vh] flex-col rounded-2xl bg-white shadow-popover animate-scale-in',
-					sizeClasses[size]
+					'focus-ring relative flex w-full max-h-[90vh] flex-col rounded-2xl bg-white shadow-popover',
+					sizeClasses[size],
+					isClosing ? 'animate-dialog-out' : 'animate-dialog-in'
 				)}
 			>
-				{title && (
+				{content.title && (
 					<div className='flex items-start justify-between gap-4 border-b border-neutral-200 p-5'>
 						<div>
 							<h2 id='modal-title' className='text-lg font-semibold text-neutral-900'>
-								{title}
+								{content.title}
 							</h2>
-							{description && (
+							{content.description && (
 								<p id='modal-description' className='mt-1 text-sm text-neutral-500'>
-									{description}
+									{content.description}
 								</p>
 							)}
 						</div>
@@ -101,11 +141,11 @@ export const Modal = ({
 					</div>
 				)}
 
-				<div className='overflow-y-auto p-5'>{children}</div>
+				<div className='overflow-y-auto p-5'>{content.children}</div>
 
-				{footer && (
+				{content.footer && (
 					<div className='flex justify-end gap-3 border-t border-neutral-200 p-5'>
-						{footer}
+						{content.footer}
 					</div>
 				)}
 			</div>
