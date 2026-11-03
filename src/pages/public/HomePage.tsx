@@ -28,7 +28,7 @@ export const HomePage = () => {
 	return (
 		<div className='flex flex-col gap-14 pb-8'>
 			<ScrollZoomStage
-				className='md:-mb-24 lg:mb-[min(-6rem,17rem-50svh)]'
+				className='md:-mb-24 lg:mb-[min(-1rem,22rem-50svh)]'
 				hero={<HeroSection />}
 				next={<FeaturedCategoriesSection />}
 			/>

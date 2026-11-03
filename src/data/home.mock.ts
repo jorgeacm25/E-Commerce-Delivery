@@ -25,12 +25,28 @@ const categoryProductCounts: Record<string, number> = {
 	dulces: 19,
 };
 
+// Fotos de referencia de Unsplash (licencia gratuita) para cada categoría,
+// hasta que existan imágenes propias. Se piden recortadas al tamaño de la
+// tarjeta para no descargar el original.
+const unsplashPhoto = (photoId: string) =>
+	`https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&w=640&h=480&q=70`;
+
+const categoryImages: Record<string, string> = {
+	'combos-familiares': unsplashPhoto('1608686207856-001b95cf60ca'),
+	despensa: unsplashPhoto('1645567454567-901dc409551b'),
+	'carnes-y-embutidos': unsplashPhoto('1692311358804-34b31f6ef43c'),
+	bebidas: unsplashPhoto('1524802020103-aa46eaffcaa2'),
+	aseo: unsplashPhoto('1649073005971-37babef31983'),
+	congelados: unsplashPhoto('1601599967100-f16100982063'),
+	dulces: unsplashPhoto('1765174639852-73f77b49e3c6'),
+};
+
 export const featuredCategoriesMock: HomeCategory[] = placeholderCategories.map(
 	category => ({
 		id: category.slug,
 		slug: category.slug,
 		label: category.label,
-		imageUrl: PLACEHOLDER_IMAGE,
+		imageUrl: categoryImages[category.slug] ?? PLACEHOLDER_IMAGE,
 		productCount: categoryProductCounts[category.slug] ?? 0,
 	})
 );
