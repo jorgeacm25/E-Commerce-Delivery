@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useFeaturedProducts } from '../../hooks';
 import { ProductCard } from '../ui/ProductCard';
+import { Reveal } from '../ui/Reveal';
 import { Skeleton } from '../ui/Skeleton';
 import { SectionHeading } from './SectionHeading';
 import { SectionState } from './SectionState';
+
+// Retraso entre tarjetas de una misma fila al entrar con el scroll. Se
+// escalona por columna (hasta 4 en lg) para que cada fila entre en cascada
+// sin que las últimas tarjetas esperen demasiado.
+const CARD_STAGGER_MS = 80;
+const MAX_COLUMNS = 4;
 
 const ProductsSkeleton = () => (
 	<div className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4'>
@@ -14,7 +21,8 @@ const ProductsSkeleton = () => (
 );
 
 // Muestra de productos de varias categorías (datos de prueba, ver
-// featuredProductsMock). Cada tarjeta lleva a su categoría.
+// featuredProductsMock). Cada tarjeta lleva a su categoría y aparece con
+// <Reveal/> al entrar en pantalla, igual que el resto de secciones.
 export const FeaturedProductsSection = () => {
 	const { products, isLoading, isError, refetch } = useFeaturedProducts();
 
@@ -43,22 +51,24 @@ export const FeaturedProductsSection = () => {
 				emptyDescription='Vuelve a intentarlo en unos minutos.'
 			>
 				<ul className='grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4'>
-					{products.map(product => (
+					{products.map((product, index) => (
 						<li key={product.id}>
-							<Link
-								to={`/categoria/${product.categorySlug}`}
-								className='focus-ring block h-full rounded-2xl'
-							>
-								<ProductCard
-									image={product.imageUrl}
-									name={product.name}
-									price={product.priceUsd}
-									inStock={product.inStock}
-									category={product.categoryLabel}
-									imageFit='cover'
-									className='h-full'
-								/>
-							</Link>
+							<Reveal delay={(index % MAX_COLUMNS) * CARD_STAGGER_MS} className='h-full'>
+								<Link
+									to={`/categoria/${product.categorySlug}`}
+									className='focus-ring block h-full rounded-2xl'
+								>
+									<ProductCard
+										image={product.imageUrl}
+										name={product.name}
+										price={product.priceUsd}
+										inStock={product.inStock}
+										category={product.categoryLabel}
+										imageFit='cover'
+										className='h-full'
+									/>
+								</Link>
+							</Reveal>
 						</li>
 					))}
 				</ul>
