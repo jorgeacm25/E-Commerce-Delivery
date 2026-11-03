@@ -34,7 +34,7 @@ export const DeliveryZonesSection = () => {
 					{zones.map(zone => (
 						<div
 							key={zone.id}
-							className='flex flex-col gap-2 rounded-2xl glass-card p-4 card-hover'
+							className='flex flex-col gap-2 rounded-2xl glass-card p-4 card-hover-lift'
 						>
 							<div className='flex items-center justify-between gap-2'>
 								<p className='font-semibold text-neutral-900'>{zone.province}</p>

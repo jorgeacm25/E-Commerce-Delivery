@@ -109,6 +109,14 @@
 		@apply transition-[box-shadow,transform] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-card-hover motion-reduce:transition-shadow motion-reduce:hover:translate-y-0;
 	}
 
+	/* Variante más marcada para las tarjetas de la tienda (productos, combos,
+	   categorías y bloques de la portada): sube más, crece un poco y la sombra
+	   se abre más, con una curva que frena al final. El admin sigue con
+	   .card-hover, más sobrio. */
+	.card-hover-lift {
+		@apply transition-[box-shadow,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:scale-[1.02] hover:shadow-card-lift motion-reduce:transition-shadow motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100;
+	}
+
 	/* Zoom del texto de encabezado de tabla al pasar el ratón por la celda.
 	   Va en un span inline-block (no en el <th>) para no mover el layout de
 	   la tabla; origin-left porque los encabezados están alineados a la izquierda. */
@@ -237,6 +245,14 @@
 			inset 0 1px 0 rgb(255 255 255 / 0.9),
 			0 6px 12px -4px rgb(23 64 44 / 0.1),
 			0 18px 36px -10px rgb(23 64 44 / 0.26);
+	}
+
+	/* Con .card-hover-lift la tarjeta sube más: la sombra acompaña */
+	.glass-card.card-hover-lift:hover {
+		box-shadow:
+			inset 0 1px 0 rgb(255 255 255 / 0.9),
+			0 10px 20px -6px rgb(23 64 44 / 0.14),
+			0 28px 48px -14px rgb(23 64 44 / 0.34);
 	}
 
 	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {

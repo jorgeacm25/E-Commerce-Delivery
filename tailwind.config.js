@@ -93,6 +93,8 @@ export default {
 				// del fondo; `card-hover` la eleva al pasar el ratón (clase .card-hover).
 				card: '0 1px 2px 0 rgb(51 51 56 / 0.06), 0 4px 14px -4px rgb(51 51 56 / 0.14)',
 				'card-hover': '0 6px 12px -4px rgb(51 51 56 / 0.10), 0 18px 36px -10px rgb(51 51 56 / 0.24)',
+				// Sombra más abierta para `.card-hover-lift` (tarjetas de la tienda)
+				'card-lift': '0 10px 20px -6px rgb(51 51 56 / 0.14), 0 28px 48px -14px rgb(51 51 56 / 0.32)',
 				popover: '0 10px 30px -5px rgb(51 51 56 / 0.18)',
 			},
 

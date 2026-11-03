@@ -39,7 +39,7 @@ export const ProductCard = ({
 	return (
 		<div
 			className={cn(
-				'group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-card card-hover',
+				'group relative flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-card card-hover-lift',
 				className
 			)}
 		>
@@ -70,7 +70,7 @@ export const ProductCard = ({
 					className={cn(
 						'h-full w-full',
 						imageFit === 'cover'
-							? 'object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none'
+							? 'object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 motion-reduce:transition-none'
 							: 'object-contain'
 					)}
 				/>

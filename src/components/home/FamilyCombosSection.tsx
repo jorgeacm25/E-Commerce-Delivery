@@ -46,7 +46,7 @@ export const FamilyCombosSection = () => {
 						<Link
 							key={combo.id}
 							to='/combos'
-							className='focus-ring flex flex-col overflow-hidden rounded-2xl glass-card card-hover'
+							className='focus-ring flex flex-col overflow-hidden rounded-2xl glass-card card-hover-lift'
 						>
 							<div className='flex h-32 items-center justify-center bg-white/40 p-4'>
 								<img

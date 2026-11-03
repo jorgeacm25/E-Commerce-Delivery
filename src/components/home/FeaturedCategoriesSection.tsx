@@ -43,7 +43,7 @@ export const FeaturedCategoriesSection = () => {
 						<Link
 							key={category.id}
 							to={`/categoria/${category.slug}`}
-							className={`focus-ring group relative isolate flex flex-col justify-end overflow-hidden rounded-2xl bg-neutral-200 card-hover ${CARD_HEIGHT}`}
+							className={`focus-ring group relative isolate flex flex-col justify-end overflow-hidden rounded-2xl bg-neutral-200 card-hover-lift ${CARD_HEIGHT}`}
 						>
 							{/* Decorativa: el nombre de la categoría ya está en el texto */}
 							<img
@@ -51,7 +51,7 @@ export const FeaturedCategoriesSection = () => {
 								alt=''
 								aria-hidden='true'
 								decoding='async'
-								className='absolute inset-0 -z-10 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none'
+								className='absolute inset-0 -z-10 h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110 motion-reduce:transition-none'
 							/>
 							{/* Degradado para que el texto blanco mantenga contraste sobre la foto */}
 							<div
