@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { mainNavLinks } from '../../constants/navigation';
 import { useAuth } from '../../hooks';
+import { useGlobalStore } from '../../store/global.store';
 import { Drawer } from '../ui';
 import { CategoryLinksList } from './CategoryNav';
 
@@ -11,10 +12,16 @@ interface Props {
 
 export const MobileMenu = ({ isOpen, onClose }: Props) => {
 	const { session, signOut } = useAuth();
+	const openLoginModal = useGlobalStore(state => state.openLoginModal);
 
 	const handleLogout = async () => {
 		await signOut();
 		onClose();
+	};
+
+	const handleLogin = () => {
+		onClose();
+		openLoginModal();
 	};
 
 	return (
@@ -61,13 +68,14 @@ export const MobileMenu = ({ isOpen, onClose }: Props) => {
 						</>
 					) : (
 						<>
-							<NavLink
-								to='/iniciar-sesion'
-								onClick={onClose}
-								className='rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100'
+							<button
+								type='button'
+								onClick={handleLogin}
+								aria-haspopup='dialog'
+								className='rounded-lg px-3 py-2 text-left text-sm font-medium text-neutral-700 hover:bg-neutral-100'
 							>
 								Iniciar sesión
-							</NavLink>
+							</button>
 							<NavLink
 								to='/registrarse'
 								onClick={onClose}

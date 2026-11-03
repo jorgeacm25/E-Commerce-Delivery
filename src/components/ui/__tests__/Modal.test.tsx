@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { Modal } from '../Modal';
@@ -41,5 +41,24 @@ describe('Modal', () => {
 
 		await user.keyboard('{Escape}');
 		expect(handleClose).toHaveBeenCalledTimes(2);
+	});
+
+	it('mantiene el último contenido durante la animación de salida y luego se desmonta', async () => {
+		const { rerender } = render(
+			<Modal isOpen onClose={vi.fn()} title='Eliminar categoría'>
+				Contenido
+			</Modal>
+		);
+
+		rerender(
+			<Modal isOpen={false} onClose={vi.fn()}>
+				{null}
+			</Modal>
+		);
+
+		expect(screen.getByRole('dialog')).toBeInTheDocument();
+		expect(screen.getByText('Eliminar categoría')).toBeInTheDocument();
+
+		await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 	});
 });

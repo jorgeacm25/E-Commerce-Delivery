@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Se comparte entre el login de clientes (LoginPage.tsx) y el de staff/admin
+// Se comparte entre el login de clientes (components/auth/LoginModal.tsx) y el de staff/admin
 // (AdminLoginPage.tsx). El backend staff no usa formato de correo (ej.
 // "staff"), así que acá no se valida como email, solo que no esté vacío.
 export const loginSchema = z.object({

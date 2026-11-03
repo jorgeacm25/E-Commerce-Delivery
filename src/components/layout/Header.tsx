@@ -7,9 +7,11 @@ import { PointerGlowCanvas } from '../ui/PointerGlowCanvas';
 import { Logo } from './Logo';
 import { CategoryNav } from './CategoryNav';
 import { CartLink } from './CartLink';
+import { HomeLink } from './HomeLink';
 import { AccountLink } from './AccountLink';
 import { MobileMenu } from './MobileMenu';
 import { CartDrawer } from '../cart/CartDrawer';
+import { LoginModal } from '../auth/LoginModal';
 
 /** Alto fijo de la barra (h-16): el hero lo descuenta en su padding superior. */
 const HEADER_HEIGHT = 64;
@@ -80,7 +82,7 @@ export const Header = () => {
 	const hasHero = pathname === '/';
 	const mode = useHeaderMode(hasHero);
 
-	// El menú móvil y el carrito van fuera del <header>: su `backdrop-filter` (modo glass)
+	// El menú móvil, el carrito y el login van fuera del <header>: su `backdrop-filter` (modo glass)
 	// convertiría a la barra en el contenedor de los elementos `fixed`.
 	return (
 		<>
@@ -138,6 +140,7 @@ export const Header = () => {
 					</nav>
 
 					<div className='ml-auto flex items-center gap-2'>
+						<HomeLink />
 						<AccountLink />
 						<CartLink />
 					</div>
@@ -146,6 +149,7 @@ export const Header = () => {
 
 			<MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 			<CartDrawer />
+			<LoginModal />
 		</>
 	);
 };

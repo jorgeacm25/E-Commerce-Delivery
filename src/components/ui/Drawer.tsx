@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { FiX } from 'react-icons/fi';
 import { cn } from '../../helpers';
 import { IconButton } from './IconButton';
+import { ModalBackdrop } from './ModalBackdrop';
 import { PointerGlowCanvas } from './PointerGlowCanvas';
 
 export type DrawerSide = 'left' | 'right';
@@ -26,8 +27,8 @@ interface Props {
 	children: React.ReactNode;
 }
 
-// Duración de la animación de salida (ver `slide-out`/`fade-out` en tailwind.config.js)
-const EXIT_DURATION_MS = 250;
+// Duración de la animación de salida (ver `drawer-out`/`overlay-out` en tailwind.config.js)
+const EXIT_DURATION_MS = 320;
 
 const sizeClasses: Record<DrawerSize, string> = {
 	sm: 'max-w-sm',
@@ -79,11 +80,11 @@ export const Drawer = ({
 	const slideAnimation =
 		side === 'right'
 			? isClosing
-				? 'animate-slide-out'
-				: 'animate-slide-in'
+				? 'animate-drawer-out'
+				: 'animate-drawer-in'
 			: isClosing
-				? 'animate-slide-out-left'
-				: 'animate-slide-in-left';
+				? 'animate-drawer-out-left'
+				: 'animate-drawer-in-left';
 
 	return createPortal(
 		<div
@@ -94,13 +95,10 @@ export const Drawer = ({
 				isClosing && 'pointer-events-none'
 			)}
 		>
-			<div
-				className={cn(
-					'absolute inset-0 bg-secondary-950/40 backdrop-blur-md',
-					isClosing ? 'animate-fade-out' : 'animate-fade-in'
-				)}
+			<ModalBackdrop
+				isClosing={isClosing}
 				onClick={onClose}
-				aria-hidden='true'
+				colorClassName='bg-secondary-950/40'
 			/>
 
 			<div
