@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { getPopularProductsHome } from '../../services/home.service';
+import { getFeaturedProducts } from '../../services/home.service';
 
-export const usePopularProductsHome = () => {
+export const useFeaturedProducts = () => {
 	const { data, isLoading, isError, refetch } = useQuery({
-		queryKey: ['home', 'popularProducts'],
-		queryFn: getPopularProductsHome,
+		queryKey: ['home', 'featuredProducts'],
+		queryFn: getFeaturedProducts,
 		retry: 1,
 	});
 

@@ -5,8 +5,8 @@ import {
 	HomeCombo,
 	HomeCategory,
 	HomeFaq,
+	HomeFeaturedProduct,
 	HomeGuarantee,
-	HomeProduct,
 	HomeTestimonial,
 	HowItWorksStep,
 } from '../interfaces';
@@ -90,55 +90,53 @@ export const familyCombosMock: HomeCombo[] = [
 	},
 ];
 
-export const popularProductsMock: HomeProduct[] = [
-	{
-		id: 'aceite-cocina-1l',
-		slug: 'aceite-cocina-1l',
-		name: 'Aceite de cocina 1L',
-		imageUrl: PLACEHOLDER_IMAGE,
-		priceUsd: 6.5,
-		inStock: true,
-	},
-	{
-		id: 'arroz-5lb',
-		slug: 'arroz-5lb',
-		name: 'Arroz 5lb',
-		imageUrl: PLACEHOLDER_IMAGE,
-		priceUsd: 5.9,
-		inStock: true,
-	},
-	{
-		id: 'pollo-entero-3lb',
-		slug: 'pollo-entero-3lb',
-		name: 'Pollo entero 3lb',
-		imageUrl: PLACEHOLDER_IMAGE,
-		priceUsd: 8.75,
-		inStock: true,
-	},
-	{
-		id: 'detergente-polvo-1kg',
-		slug: 'detergente-polvo-1kg',
-		name: 'Detergente en polvo 1kg',
-		imageUrl: PLACEHOLDER_IMAGE,
-		priceUsd: 4.2,
-		inStock: false,
-	},
-	{
-		id: 'leche-polvo-400g',
-		slug: 'leche-polvo-400g',
-		name: 'Leche en polvo 400g',
-		imageUrl: PLACEHOLDER_IMAGE,
-		priceUsd: 7.3,
-		inStock: true,
-	},
-	{
-		id: 'cafe-molido-500g',
-		slug: 'cafe-molido-500g',
-		name: 'Café molido 500g',
-		imageUrl: PLACEHOLDER_IMAGE,
-		priceUsd: 6.1,
-		inStock: true,
-	},
+// Productos destacados de prueba (datos simulados): una muestra de cada
+// categoría con foto de Unsplash. Más adelante esta lista saldrá de las
+// compras y pedidos reales; hoy no existe esa métrica.
+type FeaturedCategorySlug = 'carnes-y-embutidos' | 'bebidas' | 'despensa' | 'aseo';
+
+const featuredCategoryLabels: Record<FeaturedCategorySlug, string> = {
+	'carnes-y-embutidos': 'Cárnicos',
+	bebidas: 'Bebidas',
+	despensa: 'Despensa',
+	aseo: 'Aseo',
+};
+
+const featuredProduct = (
+	slug: string,
+	name: string,
+	categorySlug: FeaturedCategorySlug,
+	photoId: string,
+	priceUsd: number,
+	inStock = true
+): HomeFeaturedProduct => ({
+	id: slug,
+	slug,
+	name,
+	imageUrl: unsplashPhoto(photoId),
+	priceUsd,
+	inStock,
+	categorySlug,
+	categoryLabel: featuredCategoryLabels[categorySlug],
+});
+
+export const featuredProductsMock: HomeFeaturedProduct[] = [
+	// Cárnicos: 3 picadillos, 2 carnes y pollo
+	featuredProduct('picadillo-res-1lb', 'Picadillo de res 1lb', 'carnes-y-embutidos', '1764620931673-ba46205f2e4e', 4.5),
+	featuredProduct('picadillo-condimentado-1lb', 'Picadillo condimentado 1lb', 'carnes-y-embutidos', '1609183556292-f208be1a9644', 3.95),
+	featuredProduct('picadillo-hamburguesa-2lb', 'Picadillo para hamburguesas 2lb', 'carnes-y-embutidos', '1612078894671-f11ba41d713e', 7.8),
+	featuredProduct('bistec-res-2lb', 'Bistec de res 2lb', 'carnes-y-embutidos', '1603048297172-c92544798d5a', 14.9),
+	featuredProduct('bistec-cerdo-2lb', 'Bistec de cerdo 2lb', 'carnes-y-embutidos', '1628268909376-e8c44bb3153f', 9.5),
+	featuredProduct('pechuga-pollo-2lb', 'Pechuga de pollo 2lb', 'carnes-y-embutidos', '1682991136736-a2b44623eeba', 7.25, false),
+	// Bebidas
+	featuredProduct('refrescos-lata-6u', 'Refrescos de lata surtidos (6 u)', 'bebidas', '1527960471264-932f39eb5846', 6.6),
+	featuredProduct('jugo-mango-1l', 'Jugo de mango 1L', 'bebidas', '1546173159-315724a31696', 3.2),
+	// Despensa
+	featuredProduct('arroz-blanco-5lb', 'Arroz blanco 5lb', 'despensa', '1586201375761-83865001e31c', 5.9),
+	featuredProduct('frijoles-negros-2lb', 'Frijoles negros 2lb', 'despensa', '1709229851054-a09c8f7bd7e3', 4.1),
+	featuredProduct('aceite-girasol-1l', 'Aceite de girasol 1L', 'despensa', '1720468750623-39e9a09f5067', 6.5),
+	// Aseo
+	featuredProduct('detergente-liquido-3l', 'Detergente líquido 3L', 'aseo', '1624372635310-01d078c05dd9', 8.4),
 ];
 
 export const howItWorksStepsMock: HowItWorksStep[] = [

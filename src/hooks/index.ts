@@ -17,7 +17,7 @@ export * from './payments/useUpdateExchangeRate';
 /* ********************************** */
 export * from './home/useFeaturedCategories';
 export * from './home/useFamilyCombos';
-export * from './home/usePopularProductsHome';
+export * from './home/useFeaturedProducts';
 export * from './home/useHowItWorksSteps';
 export * from './home/useDeliveryZones';
 export * from './home/useHomeBenefits';
